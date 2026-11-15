@@ -38,9 +38,15 @@ const FirebaseSync = {
     isWritingRemote: false,
 
     /**
-     * Dapatkan konfigurasi aktif (dari localStorage jika ada, atau default)
+     * Dapatkan konfigurasi aktif:
+     * 1. Utamakan FIREBASE_CONFIG_DEFAULT di file ini (agar otomatis aktif di SEMUA HP/laptop pengurus tanpa perlu atur ulang)
+     * 2. Atau dari localStorage jika pernah diatur lewat antarmuka modal
      */
     getConfig() {
+        // Jika konfigurasi global di file ini sudah diisi, gunakan langsung untuk semua device
+        if (FIREBASE_CONFIG_DEFAULT && (FIREBASE_CONFIG_DEFAULT.databaseURL || (FIREBASE_CONFIG_DEFAULT.projectId && FIREBASE_CONFIG_DEFAULT.apiKey))) {
+            return FIREBASE_CONFIG_DEFAULT;
+        }
         try {
             const saved = localStorage.getItem(FIREBASE_CONFIG_STORAGE_KEY);
             if (saved) {
@@ -307,3 +313,4 @@ if (document.readyState === 'loading') {
 } else {
     setTimeout(() => FirebaseSync.init(), 100);
 }
+
