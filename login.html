@@ -15,6 +15,10 @@
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- Firebase SDK CDN (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 min-h-screen flex items-center justify-center p-4">
 
@@ -30,9 +34,17 @@
             </div>
             <h1 class="text-xl font-bold text-slate-800">E-Bendahara</h1>
             <p class="text-xs text-slate-500 mt-0.5">Sistem Manajemen Kas Asrama & Pondok</p>
-            <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                ⚡ GitHub Pages Ready (Offline & Portable)
-            </span>
+            <div class="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                    ⚡ GitHub Pages Ready
+                </span>
+                <button type="button" onclick="openLoginCloudModal()"
+                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition cursor-pointer"
+                        title="Klik untuk konfigurasi Firebase Cloud Realtime">
+                    <span id="login-cloud-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span id="login-cloud-text">Mode Lokal</span>
+                </button>
+            </div>
         </div>
 
         <!-- Alert Error / Info -->
@@ -109,11 +121,109 @@
 </div>
 
 <!-- Load Database Storage & Auth Scripts -->
+<script src="assets/js/firebase-config.js"></script>
 <script src="assets/js/storage.js"></script>
 <script src="assets/js/auth.js"></script>
+
+<!-- MODAL: Pengaturan Cloud Firebase di Halaman Login -->
+<div id="modal-login-cloud" class="modal-overlay hidden" style="display:none;" onclick="if(event.target===this)closeLoginCloudModal()">
+    <div class="modal-box max-w-md bg-white rounded-2xl p-5 shadow-2xl border border-slate-200">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="cloud" class="w-4 h-4 text-blue-600"></i>
+                Konfigurasi Firebase Cloud
+            </h3>
+            <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeLoginCloudModal()">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            Tempel konfigurasi JSON dari Firebase Console agar aplikasi ini terhubung ke database cloud yang sama dengan perangkat pengurus lainnya:
+        </p>
+        <textarea id="login-fc-paste" rows="4" class="quick-input w-full font-mono text-[11px] mb-3"
+                  placeholder='Tempel di sini, misal: { "apiKey": "...", "databaseURL": "https://...", "projectId": "..." }'></textarea>
+        <div class="flex justify-end gap-2">
+            <button type="button" onclick="closeLoginCloudModal()" class="btn-secondary text-xs">Batal</button>
+            <button type="button" onclick="simpanLoginCloudConfig()" class="btn-primary bg-blue-600 hover:bg-blue-700 text-xs">
+                Simpan & Hubungkan
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     // Inisialisasi ikon Lucide
     lucide.createIcons();
+
+    function updateLoginCloudUI() {
+        const dot = document.getElementById('login-cloud-dot');
+        const txt = document.getElementById('login-cloud-text');
+        if (!dot || !txt) return;
+
+        if (typeof FirebaseSync !== 'undefined' && FirebaseSync.status === 'connected') {
+            dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+            txt.textContent = 'Cloud Terhubung';
+        } else if (typeof FirebaseSync !== 'undefined' && FirebaseSync.status === 'connecting') {
+            dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+            txt.textContent = 'Menghubungkan...';
+        } else {
+            dot.className = 'w-2 h-2 rounded-full bg-slate-400';
+            txt.textContent = 'Mode Lokal';
+        }
+    }
+
+    setTimeout(updateLoginCloudUI, 300);
+    setInterval(updateLoginCloudUI, 2000);
+
+    function openLoginCloudModal() {
+        const m = document.getElementById('modal-login-cloud');
+        if (m) {
+            m.classList.remove('hidden');
+            m.style.display = 'flex';
+        }
+        if (typeof FirebaseSync !== 'undefined') {
+            const cfg = FirebaseSync.getConfig();
+            if (cfg && cfg.databaseURL) {
+                document.getElementById('login-fc-paste').value = JSON.stringify(cfg, null, 2);
+            }
+        }
+    }
+
+    function closeLoginCloudModal() {
+        const m = document.getElementById('modal-login-cloud');
+        if (m) {
+            m.classList.add('hidden');
+            m.style.display = 'none';
+        }
+    }
+
+    function simpanLoginCloudConfig() {
+        const raw = document.getElementById('login-fc-paste').value.trim();
+        if (!raw) {
+            alert('Silakan tempel konfigurasi Firebase!');
+            return;
+        }
+        try {
+            let obj = null;
+            if (raw.startsWith('{')) {
+                obj = JSON.parse(raw);
+            } else {
+                const match = raw.match(/\{[\s\S]*\}/);
+                if (match) {
+                    obj = (new Function('return ' + match[0]))();
+                }
+            }
+            if (!obj || (!obj.databaseURL && !obj.projectId)) {
+                throw new Error('Konfigurasi harus menyertakan databaseURL atau projectId!');
+            }
+            FirebaseSync.saveConfig(obj);
+            closeLoginCloudModal();
+            updateLoginCloudUI();
+            alert('Konfigurasi cloud disimpan! Sistem sedang menghubungkan...');
+        } catch (e) {
+            alert('Format tidak valid: ' + e.message);
+        }
+    }
 
     // Jika sudah login sebelumnya, langsung alihkan ke index.html
     const loggedUser = Auth.getCurrentUser();

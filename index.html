@@ -16,7 +16,12 @@
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css">
     
-    <!-- Auth & Storage Engine -->
+    <!-- Firebase SDK CDN (Compat) untuk Sinkronisasi Cloud Realtime Lintas Perangkat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <!-- Konfigurasi Firebase, Storage Engine, & Auth -->
+    <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/storage.js"></script>
     <script src="assets/js/auth.js"></script>
     <script>
@@ -93,6 +98,17 @@
                     </span>
                 </div>
                 <i data-lucide="user-cog" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 ml-1 transition"></i>
+            </button>
+
+            <!-- Status Indikator Cloud / Firebase Realtime -->
+            <button id="btn-cloud-status" onclick="openModalFirebaseConfig()"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm border bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 cursor-pointer"
+                    title="Status & Pengaturan Cloud Database Firebase">
+                <span class="relative flex h-2 w-2">
+                    <span id="cloud-indicator-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" style="display:none"></span>
+                    <span id="cloud-indicator-dot" class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
+                </span>
+                <span id="cloud-status-text" class="hidden md:inline">Mode Lokal (Offline)</span>
             </button>
 
             <!-- Tombol Backup / Restore JSON (Khusus Bendahara Utama) -->
@@ -289,9 +305,14 @@
                             <i data-lucide="user-plus" class="w-4 h-4 text-emerald-600"></i>
                             Tambah Cepat Santri Baru
                         </h3>
-                        <button class="text-xs text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition" onclick="openModalMasterSantri()">
-                            <i data-lucide="users" class="w-3.5 h-3.5"></i> Kelola Santri (Lulus/Boyong)
-                        </button>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <button class="text-xs text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition border border-blue-200" onclick="openModalMasterSantri()">
+                                <i data-lucide="users" class="w-3.5 h-3.5"></i> Master Santri
+                            </button>
+                            <button class="text-xs text-amber-700 font-semibold hover:text-amber-800 flex items-center gap-1 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-md transition border border-amber-200" onclick="openModalArsipBoyong()" title="Buka Daftar Santri yang Lulus atau Boyong">
+                                <i data-lucide="archive" class="w-3.5 h-3.5 text-amber-600"></i> Arsip Boyong (<span id="badge-boyong-count">0</span>)
+                            </button>
+                        </div>
                     </div>
                     <div class="flex gap-2 mb-2">
                         <input type="text" id="input-nama-santri" class="quick-input flex-1"
@@ -961,6 +982,174 @@
         </div>
     </div>
 </div>
+
+<!-- ============================================================ -->
+<!-- MODAL: Konfigurasi Cloud Realtime (Firebase)                 -->
+<!-- ============================================================ -->
+<div id="modal-firebase-config" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-firebase-config')">
+    <div class="modal-box max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="cloud" class="w-5 h-5 text-blue-600"></i>
+                Konfigurasi Cloud & Sinkronisasi Real-Time
+            </h3>
+            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-firebase-config')">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            Hubungkan E-Bendahara ke <strong>Firebase Realtime Database</strong> (100% Gratis dari Google) agar seluruh data kas, matriks, buku kas, dan pinjaman otomatis sinkron secara <em>real-time</em> di seluruh HP dan laptop pengurus tanpa mengulang dari awal saat berganti perangkat.
+        </p>
+
+        <!-- Status Koneksi Saat Ini -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4 flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2.5">
+                <span id="modal-cloud-status-dot" class="w-3 h-3 rounded-full bg-slate-400 ring-4 ring-slate-100"></span>
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Status Koneksi:</span>
+                    <strong id="modal-cloud-status-desc" class="text-xs text-slate-700">Mode Offline (Lokal)</strong>
+                </div>
+            </div>
+            <button onclick="syncLocalToCloudNow()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition shadow-sm">
+                <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i> Unggah Data Lokal ke Cloud
+            </button>
+        </div>
+
+        <!-- Form Konfigurasi -->
+        <div class="space-y-3 mb-5">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Tempel Konfigurasi JSON / Salinan dari Firebase Console (Cara Cepat)
+                </label>
+                <textarea id="fc-json-paste" rows="3" class="quick-input w-full font-mono text-[11px]"
+                          placeholder='Tempel di sini, misal: { "apiKey": "...", "databaseURL": "https://...", "projectId": "..." }'></textarea>
+                <button type="button" onclick="parseJsonConfigToInputs()" class="mt-1 text-[11px] text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1">
+                    <i data-lucide="sparkles" class="w-3 h-3"></i> Terapkan dari Teks di Atas
+                </button>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Atau Isi Parameter Secara Manual:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Database URL <span class="text-red-500">*wajib</span></label>
+                        <input type="text" id="fc-databaseURL" class="quick-input w-full text-xs font-mono" placeholder="https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">API Key <span class="text-red-500">*wajib</span></label>
+                        <input type="text" id="fc-apiKey" class="quick-input w-full text-xs font-mono" placeholder="AIzaSy...">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Project ID <span class="text-red-500">*wajib</span></label>
+                        <input type="text" id="fc-projectId" class="quick-input w-full text-xs font-mono" placeholder="e-bendahara-pondok">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Auth Domain</label>
+                        <input type="text" id="fc-authDomain" class="quick-input w-full text-xs font-mono" placeholder="e-bendahara-pondok.firebaseapp.com">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">App ID</label>
+                        <input type="text" id="fc-appId" class="quick-input w-full text-xs font-mono" placeholder="1:123456:web:abcd...">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Storage Bucket (opsional)</label>
+                        <input type="text" id="fc-storageBucket" class="quick-input w-full text-xs font-mono" placeholder="e-bendahara-pondok.appspot.com">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panduan Pembuatan Firebase Gratis -->
+        <details class="bg-blue-50/60 border border-blue-200 rounded-xl p-3 mb-5 text-xs text-slate-700">
+            <summary class="font-bold text-blue-800 cursor-pointer flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-4 h-4 text-blue-600"></i>
+                Panduan 2 Menit Membuat Firebase Realtime Database (Gratis Selamanya)
+            </summary>
+            <div class="mt-2.5 space-y-2 text-slate-600 leading-relaxed text-[11px]">
+                <p>1. Buka <strong><a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline font-bold">console.firebase.google.com</a></strong> dan login dengan akun Google Anda.</p>
+                <p>2. Klik <strong>"Add project"</strong>, beri nama misalnya <code>e-bendahara</code> (lewati Google Analytics).</p>
+                <p>3. Di menu sebelah kiri, buka <strong>Build ➔ Realtime Database</strong>, lalu klik <strong>Create Database</strong> (pilih lokasi <em>Singapore / asia-southeast1</em> atau <em>United States</em>).</p>
+                <p>4. Pada tab <strong>Rules</strong> di Realtime Database, ubah menjadi:</p>
+                <pre class="cloud-code-box">{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</pre>
+                <p>Lalu klik <strong>Publish</strong>.</p>
+                <p>5. Klik ikon gerigi (Project Settings) di pojok kiri atas ➔ gulir ke bawah ➔ klik ikon Web (<code>&lt;/&gt;</code>) ➔ salin isi <code>const firebaseConfig = { ... }</code> lalu tempelkan pada kolom di atas!</p>
+            </div>
+        </details>
+
+        <!-- Aksi Tombol -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+            <button type="button" onclick="useOfflineMode()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                Gunakan Mode Offline (Lokal Saja)
+            </button>
+            <div class="flex items-center gap-2">
+                <button type="button" class="btn-secondary text-xs" onclick="closeModal('modal-firebase-config')">Tutup</button>
+                <button type="button" onclick="simpanFirebaseConfig()" class="btn-primary bg-blue-600 hover:bg-blue-700 text-xs">
+                    <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan & Hubungkan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: Arsip Santri Boyong & Lulus Pondok                     -->
+<!-- ============================================================ -->
+<div id="modal-arsip-boyong" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-arsip-boyong')">
+    <div class="modal-box max-w-3xl max-h-[85vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="archive" class="w-5 h-5 text-amber-600"></i>
+                Arsip Santri Boyong & Lulus Pondok
+            </h3>
+            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-arsip-boyong')">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            Daftar santri yang telah lulus atau boyong dari pondok. Riwayat iuran dan catatan pembayaran mereka pada tahun-tahun ajaran lama tetap <strong>utuh 100%</strong> dan tidak terhapus. Namun, nama mereka tidak lagi menjadi tanggungan pada tahun ajaran baru. Klik tombol <strong>Aktifkan Kembali</strong> jika santri kembali mondok.
+        </p>
+
+        <!-- Bar pencarian & info -->
+        <div class="flex items-center justify-between gap-3 mb-4 bg-amber-50/60 p-3 rounded-lg border border-amber-200 flex-wrap">
+            <div class="flex items-center gap-2 text-xs text-amber-900 font-medium">
+                <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                <span>Jumlah Santri di Arsip: <strong id="ab-count-total">0</strong> orang</span>
+            </div>
+            <input type="text" id="ab-search-input" class="quick-input text-xs w-56"
+                   placeholder="Cari santri boyong..." oninput="filterArsipBoyongTable()">
+        </div>
+
+        <!-- Tabel Santri Boyong -->
+        <div class="border border-slate-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto mb-4">
+            <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
+                    <tr>
+                        <th class="p-2.5 w-10 text-center">No</th>
+                        <th class="p-2.5">Nama Santri</th>
+                        <th class="p-2.5">Kamar / Kelas</th>
+                        <th class="p-2.5">Tgl Boyong / Keterangan</th>
+                        <th class="p-2.5 w-24 text-center">Status</th>
+                        <th class="p-2.5 w-36 text-center col-aksi">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="ab-table-body" class="divide-y divide-slate-100">
+                    <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data arsip boyong...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex justify-end pt-2 border-t border-slate-100">
+            <button class="btn-secondary" onclick="closeModal('modal-arsip-boyong')">Tutup</button>
+        </div>
+    </div>
+</div>
+
 
 <!-- ============================================================ -->
 <!-- MODAL: Cetak LPJ (Pratinjau Cetak)                            -->

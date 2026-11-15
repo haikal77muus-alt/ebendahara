@@ -515,3 +515,29 @@ body {
     }
 }
 
+/* ---------- Cloud & Arsip Boyong Badges ---------- */
+.badge-boyong {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.cloud-status-badge {
+    transition: all 0.25s ease;
+}
+
+.cloud-code-box {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.75rem;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+}
+
+

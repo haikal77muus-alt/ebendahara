@@ -1,14 +1,16 @@
 /**
  * ============================================================
  * E-Bendahara — storage.js
- * Pengelola Database Lokal (localStorage), Seeder Data Awal,
- * & Fitur Ekspor / Impor Cadangan Data (Backup JSON)
+ * Pengelola Database Lokal (localStorage) & Sinkronisasi Cloud
+ * Firebase Realtime Database Lintas Perangkat, Seeder Data Awal,
+ * Master Data Santri Permanen & Arsip Santri Boyong,
+ * serta Fitur Ekspor / Impor Cadangan Data (Backup JSON)
  * ============================================================
  */
 
 const STORAGE_KEY = 'ebendahara_database_v1';
 
-// Seed Data Awal jika localStorage masih kosong
+// Seed Data Awal jika database masih baru/kosong
 const DEFAULT_SEED_DATA = {
     users: [
         { id: 1, nama: 'Ustadzah Siti Aisyah', username: 'admin', password: 'admin123', role: 'bendahara_utama' },
@@ -22,16 +24,16 @@ const DEFAULT_SEED_DATA = {
         { id: 3, nama_periode: 'Tahun 2025', tipe_bulan: 'januari_desember', is_active: 0 }
     ],
     master_santri: [
-        { id: 1,  nama_santri: 'Abdullah Faqih',  kamar_kelas: 'Kamar Ali 01',    is_active: 1, urutan: 1 },
-        { id: 2,  nama_santri: 'Muhammad Rizki',  kamar_kelas: 'Kamar Ali 02',    is_active: 1, urutan: 2 },
-        { id: 3,  nama_santri: 'Ahmad Zainuddin', kamar_kelas: 'Kamar Umar 01',   is_active: 1, urutan: 3 },
-        { id: 4,  nama_santri: 'Hasan Al-Bashri', kamar_kelas: 'Kamar Umar 02',   is_active: 1, urutan: 4 },
-        { id: 5,  nama_santri: 'Umar Faruq',      kamar_kelas: 'Kamar Utsman 01', is_active: 1, urutan: 5 },
-        { id: 6,  nama_santri: 'Ali Mustofa',     kamar_kelas: 'Kamar Utsman 02', is_active: 1, urutan: 6 },
-        { id: 7,  nama_santri: 'Bilal Ibrahim',   kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 7 },
-        { id: 8,  nama_santri: 'Yusuf Hakim',     kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 8 },
-        { id: 9,  nama_santri: 'Hamzah Ridwan',   kamar_kelas: 'Kamar Zubair 01', is_active: 1, urutan: 9 },
-        { id: 10, nama_santri: 'Khalid Walid',    kamar_kelas: 'Kamar Zubair 02', is_active: 1, urutan: 10 }
+        { id: 1,  nama_santri: 'Abdullah Faqih',  kamar_kelas: 'Kamar Ali 01',    is_active: 1, urutan: 1, tgl_boyong: null },
+        { id: 2,  nama_santri: 'Muhammad Rizki',  kamar_kelas: 'Kamar Ali 02',    is_active: 1, urutan: 2, tgl_boyong: null },
+        { id: 3,  nama_santri: 'Ahmad Zainuddin', kamar_kelas: 'Kamar Umar 01',   is_active: 1, urutan: 3, tgl_boyong: null },
+        { id: 4,  nama_santri: 'Hasan Al-Bashri', kamar_kelas: 'Kamar Umar 02',   is_active: 1, urutan: 4, tgl_boyong: null },
+        { id: 5,  nama_santri: 'Umar Faruq',      kamar_kelas: 'Kamar Utsman 01', is_active: 1, urutan: 5, tgl_boyong: null },
+        { id: 6,  nama_santri: 'Ali Mustofa',     kamar_kelas: 'Kamar Utsman 02', is_active: 1, urutan: 6, tgl_boyong: null },
+        { id: 7,  nama_santri: 'Bilal Ibrahim',   kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 7, tgl_boyong: null },
+        { id: 8,  nama_santri: 'Yusuf Hakim',     kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 8, tgl_boyong: null },
+        { id: 9,  nama_santri: 'Hamzah Ridwan',   kamar_kelas: 'Kamar Zubair 01', is_active: 1, urutan: 9, tgl_boyong: null },
+        { id: 10, nama_santri: 'Khalid Walid',    kamar_kelas: 'Kamar Zubair 02', is_active: 1, urutan: 10, tgl_boyong: null }
     ],
     matriks_kas_bulanan: [
         { id: 1,  periode_id: 2, santri_id: 1, bulan: 7, status: 'sudah' },
@@ -100,26 +102,43 @@ const DEFAULT_SEED_DATA = {
 };
 
 const Storage = {
+    subscribers: [],
+
+    /**
+     * Daftarkan pendengar (subscriber) untuk auto re-render saat data berubah
+     */
+    subscribe(callback) {
+        if (typeof callback === 'function') {
+            this.subscribers.push(callback);
+        }
+    },
+
+    notifySubscribers(data) {
+        this.subscribers.forEach(cb => {
+            try { cb(data); } catch (e) { console.error('[Storage] Subscriber error:', e); }
+        });
+    },
+
     /**
      * Inisialisasi Database: Muat data dari localStorage atau pasang default seed data
      */
     init() {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) {
-            this.saveData(DEFAULT_SEED_DATA);
+            this.saveLocalOnly(DEFAULT_SEED_DATA);
             return DEFAULT_SEED_DATA;
         }
         try {
             const data = JSON.parse(raw);
             if (!data || !Array.isArray(data.users) || !Array.isArray(data.periode) || !Array.isArray(data.master_santri) || !Array.isArray(data.buku_kas) || !Array.isArray(data.pinjaman)) {
-                console.warn('Struktur data localStorage tidak lengkap, mereset ke data awal');
-                this.saveData(DEFAULT_SEED_DATA);
+                console.warn('[Storage] Struktur data tidak lengkap, mereset ke data awal');
+                this.saveLocalOnly(DEFAULT_SEED_DATA);
                 return DEFAULT_SEED_DATA;
             }
             return data;
         } catch (e) {
-            console.error('Data rusak, mengembalikan ke data awal:', e);
-            this.saveData(DEFAULT_SEED_DATA);
+            console.error('[Storage] Data rusak, mengembalikan ke data awal:', e);
+            this.saveLocalOnly(DEFAULT_SEED_DATA);
             return DEFAULT_SEED_DATA;
         }
     },
@@ -128,8 +147,22 @@ const Storage = {
         return this.init();
     },
 
-    saveData(data) {
+    /**
+     * Simpan data hanya ke penyimpanan lokal tanpa memicu feedback push ke cloud
+     */
+    saveLocalOnly(data) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        this.notifySubscribers(data);
+    },
+
+    /**
+     * Simpan data: simpan ke lokal dan otomatis sinkronkan ke Firebase Cloud Realtime
+     */
+    saveData(data) {
+        this.saveLocalOnly(data);
+        if (typeof FirebaseSync !== 'undefined' && FirebaseSync.pushToCloud) {
+            FirebaseSync.pushToCloud(data);
+        }
     },
 
     getNextId(collection) {
@@ -346,6 +379,10 @@ const Storage = {
         return this.getAllSantri().filter(s => s.is_active === 1);
     },
 
+    getBoyongSantri() {
+        return this.getAllSantri().filter(s => s.is_active === 0);
+    },
+
     addSantri({ nama_santri, kamar_kelas }) {
         const db = this.getData();
         const newId = this.getNextId(db.master_santri);
@@ -356,20 +393,59 @@ const Storage = {
             nama_santri,
             kamar_kelas: kamar_kelas || '',
             is_active: 1,
-            urutan: maxUrutan + 1
+            urutan: maxUrutan + 1,
+            tgl_boyong: null
         };
         db.master_santri.push(newSantri);
         this.saveData(db);
         return newSantri;
     },
 
-    toggleSantriStatus(id, isActive) {
+    updateSantri(id, { nama_santri, kamar_kelas }) {
         const db = this.getData();
         const santri = db.master_santri.find(s => s.id === parseInt(id));
         if (!santri) throw new Error('Santri tidak ditemukan!');
-        santri.is_active = (isActive ? 1 : 0);
+        santri.nama_santri = nama_santri.trim();
+        santri.kamar_kelas = (kamar_kelas || '').trim();
         this.saveData(db);
         return santri;
+    },
+
+    /**
+     * Nonaktifkan santri (Boyong / Lulus)
+     * Riwayat pembayaran di periode lama tetap utuh, tapi tidak lagi menjadi beban di periode aktif/baru.
+     */
+    boyongSantri(id, alasan = '') {
+        const db = this.getData();
+        const santri = db.master_santri.find(s => s.id === parseInt(id));
+        if (!santri) throw new Error('Santri tidak ditemukan!');
+        santri.is_active = 0;
+        santri.tgl_boyong = new Date().toISOString().split('T')[0];
+        santri.alasan_boyong = alasan || 'Lulus / Boyong';
+        this.saveData(db);
+        return santri;
+    },
+
+    /**
+     * Aktifkan kembali santri yang boyong (Reaktivasi)
+     */
+    reaktivasiSantri(id) {
+        const db = this.getData();
+        const santri = db.master_santri.find(s => s.id === parseInt(id));
+        if (!santri) throw new Error('Santri tidak ditemukan!');
+        santri.is_active = 1;
+        santri.tgl_boyong = null;
+        santri.alasan_boyong = null;
+        this.saveData(db);
+        return santri;
+    },
+
+    toggleSantriStatus(id, isActive) {
+        if (isActive) {
+            return this.reaktivasiSantri(id);
+        } else {
+            return this.boyongSantri(id);
+        }
     },
 
     deleteSantri(id) {
@@ -618,6 +694,12 @@ const Storage = {
     }
 };
 
+// Hubungkan ke listener FirebaseSync jika tersedia
+if (typeof FirebaseSync !== 'undefined' && FirebaseSync.onDataChange) {
+    FirebaseSync.onDataChange((cloudData) => {
+        Storage.saveLocalOnly(cloudData);
+    });
+}
+
 // Pastikan storage diinisialisasi saat skrip dimuat
 Storage.init();
-

@@ -587,11 +587,112 @@ function toggleStatusSantri(santriId, newActive, nama) {
         return;
     }
     try {
-        Storage.toggleSantriStatus(santriId, newActive);
-        showToast(`Status santri "${nama}" diperbarui`, 'success');
+        if (newActive === 0) {
+            Storage.boyongSantri(santriId);
+            showToast(`Santri "${nama}" telah dipindahkan ke Arsip Santri Boyong. Riwayat kasnya tetap aman.`, 'info');
+        } else {
+            Storage.reaktivasiSantri(santriId);
+            showToast(`Santri "${nama}" berhasil diaktifkan kembali!`, 'success');
+        }
         loadMasterSantriList();
         loadMatriks();
         loadDashboard();
+        updateBoyongCountBadge();
+    } catch (e) {
+        showToast(e.message, 'error');
+    }
+}
+
+// ============================================================
+// ARSIP SANTRI BOYONG & REAKTIVASI
+// ============================================================
+function updateBoyongCountBadge() {
+    try {
+        const boyongList = Storage.getBoyongSantri();
+        const badge = document.getElementById('badge-boyong-count');
+        if (badge) badge.textContent = boyongList.length;
+        const totalAb = document.getElementById('ab-count-total');
+        if (totalAb) totalAb.textContent = boyongList.length;
+    } catch (e) {}
+}
+
+function openModalArsipBoyong() {
+    openModal('modal-arsip-boyong');
+    loadArsipBoyongList();
+}
+
+function loadArsipBoyongList() {
+    const list = Storage.getBoyongSantri();
+    renderArsipBoyongTable(list);
+}
+
+function renderArsipBoyongTable(list) {
+    const tbody = document.getElementById('ab-table-body');
+    const countEl = document.getElementById('ab-count-total');
+    if (countEl) countEl.textContent = list.length;
+    if (!tbody) return;
+
+    if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada santri yang berstatus lulus atau boyong. Seluruh santri berstatus aktif mondok.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = list.map((s, idx) => {
+        const tgl = s.tgl_boyong ? s.tgl_boyong : '-';
+        const alasan = s.alasan_boyong || 'Lulus / Boyong Pondok';
+
+        const aksiCol = !Auth.isReadOnly() ? `
+            <td class="p-2.5 text-center col-aksi">
+                <button class="px-2.5 py-1 text-xs rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold flex items-center gap-1 mx-auto transition shadow-sm active:scale-95"
+                        onclick="reaktivasiSantriDariArsip(${s.id}, '${escHtml(s.nama_santri)}')">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-emerald-600"></i> Aktifkan Kembali
+                </button>
+            </td>` : `<td class="p-2.5 text-center text-slate-400 col-aksi">-</td>`;
+
+        return `<tr>
+            <td class="p-2.5 text-center text-slate-400 font-medium">${idx + 1}</td>
+            <td class="p-2.5 font-bold text-slate-800">${escHtml(s.nama_santri)}</td>
+            <td class="p-2.5 text-slate-600">${escHtml(s.kamar_kelas || '-')}</td>
+            <td class="p-2.5 text-slate-500">
+                <span class="font-medium text-slate-700 block">${escHtml(tgl)}</span>
+                <span class="text-[10px] text-slate-400">${escHtml(alasan)}</span>
+            </td>
+            <td class="p-2.5 text-center">
+                <span class="badge-boyong">Lulus / Boyong</span>
+            </td>
+            ${aksiCol}
+        </tr>`;
+    }).join('');
+    lucide.createIcons();
+}
+
+function filterArsipBoyongTable() {
+    const q = (document.getElementById('ab-search-input')?.value || '').toLowerCase().trim();
+    const all = Storage.getBoyongSantri();
+    if (!q) {
+        renderArsipBoyongTable(all);
+        return;
+    }
+    const filtered = all.filter(s =>
+        s.nama_santri.toLowerCase().includes(q) ||
+        (s.kamar_kelas && s.kamar_kelas.toLowerCase().includes(q))
+    );
+    renderArsipBoyongTable(filtered);
+}
+
+function reaktivasiSantriDariArsip(id, nama) {
+    if (Auth.isReadOnly()) {
+        showToast('Akses ditolak: Anda hanya memiliki hak memantau.', 'warning');
+        return;
+    }
+    try {
+        Storage.reaktivasiSantri(id);
+        showToast(`Alhamdulillah! Santri "${nama}" berhasil diaktifkan kembali ke pondok!`, 'success');
+        loadArsipBoyongList();
+        loadMasterSantriList();
+        loadMatriks();
+        loadDashboard();
+        updateBoyongCountBadge();
     } catch (e) {
         showToast(e.message, 'error');
     }
@@ -1165,6 +1266,139 @@ function escHtml(str) {
 }
 
 // ============================================================
+// PENGATURAN FIREBASE CLOUD REALTIME
+// ============================================================
+function openModalFirebaseConfig() {
+    openModal('modal-firebase-config');
+    if (typeof FirebaseSync !== 'undefined') {
+        const cfg = FirebaseSync.getConfig();
+        if (cfg) {
+            const elDb = document.getElementById('fc-databaseURL');
+            const elApi = document.getElementById('fc-apiKey');
+            const elProj = document.getElementById('fc-projectId');
+            const elAuth = document.getElementById('fc-authDomain');
+            const elApp = document.getElementById('fc-appId');
+            const elBucket = document.getElementById('fc-storageBucket');
+
+            if (elDb) elDb.value = cfg.databaseURL || '';
+            if (elApi) elApi.value = cfg.apiKey || '';
+            if (elProj) elProj.value = cfg.projectId || '';
+            if (elAuth) elAuth.value = cfg.authDomain || '';
+            if (elApp) elApp.value = cfg.appId || '';
+            if (elBucket) elBucket.value = cfg.storageBucket || '';
+
+            if (cfg.databaseURL || cfg.projectId) {
+                const jsonPaste = document.getElementById('fc-json-paste');
+                if (jsonPaste && !jsonPaste.value) {
+                    jsonPaste.value = JSON.stringify(cfg, null, 2);
+                }
+            }
+        }
+        FirebaseSync.updateUIStatusBadge();
+    }
+    lucide.createIcons();
+}
+
+function parseJsonConfigToInputs() {
+    const text = (document.getElementById('fc-json-paste')?.value || '').trim();
+    if (!text) {
+        showToast('Tempelkan teks konfigurasi Firebase terlebih dahulu!', 'warning');
+        return;
+    }
+    try {
+        let obj = null;
+        if (text.startsWith('{')) {
+            obj = JSON.parse(text);
+        } else {
+            const match = text.match(/\{[\s\S]*\}/);
+            if (match) {
+                obj = (new Function('return ' + match[0]))();
+            }
+        }
+        if (!obj || typeof obj !== 'object') throw new Error('Format teks tidak valid');
+
+        if (obj.databaseURL && document.getElementById('fc-databaseURL')) document.getElementById('fc-databaseURL').value = obj.databaseURL;
+        if (obj.apiKey && document.getElementById('fc-apiKey')) document.getElementById('fc-apiKey').value = obj.apiKey;
+        if (obj.projectId && document.getElementById('fc-projectId')) document.getElementById('fc-projectId').value = obj.projectId;
+        if (obj.authDomain && document.getElementById('fc-authDomain')) document.getElementById('fc-authDomain').value = obj.authDomain;
+        if (obj.appId && document.getElementById('fc-appId')) document.getElementById('fc-appId').value = obj.appId;
+        if (obj.storageBucket && document.getElementById('fc-storageBucket')) document.getElementById('fc-storageBucket').value = obj.storageBucket;
+
+        showToast('Parameter konfigurasi berhasil diekstrak ke formulir!', 'success');
+    } catch (e) {
+        showToast('Gagal membaca JSON: ' + e.message, 'error');
+    }
+}
+
+function simpanFirebaseConfig() {
+    const dbUrl = document.getElementById('fc-databaseURL')?.value.trim();
+    const apiKey = document.getElementById('fc-apiKey')?.value.trim();
+    const projId = document.getElementById('fc-projectId')?.value.trim();
+    const authDom = document.getElementById('fc-authDomain')?.value.trim();
+    const appId = document.getElementById('fc-appId')?.value.trim();
+    const bucket = document.getElementById('fc-storageBucket')?.value.trim();
+
+    if (!dbUrl && !projId) {
+        showToast('Database URL atau Project ID wajib diisi!', 'warning');
+        return;
+    }
+
+    const config = {
+        databaseURL: dbUrl,
+        apiKey: apiKey,
+        projectId: projId,
+        authDomain: authDom || `${projId}.firebaseapp.com`,
+        appId: appId || '',
+        storageBucket: bucket || `${projId}.appspot.com`
+    };
+
+    try {
+        if (typeof FirebaseSync !== 'undefined') {
+            FirebaseSync.saveConfig(config);
+            showToast('Konfigurasi Firebase berhasil disimpan! Menghubungkan ke cloud...', 'success');
+            closeModal('modal-firebase-config');
+            if (typeof FirebaseSync.pushToCloud === 'function') {
+                FirebaseSync.pushToCloud(Storage.getData());
+            }
+        }
+    } catch (e) {
+        showToast(e.message, 'error');
+    }
+}
+
+function useOfflineMode() {
+    if (typeof FirebaseSync !== 'undefined') {
+        FirebaseSync.disconnectToOffline();
+        showToast('Beralih ke mode offline (localStorage). Data tetap aman di browser ini.', 'info');
+        closeModal('modal-firebase-config');
+    }
+}
+
+function syncLocalToCloudNow() {
+    if (typeof FirebaseSync !== 'undefined') {
+        if (!FirebaseSync.hasValidConfig()) {
+            showToast('Harap simpan konfigurasi Firebase terlebih dahulu sebelum sinkronisasi!', 'warning');
+            return;
+        }
+        const data = Storage.getData();
+        FirebaseSync.pushToCloud(data);
+        showToast('Data lokal berhasil dikirim ke antrean sinkronisasi Firebase Cloud!', 'success');
+    }
+}
+
+// ============================================================
+// AUTO REALTIME SYNC LISTENER
+// ============================================================
+Storage.subscribe(() => {
+    updateBoyongCountBadge();
+    // Render ulang tab aktif jika ada perubahan dari cloud atau perangkat lain
+    if (currentTab === 'dashboard') loadDashboard();
+    else if (currentTab === 'matriks') loadMatriks();
+    else if (currentTab === 'bukukas') loadBukuKas();
+    else if (currentTab === 'pinjaman') loadPinjaman();
+});
+
+// ============================================================
 // INISIALISASI HALAMAN
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -1177,6 +1411,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Muat periode aktif dan seluruh data tab
     loadPeriode();
+
+    // 4. Perbarui badge jumlah santri boyong
+    updateBoyongCountBadge();
+
+    // 5. Perbarui status cloud badge
+    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.updateUIStatusBadge) {
+        FirebaseSync.updateUIStatusBadge();
+    }
 
     // Inisialisasi ikon Lucide
     lucide.createIcons();
