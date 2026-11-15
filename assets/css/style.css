@@ -1,0 +1,517 @@
+/* ============================================================
+   E-Bendahara — Custom Styles & Print Rules
+   ============================================================ */
+
+/* ---------- Base & Layout ---------- */
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f1f5f9;
+    min-height: 100vh;
+}
+
+/* ---------- Sticky Header ---------- */
+#app-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ---------- Tab Navigation ---------- */
+.tab-btn {
+    transition: all 0.2s ease;
+    position: relative;
+    white-space: nowrap;
+}
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: #3b82f6;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+    border-radius: 3px 3px 0 0;
+}
+.tab-btn.active {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+}
+.tab-btn.active::after {
+    width: 70%;
+}
+.tab-btn:hover:not(.active) {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.04);
+}
+
+/* ---------- Cards ---------- */
+.stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #e2e8f0;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ---------- Matriks Table ---------- */
+.matriks-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.matriks-table th,
+.matriks-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+}
+.matriks-table thead th {
+    background: #1e293b;
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.matriks-table .col-no {
+    position: sticky;
+    left: 0;
+    z-index: 6;
+    background: #f8fafc;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+    text-align: center;
+}
+.matriks-table thead .col-no {
+    z-index: 16;
+    background: #1e293b;
+}
+.matriks-table .col-nama {
+    position: sticky;
+    left: 44px;
+    z-index: 5;
+    background: #f8fafc;
+    text-align: left;
+    min-width: 180px;
+    font-weight: 500;
+    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1);
+}
+.matriks-table thead .col-nama {
+    z-index: 15;
+    background: #1e293b;
+    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.3);
+}
+
+/* Status cells */
+.status-cell {
+    cursor: pointer;
+    user-select: none;
+    min-width: 55px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+    border-radius: 4px;
+}
+.status-cell:hover {
+    filter: brightness(0.92);
+    transform: scale(1.05);
+}
+.status-sudah {
+    background: #dcfce7 !important;
+    color: #16a34a;
+}
+.status-belum {
+    background: #fee2e2 !important;
+    color: #dc2626;
+}
+.status-kosong {
+    background: #f1f5f9 !important;
+    color: #94a3b8;
+}
+
+/* ---------- Buku Kas Table ---------- */
+.bukukas-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.bukukas-table th {
+    background: #1e293b;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+}
+.bukukas-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+}
+.bukukas-table tbody tr:hover {
+    background: #f0f9ff;
+}
+.bukukas-table .col-debit {
+    color: #16a34a;
+    font-weight: 600;
+}
+.bukukas-table .col-kredit {
+    color: #dc2626;
+    font-weight: 600;
+}
+.bukukas-table .col-saldo {
+    font-weight: 700;
+    color: #1e40af;
+}
+
+/* ---------- Pinjaman Table ---------- */
+.pinjaman-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.pinjaman-table th {
+    background: #1e293b;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+}
+.pinjaman-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    text-align: center;
+}
+.pinjaman-table tbody tr:hover {
+    background: #f0f9ff;
+}
+
+/* ---------- Badge ---------- */
+.badge-lunas {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+.badge-kurang {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+/* ---------- Progress Bar ---------- */
+.progress-bar-bg {
+    background: #e2e8f0;
+    border-radius: 9999px;
+    height: 1.25rem;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+}
+.modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.modal-box {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    max-width: 600px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.25s;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.modal-overlay.show .modal-box {
+    transform: scale(1) translateY(0);
+}
+
+/* ---------- Toast Notification ---------- */
+#toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.toast {
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    max-width: 380px;
+}
+.toast-success { background: #16a34a; }
+.toast-error   { background: #dc2626; }
+.toast-info    { background: #2563eb; }
+.toast-warning { background: #d97706; }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; transform: translateX(50%); }
+}
+
+/* ---------- Quick Form Inputs ---------- */
+.quick-input {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.quick-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* ---------- Action Buttons ---------- */
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.btn-primary:hover { background: #2563eb; }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #475569;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.btn-secondary:hover { background: #cbd5e1; }
+
+.btn-danger {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-danger:hover { background: #fecaca; }
+
+.btn-success {
+    background: #dcfce7;
+    color: #16a34a;
+    border: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-success:hover { background: #bbf7d0; }
+
+/* ---------- Kalkulator Section ---------- */
+.kalkulator-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 1rem;
+    padding: 1.25rem;
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* ---------- Loading Skeleton ---------- */
+.skeleton {
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 0.5rem;
+}
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .stat-card { padding: 1rem; }
+
+    .matriks-table th,
+    .matriks-table td {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    .matriks-table .col-nama {
+        min-width: 130px;
+    }
+}
+
+@media (max-width: 640px) {
+    #app-header .header-inner {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .tab-btn {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem !important;
+    }
+}
+
+/* ============================================================
+   @media print — Cetak LPJ
+   ============================================================ */
+@media print {
+    /* Sembunyikan elemen non-cetak */
+    #app-header,
+    #toolbar-area,
+    .no-print,
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .btn-success,
+    .modal-overlay:not(.print-target),
+    #toast-container,
+    .tab-content:not(.print-active) {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        font-size: 11pt;
+        color: black;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Print Modal full width */
+    .print-target {
+        position: static !important;
+        background: none !important;
+    }
+    .print-target .modal-box {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        max-height: none !important;
+    }
+
+    /* Print tables */
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        page-break-inside: auto;
+    }
+    .print-table th,
+    .print-table td {
+        border: 1px solid #333;
+        padding: 4px 8px;
+        font-size: 10pt;
+    }
+    .print-table th {
+        background: #e5e7eb !important;
+        font-weight: bold;
+    }
+
+    /* Kolom Tanda Tangan */
+    .ttd-section {
+        margin-top: 2rem;
+        page-break-inside: avoid;
+    }
+    .ttd-box {
+        display: inline-block;
+        width: 45%;
+        text-align: center;
+        vertical-align: top;
+    }
+    .ttd-box .ttd-line {
+        margin-top: 4rem;
+        border-top: 1px solid #333;
+        display: inline-block;
+        width: 180px;
+    }
+
+    /* Status colors in print */
+    .status-sudah { background: #d1fae5 !important; }
+    .status-belum { background: #fee2e2 !important; }
+
+    @page {
+        size: A4 landscape;
+        margin: 1.5cm;
+    }
+}
+
