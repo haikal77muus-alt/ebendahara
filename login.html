@@ -47,10 +47,24 @@
             </div>
         </div>
 
+        <!-- Banner Info Akun Bawaan Multi-Perangkat -->
+        <div class="mb-4 p-3 rounded-xl bg-blue-50 border border-blue-200/80 text-xs text-blue-900 flex items-start gap-2.5">
+            <i data-lucide="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+            <div class="leading-relaxed">
+                <p class="font-semibold text-blue-950">Akses Cepat Semua Perangkat (HP / Laptop):</p>
+                <p class="mt-0.5 text-blue-800">
+                    Akun bawaan: <span class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-blue-200">admin</span> / <span class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-blue-200">admin123</span>
+                </p>
+                <p class="text-[11px] text-blue-600 mt-1">
+                    💡 Atau klik tombol akun di bawah untuk <strong>1-klik masuk langsung</strong>!
+                </p>
+            </div>
+        </div>
+
         <!-- Alert Error / Info -->
-        <div id="login-alert" class="hidden mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600 flex items-center gap-2">
-            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
-            <span id="login-alert-msg">Username atau password salah!</span>
+        <div id="login-alert" class="hidden mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600 flex items-start gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+            <span id="login-alert-msg" class="leading-relaxed">Username atau password salah!</span>
         </div>
 
         <!-- Form Login -->
@@ -62,6 +76,7 @@
                         <i data-lucide="user" class="w-4 h-4"></i>
                     </span>
                     <input type="text" id="username" name="username" required autocomplete="username"
+                           autocapitalize="none" autocorrect="off" spellcheck="false"
                            class="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
                            placeholder="Masukkan username...">
                 </div>
@@ -74,6 +89,7 @@
                         <i data-lucide="lock" class="w-4 h-4"></i>
                     </span>
                     <input type="password" id="password" name="password" required autocomplete="current-password"
+                           autocapitalize="none" autocorrect="off" spellcheck="false"
                            class="w-full pl-9 pr-10 py-2.5 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
                            placeholder="Masukkan password...">
                     <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
@@ -92,23 +108,29 @@
         <!-- Akun Demo Cepat (Quick Switcher) -->
         <div class="mt-6 pt-5 border-t border-slate-100">
             <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center mb-2.5">
-                Pilih Akun Demo / Uji Coba:
+                ⚡ 1-Klik Masuk Langsung (Pilih Peran):
             </p>
             <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="fillAccount('admin', 'admin123')"
-                        class="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-center transition group">
-                    <p class="text-xs font-bold text-blue-700">Bendahara</p>
-                    <p class="text-[10px] text-blue-500">Akses Penuh</p>
+                <button type="button" onclick="quickLogin('admin', 'admin123')"
+                        class="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 active:scale-95 border border-blue-200 text-center transition group cursor-pointer shadow-sm">
+                    <p class="text-xs font-bold text-blue-700 flex items-center justify-center gap-1">
+                        Bendahara
+                    </p>
+                    <p class="text-[10px] text-blue-500 mt-0.5">Akses Penuh</p>
                 </button>
-                <button type="button" onclick="fillAccount('sekretaris', 'sekretaris123')"
-                        class="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-center transition group">
-                    <p class="text-xs font-bold text-emerald-700">Sekretaris</p>
-                    <p class="text-[10px] text-emerald-500">Input Kas</p>
+                <button type="button" onclick="quickLogin('sekretaris', 'sekretaris123')"
+                        class="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 text-center transition group cursor-pointer shadow-sm">
+                    <p class="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1">
+                        Sekretaris
+                    </p>
+                    <p class="text-[10px] text-emerald-500 mt-0.5">Input Kas</p>
                 </button>
-                <button type="button" onclick="fillAccount('pembina', 'pembina123')"
-                        class="p-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-center transition group">
-                    <p class="text-xs font-bold text-amber-700">Pembina</p>
-                    <p class="text-[10px] text-amber-500">Lihat / LPJ</p>
+                <button type="button" onclick="quickLogin('pembina', 'pembina123')"
+                        class="p-2 rounded-lg bg-amber-50 hover:bg-amber-100 active:scale-95 border border-amber-200 text-center transition group cursor-pointer shadow-sm">
+                    <p class="text-xs font-bold text-amber-700 flex items-center justify-center gap-1">
+                        Pembina
+                    </p>
+                    <p class="text-[10px] text-amber-500 mt-0.5">Lihat / LPJ</p>
                 </button>
             </div>
         </div>
@@ -248,6 +270,12 @@
         document.getElementById('username').value = u;
         document.getElementById('password').value = p;
         hideAlert();
+    }
+
+    function quickLogin(u, p) {
+        fillAccount(u, p);
+        const fakeEvt = { preventDefault: () => {} };
+        handleLoginSubmit(fakeEvt);
     }
 
     function showAlert(msg, isSuccess = false) {

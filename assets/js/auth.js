@@ -10,41 +10,58 @@ const AUTH_SESSION_KEY = 'ebendahara_current_session';
 
 const Auth = {
     /**
-     * Ambil data pengguna yang sedang login dari session
-     */
-    getCurrentUser() {
-        const raw = sessionStorage.getItem(AUTH_SESSION_KEY) || localStorage.getItem(AUTH_SESSION_KEY);
-        if (!raw) return null;
-        try {
-            return JSON.parse(raw);
-        } catch (e) {
-            return null;
-        }
-    },
-
-    /**
-     * Simpan sesi pengguna
+     * Simpan sesi pengguna (dengan penanganan aman untuk Safari Private / In-App Browser)
      */
     setSession(user, remember = true) {
         const str = JSON.stringify(user);
-        sessionStorage.setItem(AUTH_SESSION_KEY, str);
-        if (remember) {
-            localStorage.setItem(AUTH_SESSION_KEY, str);
+        try {
+            sessionStorage.setItem(AUTH_SESSION_KEY, str);
+        } catch (e) {
+            console.warn('[Auth] Gagal menyimpan ke sessionStorage:', e);
         }
+        if (remember) {
+            try {
+                localStorage.setItem(AUTH_SESSION_KEY, str);
+            } catch (e) {
+                console.warn('[Auth] Gagal menyimpan ke localStorage:', e);
+            }
+        }
+        this._inMemorySession = user;
+    },
+
+    /**
+     * Ambil data pengguna yang sedang login dari session
+     */
+    getCurrentUser() {
+        try {
+            const raw = sessionStorage.getItem(AUTH_SESSION_KEY) || localStorage.getItem(AUTH_SESSION_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) {
+            console.warn('[Auth] Gagal membaca session:', e);
+        }
+        return this._inMemorySession || null;
     },
 
     /**
      * Proses Login pengguna
      */
     login(username, password) {
+        const cleanUser = (username || '').trim().toLowerCase();
         const users = Storage.getUsers();
         const found = users.find(u => 
-            u.username.toLowerCase() === username.trim().toLowerCase() && 
+            u.username.toLowerCase() === cleanUser && 
             u.password === password
         );
 
         if (!found) {
-            throw new Error('Username atau password yang Anda masukkan salah!');
+            const userExists = users.find(u => u.username.toLowerCase() === cleanUser);
+            if (userExists) {
+                throw new Error('Password salah! Silakan periksa kembali password Anda.');
+            } else {
+                throw new Error(
+                    `Akun "${username}" belum terdaftar di perangkat ini! Jika akun ini baru dibuat di HP/laptop lain, pastikan Firebase Cloud sudah terhubung agar sinkron otomatis. Di perangkat baru, silakan gunakan akun bawaan: username "admin" & password "admin123".`
+                );
+            }
         }
 
         const sessionUser = {
