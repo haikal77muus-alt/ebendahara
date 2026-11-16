@@ -184,6 +184,11 @@ const Storage = {
         }
 
         // Manajemen Santri Per-Periode (santri_list tersimpan mandiri di tiap periode)
+        if (!Array.isArray(data.periode) || data.periode.length === 0) {
+            data.periode = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA.periode));
+            needsSave = true;
+        }
+
         const fallbackSantri = (Array.isArray(data.master_santri) && data.master_santri.length > 0)
             ? data.master_santri
             : DEFAULT_SANTRI_TEMPLATE;

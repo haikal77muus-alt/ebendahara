@@ -20,8 +20,14 @@ let allMasterSantri = [];
 let currentCicilSisa = 0;
 
 // ============================================================
-// HELPER: Format Rupiah & Tanggal
+// HELPER: Format Rupiah & Tanggal & Ikon Aman
 // ============================================================
+function renderIcons() {
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        try { renderIcons(); } catch (e) { console.warn('[Lucide] Error:', e); }
+    }
+}
+
 function formatRp(num) {
     const n = parseFloat(num) || 0;
     return 'Rp ' + n.toLocaleString('id-ID');
@@ -87,7 +93,7 @@ function showToast(message, type = 'success') {
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `<i data-lucide="${icons[type] || 'info'}" class="w-5 h-5 shrink-0"></i><span>${message}</span>`;
     container.appendChild(toast);
-    lucide.createIcons();
+    renderIcons();
     setTimeout(() => { 
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-10px)';
@@ -139,7 +145,7 @@ function switchTab(tab) {
     const info = TAB_TITLES[tab] || TAB_TITLES['dashboard'];
     document.getElementById('page-title').innerHTML =
         `<i data-lucide="${info.icon}" class="w-5 h-5 text-blue-500"></i> ${info.text}`;
-    lucide.createIcons();
+    renderIcons();
 
     // Terapkan hak akses UI
     Auth.applyUIPermissions();
@@ -288,7 +294,7 @@ function konfirmasiHapusPeriode() {
     const nama = currentP ? currentP.nama_periode : 'Periode ini';
     document.getElementById('mhp-nama-periode').textContent = `"${nama}"`;
     openModal('modal-hapus-periode');
-    lucide.createIcons();
+    renderIcons();
 }
 
 function prosesHapusPeriode() {
@@ -378,7 +384,7 @@ function renderDashPinjaman(data) {
     const belumLunas = data.filter(p => p.total_kembali < p.total_ambil);
     if (belumLunas.length === 0) {
         container.innerHTML = '<p class="text-xs text-slate-400 flex items-center gap-1.5 py-2"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i> Seluruh pinjaman sudah lunas tercatat</p>';
-        lucide.createIcons();
+        renderIcons();
         return;
     }
     container.innerHTML = belumLunas.map(p => {
@@ -488,7 +494,7 @@ function renderMatriksTable() {
         bodyHTML += '</tr>';
     });
     tbody.innerHTML = bodyHTML;
-    lucide.createIcons();
+    renderIcons();
 }
 
 function toggleStatus(santriId, bulan, currentStatus) {
@@ -601,7 +607,7 @@ function renderMasterSantriTable(list) {
             ${aksiCol}
         </tr>`;
     }).join('');
-    lucide.createIcons();
+    renderIcons();
 }
 
 function filterMasterSantriTable() {
@@ -699,7 +705,7 @@ function renderArsipBoyongTable(list) {
             ${aksiCol}
         </tr>`;
     }).join('');
-    lucide.createIcons();
+    renderIcons();
 }
 
 function filterArsipBoyongTable() {
@@ -755,7 +761,7 @@ function konfirmasiHapusSantri(id, nama) {
         }
     };
     openModal('modal-confirm');
-    lucide.createIcons();
+    renderIcons();
 }
 
 // ============================================================
@@ -872,7 +878,7 @@ function renderBukuKasTable() {
         </tr>`;
     });
     tbody.innerHTML = html;
-    lucide.createIcons();
+    renderIcons();
 }
 
 function tambahBukuKas() {
@@ -984,7 +990,7 @@ function konfirmasiHapusBK(id) {
         }
     };
     openModal('modal-confirm');
-    lucide.createIcons();
+    renderIcons();
 }
 
 // ============================================================
@@ -1033,7 +1039,7 @@ function renderPinjamanTable() {
         </tr>`;
     });
     tbody.innerHTML = html;
-    lucide.createIcons();
+    renderIcons();
 }
 
 function tambahPinjaman() {
@@ -1143,7 +1149,7 @@ function konfirmasiHapusPinjaman(id) {
         }
     };
     openModal('modal-confirm');
-    lucide.createIcons();
+    renderIcons();
 }
 
 // ============================================================
@@ -1330,7 +1336,7 @@ function resetDataKeAwal() {
         loadPeriode();
     };
     openModal('modal-confirm');
-    lucide.createIcons();
+    renderIcons();
 }
 
 // ============================================================
@@ -1374,7 +1380,7 @@ function openModalFirebaseConfig() {
         }
         FirebaseSync.updateUIStatusBadge();
     }
-    lucide.createIcons();
+    renderIcons();
 }
 
 function parseJsonConfigToInputs() {
@@ -1515,5 +1521,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Inisialisasi ikon Lucide
-    lucide.createIcons();
+    renderIcons();
 });
