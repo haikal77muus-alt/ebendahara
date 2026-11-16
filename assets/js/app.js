@@ -125,9 +125,15 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tab);
     });
-    // Toggle active panels
+    // Toggle active panels & trigger fade-in
     document.querySelectorAll('.tab-content').forEach(panel => {
-        panel.classList.toggle('hidden', panel.id !== 'tab-' + tab);
+        const isCurrent = (panel.id === 'tab-' + tab);
+        panel.classList.toggle('hidden', !isCurrent);
+        if (isCurrent) {
+            panel.classList.remove('animate-fade-in');
+            void panel.offsetWidth;
+            panel.classList.add('animate-fade-in');
+        }
     });
     // Update toolbar title
     const info = TAB_TITLES[tab] || TAB_TITLES['dashboard'];
@@ -330,7 +336,9 @@ function loadDashboard() {
 function renderProgressBar() {
     const now = new Date();
     const currentMonth = now.getMonth() + 1; // 1-12
-    const total = matriksData.length;
+    // Santri boyong TIDAK DIHITUNG TUNGGAKAN, hanya santri aktif yang dihitung
+    const activeSantri = matriksData.filter(s => s.is_active === 1);
+    const total = activeSantri.length;
     if (total === 0) {
         document.getElementById('progress-fill').style.width = '0%';
         document.getElementById('progress-label').textContent = '0%';
@@ -338,14 +346,14 @@ function renderProgressBar() {
         return;
     }
     let sudah = 0;
-    matriksData.forEach(s => {
+    activeSantri.forEach(s => {
         if (s.status && s.status[currentMonth] === 'sudah') sudah++;
     });
     const pct = Math.round((sudah / total) * 100);
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-label').textContent = pct + '%';
     document.getElementById('progress-detail').textContent =
-        `${sudah} dari ${total} santri sudah bayar kas bulan ${getBulanNama(currentMonth)}`;
+        `${sudah} dari ${total} santri aktif sudah bayar kas bulan ${getBulanNama(currentMonth)} (santri boyong tidak dihitung tunggakan)`;
 }
 
 function renderDashPinjaman(data) {
@@ -427,11 +435,16 @@ function renderMatriksTable() {
 
     let bodyHTML = '';
     matriksData.forEach((s, idx) => {
-        bodyHTML += `<tr>`;
+        const isBoyong = (s.is_active === 0);
+        const rowClass = isBoyong ? 'row-boyong' : '';
+        bodyHTML += `<tr class="${rowClass}">`;
         bodyHTML += `<td class="col-no">${idx + 1}</td>`;
         bodyHTML += `<td class="col-nama">
-            <span class="font-medium text-slate-800">${escHtml(s.nama_santri)}</span>
-            ${s.kamar_kelas ? `<span class="block text-[10px] text-slate-400 font-normal">${escHtml(s.kamar_kelas)}</span>` : ''}
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-semibold ${isBoyong ? 'text-slate-600' : 'text-slate-800'}">${escHtml(s.nama_santri)}</span>
+                ${isBoyong ? '<span class="badge-status-boyong">Boyong</span>' : ''}
+            </div>
+            ${s.kamar_kelas ? `<span class="block text-[10px] ${isBoyong ? 'text-slate-400' : 'text-slate-500'} font-normal">${escHtml(s.kamar_kelas)}</span>` : ''}
         </td>`;
         
         bulanOrder.forEach(b => {
@@ -446,7 +459,11 @@ function renderMatriksTable() {
         if (!Auth.isReadOnly()) {
             bodyHTML += `<td class="no-print col-aksi">
                 <div class="flex items-center justify-center gap-1">
-                    <button class="px-1.5 py-0.5 text-[11px] rounded bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200" title="Set Lulus / Boyong" onclick="toggleStatusSantri(${s.id}, 0, '${escHtml(s.nama_santri)}')">Boyong</button>
+                    ${isBoyong ? `
+                        <button class="px-2 py-0.5 text-[11px] rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-medium" title="Aktifkan Kembali ke Pondok" onclick="toggleStatusSantri(${s.id}, 1, '${escHtml(s.nama_santri)}')">Aktifkan</button>
+                    ` : `
+                        <button class="px-1.5 py-0.5 text-[11px] rounded bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 font-medium" title="Tandai Santri Lulus / Boyong" onclick="toggleStatusSantri(${s.id}, 0, '${escHtml(s.nama_santri)}')">Boyong</button>
+                    `}
                     <button class="btn-danger p-1" title="Hapus Permanen dari Master Data" onclick="konfirmasiHapusSantri(${s.id}, '${escHtml(s.nama_santri)}')"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>
             </td>`;

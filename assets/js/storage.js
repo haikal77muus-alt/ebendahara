@@ -33,7 +33,8 @@ const DEFAULT_SEED_DATA = {
         { id: 7,  nama_santri: 'Bilal Ibrahim',   kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 7, tgl_boyong: null },
         { id: 8,  nama_santri: 'Yusuf Hakim',     kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 8, tgl_boyong: null },
         { id: 9,  nama_santri: 'Hamzah Ridwan',   kamar_kelas: 'Kamar Zubair 01', is_active: 1, urutan: 9, tgl_boyong: null },
-        { id: 10, nama_santri: 'Khalid Walid',    kamar_kelas: 'Kamar Zubair 02', is_active: 1, urutan: 10, tgl_boyong: null }
+        { id: 10, nama_santri: 'Khalid Walid',    kamar_kelas: 'Kamar Zubair 02', is_active: 1, urutan: 10, tgl_boyong: null },
+        { id: 11, nama_santri: 'Zaid bin Tsabit', kamar_kelas: 'Kamar Ali 01',    is_active: 0, urutan: 11, tgl_boyong: '2026-06-25', alasan_boyong: 'Lulus Madrasah Aliyah' }
     ],
     matriks_kas_bulanan: [
         { id: 1,  periode_id: 2, santri_id: 1, bulan: 7, status: 'sudah' },
@@ -466,12 +467,14 @@ const Storage = {
     getMatriksByPeriode(periodeId) {
         const db = this.getData();
         const pid = parseInt(periodeId);
-        const activeSantri = this.getActiveSantri();
+        // Daftar seluruh santri (santri aktif di atas, santri boyong di bawah)
+        // Santri boyong tetap ditampilkan di matriks dengan gaya transparan kemerahan
+        const allSantri = this.getAllSantri();
         const periode = db.periode.find(p => p.id === pid) || { tipe_bulan: 'juli_juni' };
         const records = (db.matriks_kas_bulanan || []).filter(m => m.periode_id === pid);
 
-        // Format data: daftar santri aktif dengan map status bulan { 1: '...', ..., 12: '...' }
-        const result = activeSantri.map(s => {
+        // Format data: daftar santri dengan map status bulan { 1: '...', ..., 12: '...' }
+        const result = allSantri.map(s => {
             const statusMap = {};
             for (let b = 1; b <= 12; b++) {
                 statusMap[b] = 'kosong';
@@ -483,6 +486,9 @@ const Storage = {
                 id: s.id,
                 nama_santri: s.nama_santri,
                 kamar_kelas: s.kamar_kelas,
+                is_active: s.is_active,
+                tgl_boyong: s.tgl_boyong,
+                alasan_boyong: s.alasan_boyong,
                 status: statusMap
             };
         });

@@ -11,6 +11,42 @@ body {
     min-height: 100vh;
 }
 
+/* ---------- Custom Scrollbar Modern ---------- */
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ---------- Animasi Fade-In Lembut ---------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tab-pane {
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* ---------- Sticky Header ---------- */
 #app-header {
     position: sticky;
@@ -139,6 +175,40 @@ body {
 .status-kosong {
     background: #f1f5f9 !important;
     color: #94a3b8;
+}
+
+/* ---------- Gaya Baris Santri Boyong Transparan Kemerahan ---------- */
+.row-boyong {
+    background-color: rgba(255, 241, 242, 0.75) !important;
+}
+.row-boyong td {
+    background-color: rgba(255, 241, 242, 0.75);
+    color: #64748b;
+}
+.row-boyong:hover td {
+    background-color: rgba(254, 226, 226, 0.9) !important;
+}
+.row-boyong .col-no {
+    background-color: #fff1f2 !important;
+    color: #94a3b8;
+}
+.row-boyong .col-nama {
+    background-color: #fff1f2 !important;
+}
+.row-boyong .status-cell {
+    opacity: 0.65;
+}
+.badge-status-boyong {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.45rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    letter-spacing: 0.025em;
 }
 
 /* ---------- Buku Kas Table ---------- */
