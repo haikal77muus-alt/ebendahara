@@ -36,6 +36,7 @@ const FirebaseSync = {
     listeners: [],
     saveTimeout: null,
     isWritingRemote: false,
+    initialSyncPromise: null,
 
     /**
      * Dapatkan konfigurasi aktif:
@@ -67,6 +68,87 @@ const FirebaseSync = {
     hasValidConfig() {
         const cfg = this.getConfig();
         return Boolean(cfg && (cfg.databaseURL || (cfg.projectId && cfg.apiKey)));
+    },
+
+    /**
+     * Menunggu pembacaan cloud once('value') saat inisialisasi sebelum pengecekan login maupun me-render halaman.
+     * Mengembalikan Promise yang selesai begitu data cloud terbaca atau timeout pengaman tercapai.
+     */
+    waitForInitialSync(timeoutMs = 4000) {
+        if (!this.hasValidConfig() || typeof firebase === 'undefined' || !firebase.database) {
+            return Promise.resolve(typeof Storage !== 'undefined' ? Storage.getData() : null);
+        }
+
+        if (this.initialSyncPromise) {
+            return this.initialSyncPromise;
+        }
+
+        this.initialSyncPromise = new Promise((resolve) => {
+            let settled = false;
+
+            const timer = setTimeout(() => {
+                if (!settled) {
+                    settled = true;
+                    console.info('[FirebaseSync] Timeout sinkronisasi cloud, melanjutkan dengan cache lokal.');
+                    resolve(typeof Storage !== 'undefined' ? Storage.getData() : null);
+                }
+            }, timeoutMs);
+
+            try {
+                this.init();
+                if (!this.ref) {
+                    if (!settled) {
+                        settled = true;
+                        clearTimeout(timer);
+                        resolve(typeof Storage !== 'undefined' ? Storage.getData() : null);
+                    }
+                    return;
+                }
+
+                this.ref.once('value').then(snapshot => {
+                    if (!settled) {
+                        settled = true;
+                        clearTimeout(timer);
+                        const cloudData = snapshot.val();
+                        if (cloudData && typeof cloudData === 'object' && Array.isArray(cloudData.periode)) {
+                            if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
+                                Storage.saveLocalOnly(cloudData);
+                            } else {
+                                localStorage.setItem('ebendahara_database_v1', JSON.stringify(cloudData));
+                            }
+                            this.setStatus('connected', 'Cloud Realtime Terhubung & Sinkron');
+                            this.notifyListeners(cloudData);
+                            resolve(cloudData);
+                        } else if (!cloudData) {
+                            console.info('[FirebaseSync] Cloud masih kosong, mengunggah data seeder awal...');
+                            const localData = typeof Storage !== 'undefined' ? Storage.getData() : null;
+                            if (localData) {
+                                this.pushToCloud(localData, true);
+                            }
+                            this.setStatus('connected', 'Cloud Realtime Terhubung & Sinkron');
+                            resolve(localData);
+                        } else {
+                            resolve(typeof Storage !== 'undefined' ? Storage.getData() : null);
+                        }
+                    }
+                }).catch(err => {
+                    if (!settled) {
+                        settled = true;
+                        clearTimeout(timer);
+                        console.warn('[FirebaseSync] Gagal membaca cloud sekali (once):', err);
+                        resolve(typeof Storage !== 'undefined' ? Storage.getData() : null);
+                    }
+                });
+            } catch (err) {
+                if (!settled) {
+                    settled = true;
+                    clearTimeout(timer);
+                    resolve(typeof Storage !== 'undefined' ? Storage.getData() : null);
+                }
+            }
+        });
+
+        return this.initialSyncPromise;
     },
 
     /**
@@ -237,13 +319,14 @@ const FirebaseSync = {
     },
 
     /**
-     * Kirim data lokal ke Firebase Realtime Database (dengan debounce)
+     * Kirim data lokal ke Firebase Realtime Database
+     * @param {Object} data Objek database lengkap
+     * @param {Boolean} immediate Jika true, kirim seketika tanpa debounce (misal saat beforeunload / initial sync)
      */
-    pushToCloud(data) {
+    pushToCloud(data, immediate = false) {
         if (!this.ref || this.status === 'offline') return;
 
-        if (this.saveTimeout) clearTimeout(this.saveTimeout);
-        this.saveTimeout = setTimeout(() => {
+        const writeOp = () => {
             this.isWritingRemote = true;
             this.ref.set(data)
                 .then(() => {
@@ -255,7 +338,16 @@ const FirebaseSync = {
                     console.error('[FirebaseSync] Gagal menyimpan ke cloud:', err);
                     this.setStatus('error', 'Gagal kirim ke cloud: ' + err.message);
                 });
-        }, 300);
+        };
+
+        if (immediate) {
+            if (this.saveTimeout) clearTimeout(this.saveTimeout);
+            writeOp();
+            return;
+        }
+
+        if (this.saveTimeout) clearTimeout(this.saveTimeout);
+        this.saveTimeout = setTimeout(writeOp, 300);
     },
 
     /**

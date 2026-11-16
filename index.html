@@ -222,7 +222,7 @@
             </div>
         </div>
 
-        <!-- Progress Bar Kepatuhan Iuran -->
+        <!-- Progress Bar Kepatuhan Iuran & Countdown Target Kas -->
         <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-6">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -235,7 +235,21 @@
                 <div id="progress-fill" class="progress-bar-fill bg-gradient-to-r from-blue-500 to-blue-600" style="width: 0%">
                 </div>
             </div>
-            <p id="progress-detail" class="text-xs text-slate-400 mt-2">Memuat data...</p>
+            <p id="progress-detail" class="text-xs text-slate-500 mt-2">Memuat data...</p>
+
+            <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 border border-rose-200 font-semibold flex items-center gap-1">
+                        <i data-lucide="clock" class="w-3.5 h-3.5 text-rose-600"></i>
+                        Sisa Santri Belum: <strong id="dash-belum-santri" class="text-rose-800">0</strong>
+                    </span>
+                    <span class="px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-semibold flex items-center gap-1">
+                        <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i>
+                        Target Kurang: <strong id="dash-target-kurang" class="text-amber-900">Rp 0</strong>
+                    </span>
+                </div>
+                <span class="text-[11px] text-slate-400">Target berkurang otomatis (countdown) setiap santri lunas</span>
+            </div>
         </div>
 
         <!-- 2 Kolom: Pinjaman Belum Lunas + 5 Transaksi Terakhir -->
@@ -285,10 +299,29 @@
                         <label class="text-xs font-medium text-slate-500 block mb-1">Tarif Kas (Rp)</label>
                         <input type="number" id="calc-tarif" class="quick-input text-sm w-32" value="10000" onchange="hitungCekFisik()" oninput="hitungCekFisik()">
                     </div>
-                    <div class="flex-1 min-w-[200px]">
-                        <div id="calc-result" class="bg-white rounded-lg p-3 border border-blue-200">
-                            <p class="text-xs text-slate-400">Jumlah Santri Sudah: <strong id="calc-jml" class="text-blue-600">0</strong></p>
-                            <p class="text-lg font-extrabold text-blue-700 mt-1">Target: <span id="calc-target">Rp 0</span></p>
+                    <div class="flex-1 min-w-[260px]">
+                        <div id="calc-result" class="bg-white rounded-xl p-3.5 border border-blue-200 shadow-sm space-y-2">
+                            <div class="flex items-center justify-between text-xs text-slate-500">
+                                <span>Target Awal (<span id="calc-total-santri">0</span> santri):</span>
+                                <span id="calc-target-awal" class="font-bold text-slate-700">Rp 0</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-emerald-600">
+                                <span>Sudah Terkumpul (<span id="calc-jml-sudah">0</span> santri):</span>
+                                <span id="calc-terkumpul" class="font-bold">Rp 0</span>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider block">Sisa Santri Belum:</span>
+                                    <span class="text-sm font-extrabold text-rose-600"><strong id="calc-jml-belum">0</strong> santri</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider block">Target Kurang:</span>
+                                    <span id="calc-target-kurang" class="text-lg font-black text-rose-600">Rp 0</span>
+                                </div>
+                            </div>
+                            <!-- Fallback hidden untuk selector lama -->
+                            <span id="calc-jml" class="hidden">0</span>
+                            <span id="calc-target" class="hidden">Rp 0</span>
                         </div>
                     </div>
                 </div>
@@ -322,7 +355,7 @@
                     </div>
                 </div>
                 <p class="text-[11px] text-slate-400">
-                    Santri baru otomatis tersimpan permanen di Master Data dan langsung aktif pada seluruh periode.
+                    Santri baru otomatis ditambahkan ke periode aktif ini dan periode berikutnya, tanpa mengubah riwayat periode terdahulu.
                 </p>
             </div>
         </div>

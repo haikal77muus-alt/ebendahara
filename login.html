@@ -250,7 +250,13 @@
     // Jika sudah login sebelumnya, langsung alihkan ke index.html
     const loggedUser = Auth.getCurrentUser();
     if (loggedUser) {
-        window.location.href = 'index.html';
+        if (typeof FirebaseSync !== 'undefined' && FirebaseSync.hasValidConfig()) {
+            FirebaseSync.waitForInitialSync(2000).then(() => {
+                window.location.href = 'index.html';
+            });
+        } else {
+            window.location.href = 'index.html';
+        }
     }
 
     function togglePasswordVisibility() {
@@ -295,8 +301,8 @@
         document.getElementById('login-alert').classList.add('hidden');
     }
 
-    function handleLoginSubmit(e) {
-        e.preventDefault();
+    async function handleLoginSubmit(e) {
+        if (e && e.preventDefault) e.preventDefault();
         hideAlert();
 
         const u = document.getElementById('username').value.trim();
@@ -310,9 +316,14 @@
         }
 
         btn.disabled = true;
-        btnText.textContent = 'Memverifikasi...';
+        btnText.textContent = 'Menghubungkan & Memverifikasi...';
 
         try {
+            // Tunggu sinkronisasi awal cloud Firebase agar akun yang dibuat di HP/laptop lain langsung sinkron
+            if (typeof FirebaseSync !== 'undefined' && FirebaseSync.hasValidConfig()) {
+                await FirebaseSync.waitForInitialSync(4000);
+            }
+
             const user = Auth.login(u, p);
             btnText.textContent = 'Sukses! Mengalihkan...';
             setTimeout(() => {

@@ -10,6 +10,21 @@
 
 const STORAGE_KEY = 'ebendahara_database_v1';
 
+// Template Santri Awal
+const DEFAULT_SANTRI_TEMPLATE = [
+    { id: 1,  nama_santri: 'Abdullah Faqih',  kamar_kelas: 'Kamar Ali 01',    is_active: 1, urutan: 1, tgl_boyong: null, alasan_boyong: null },
+    { id: 2,  nama_santri: 'Muhammad Rizki',  kamar_kelas: 'Kamar Ali 02',    is_active: 1, urutan: 2, tgl_boyong: null, alasan_boyong: null },
+    { id: 3,  nama_santri: 'Ahmad Zainuddin', kamar_kelas: 'Kamar Umar 01',   is_active: 1, urutan: 3, tgl_boyong: null, alasan_boyong: null },
+    { id: 4,  nama_santri: 'Hasan Al-Bashri', kamar_kelas: 'Kamar Umar 02',   is_active: 1, urutan: 4, tgl_boyong: null, alasan_boyong: null },
+    { id: 5,  nama_santri: 'Umar Faruq',      kamar_kelas: 'Kamar Utsman 01', is_active: 1, urutan: 5, tgl_boyong: null, alasan_boyong: null },
+    { id: 6,  nama_santri: 'Ali Mustofa',     kamar_kelas: 'Kamar Utsman 02', is_active: 1, urutan: 6, tgl_boyong: null, alasan_boyong: null },
+    { id: 7,  nama_santri: 'Bilal Ibrahim',   kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 7, tgl_boyong: null, alasan_boyong: null },
+    { id: 8,  nama_santri: 'Yusuf Hakim',     kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 8, tgl_boyong: null, alasan_boyong: null },
+    { id: 9,  nama_santri: 'Hamzah Ridwan',   kamar_kelas: 'Kamar Zubair 01', is_active: 1, urutan: 9, tgl_boyong: null, alasan_boyong: null },
+    { id: 10, nama_santri: 'Khalid Walid',    kamar_kelas: 'Kamar Zubair 02', is_active: 1, urutan: 10, tgl_boyong: null, alasan_boyong: null },
+    { id: 11, nama_santri: 'Zaid bin Tsabit', kamar_kelas: 'Kamar Ali 01',    is_active: 0, urutan: 11, tgl_boyong: '2026-06-25', alasan_boyong: 'Lulus Madrasah Aliyah' }
+];
+
 // Seed Data Awal jika database masih baru/kosong
 const DEFAULT_SEED_DATA = {
     users: [
@@ -19,23 +34,11 @@ const DEFAULT_SEED_DATA = {
         { id: 4, nama: 'K.H. Abdullah Gym',    username: 'pembina', password: 'pembina123', role: 'pembina' }
     ],
     periode: [
-        { id: 1, nama_periode: 'Tahun Ajaran 2025/2026', tipe_bulan: 'juli_juni', is_active: 0 },
-        { id: 2, nama_periode: 'Tahun Ajaran 2026/2027', tipe_bulan: 'juli_juni', is_active: 1 },
-        { id: 3, nama_periode: 'Tahun 2025', tipe_bulan: 'januari_desember', is_active: 0 }
+        { id: 1, nama_periode: 'Tahun Ajaran 2025/2026', tipe_bulan: 'juli_juni', is_active: 0, santri_list: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)) },
+        { id: 2, nama_periode: 'Tahun Ajaran 2026/2027', tipe_bulan: 'juli_juni', is_active: 1, santri_list: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)) },
+        { id: 3, nama_periode: 'Tahun 2025', tipe_bulan: 'januari_desember', is_active: 0, santri_list: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)) }
     ],
-    master_santri: [
-        { id: 1,  nama_santri: 'Abdullah Faqih',  kamar_kelas: 'Kamar Ali 01',    is_active: 1, urutan: 1, tgl_boyong: null },
-        { id: 2,  nama_santri: 'Muhammad Rizki',  kamar_kelas: 'Kamar Ali 02',    is_active: 1, urutan: 2, tgl_boyong: null },
-        { id: 3,  nama_santri: 'Ahmad Zainuddin', kamar_kelas: 'Kamar Umar 01',   is_active: 1, urutan: 3, tgl_boyong: null },
-        { id: 4,  nama_santri: 'Hasan Al-Bashri', kamar_kelas: 'Kamar Umar 02',   is_active: 1, urutan: 4, tgl_boyong: null },
-        { id: 5,  nama_santri: 'Umar Faruq',      kamar_kelas: 'Kamar Utsman 01', is_active: 1, urutan: 5, tgl_boyong: null },
-        { id: 6,  nama_santri: 'Ali Mustofa',     kamar_kelas: 'Kamar Utsman 02', is_active: 1, urutan: 6, tgl_boyong: null },
-        { id: 7,  nama_santri: 'Bilal Ibrahim',   kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 7, tgl_boyong: null },
-        { id: 8,  nama_santri: 'Yusuf Hakim',     kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 8, tgl_boyong: null },
-        { id: 9,  nama_santri: 'Hamzah Ridwan',   kamar_kelas: 'Kamar Zubair 01', is_active: 1, urutan: 9, tgl_boyong: null },
-        { id: 10, nama_santri: 'Khalid Walid',    kamar_kelas: 'Kamar Zubair 02', is_active: 1, urutan: 10, tgl_boyong: null },
-        { id: 11, nama_santri: 'Zaid bin Tsabit', kamar_kelas: 'Kamar Ali 01',    is_active: 0, urutan: 11, tgl_boyong: '2026-06-25', alasan_boyong: 'Lulus Madrasah Aliyah' }
-    ],
+    master_santri: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)),
     matriks_kas_bulanan: [
         { id: 1,  periode_id: 2, santri_id: 1, bulan: 7, status: 'sudah' },
         { id: 2,  periode_id: 2, santri_id: 1, bulan: 8, status: 'sudah' },
@@ -122,30 +125,76 @@ const Storage = {
 
     /**
      * Inisialisasi Database: Muat data dari localStorage atau pasang default seed data
+     * Otomatis migrasikan santriList ke masing-masing objek periode jika belum ada.
      */
     init() {
         const raw = localStorage.getItem(STORAGE_KEY);
+        let data = null;
+
         if (!raw) {
-            this.saveLocalOnly(DEFAULT_SEED_DATA);
-            return DEFAULT_SEED_DATA;
-        }
-        try {
-            const data = JSON.parse(raw);
-            if (!data || !Array.isArray(data.users) || !Array.isArray(data.periode) || !Array.isArray(data.master_santri) || !Array.isArray(data.buku_kas) || !Array.isArray(data.pinjaman)) {
-                console.warn('[Storage] Struktur data tidak lengkap, mereset ke data awal');
-                this.saveLocalOnly(DEFAULT_SEED_DATA);
-                return DEFAULT_SEED_DATA;
-            }
+            data = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA));
+            this.saveLocalOnly(data);
             return data;
+        }
+
+        try {
+            data = JSON.parse(raw);
+            if (!data || !Array.isArray(data.users) || !Array.isArray(data.periode) || !Array.isArray(data.buku_kas) || !Array.isArray(data.pinjaman)) {
+                console.warn('[Storage] Struktur data tidak lengkap, mereset ke data awal');
+                data = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA));
+                this.saveLocalOnly(data);
+                return data;
+            }
         } catch (e) {
             console.error('[Storage] Data rusak, mengembalikan ke data awal:', e);
-            this.saveLocalOnly(DEFAULT_SEED_DATA);
-            return DEFAULT_SEED_DATA;
+            data = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA));
+            this.saveLocalOnly(data);
+            return data;
         }
+
+        // Migrasi & Validasi Manajemen Santri Per-Periode (santri_list tersimpan mandiri di tiap periode)
+        let needsSave = false;
+        const fallbackSantri = (Array.isArray(data.master_santri) && data.master_santri.length > 0)
+            ? data.master_santri
+            : DEFAULT_SANTRI_TEMPLATE;
+
+        data.periode.forEach(p => {
+            if (!Array.isArray(p.santri_list) || p.santri_list.length === 0) {
+                p.santri_list = JSON.parse(JSON.stringify(fallbackSantri));
+                needsSave = true;
+            }
+        });
+
+        if (!Array.isArray(data.master_santri) || data.master_santri.length === 0) {
+            data.master_santri = JSON.parse(JSON.stringify(fallbackSantri));
+            needsSave = true;
+        }
+
+        if (needsSave) {
+            this.saveLocalOnly(data);
+        }
+
+        return data;
     },
 
     getData() {
         return this.init();
+    },
+
+    /**
+     * Pengaman Beforeunload & Auto-Save Sync:
+     * Memastikan state lokal tersimpan rapi dan langsung diflush ke Firebase Cloud seketika
+     */
+    autoSaveSync() {
+        try {
+            const db = this.getData();
+            this.saveLocalOnly(db);
+            if (typeof FirebaseSync !== 'undefined' && FirebaseSync.hasValidConfig() && FirebaseSync.pushToCloud) {
+                FirebaseSync.pushToCloud(db, true);
+            }
+        } catch (e) {
+            console.warn('[Storage] autoSaveSync error:', e);
+        }
     },
 
     /**
@@ -304,6 +353,24 @@ const Storage = {
         const db = this.getData();
         const newId = this.getNextId(db.periode);
         
+        // Ambil periode sumber untuk menyalin santriList
+        const sourcePid = parseInt(dari_periode_id || (this.getActivePeriode() || {}).id);
+        const sourcePeriode = db.periode.find(p => p.id === sourcePid) || this.getActivePeriode();
+        const sourceSantri = (sourcePeriode && Array.isArray(sourcePeriode.santri_list) && sourcePeriode.santri_list.length > 0)
+            ? sourcePeriode.santri_list
+            : (db.master_santri || DEFAULT_SANTRI_TEMPLATE);
+
+        // Salin seluruh daftar santri dari periode aktif sebelumnya ke periode baru
+        const copiedSantriList = sourceSantri.map(s => ({
+            id: s.id,
+            nama_santri: s.nama_santri,
+            kamar_kelas: s.kamar_kelas || '',
+            is_active: s.is_active,
+            urutan: s.urutan || 1,
+            tgl_boyong: s.tgl_boyong || null,
+            alasan_boyong: s.alasan_boyong || null
+        }));
+
         // Nonaktifkan yang lain
         db.periode.forEach(p => p.is_active = 0);
 
@@ -311,18 +378,20 @@ const Storage = {
             id: newId,
             nama_periode,
             tipe_bulan: tipe_bulan || 'juli_juni',
-            is_active: 1
+            is_active: 1,
+            santri_list: copiedSantriList
         };
         db.periode.push(newPeriode);
 
         // Jika opsi bawa saldo dicentang
         if (bawa_saldo && dari_periode_id) {
-            const bkLama = db.buku_kas.filter(b => b.periode_id === parseInt(dari_periode_id));
+            const bkLama = (db.buku_kas || []).filter(b => b.periode_id === parseInt(dari_periode_id));
             const saldoAkhir = bkLama.reduce((s, r) => s + (parseFloat(r.debit) || 0) - (parseFloat(r.kredit) || 0), 0);
             
             if (saldoAkhir > 0) {
                 const newBkId = this.getNextId(db.buku_kas);
                 const today = new Date().toISOString().split('T')[0];
+                if (!db.buku_kas) db.buku_kas = [];
                 db.buku_kas.push({
                     id: newBkId,
                     periode_id: newId,
@@ -369,96 +438,226 @@ const Storage = {
     },
 
     // ========================================================
-    // MASTER DATA SANTRI (PERMANEN LINTAS TAHUN AJARAN)
+    // MANAJEMEN DAFTAR SANTRI PER-PERIODE
     // ========================================================
-    getAllSantri() {
+    /**
+     * Dapatkan daftar santri khusus untuk periode tertentu.
+     * Santri aktif diurutkan di atas, santri boyong di bawah.
+     */
+    getSantriByPeriode(periodeId) {
         const db = this.getData();
-        return (db.master_santri || []).sort((a, b) => b.is_active - a.is_active || (a.urutan || 0) - (b.urutan || 0) || a.id - b.id);
+        const pid = parseInt(periodeId || (this.getActivePeriode() || {}).id);
+        const targetPeriode = db.periode.find(p => p.id === pid) || this.getActivePeriode();
+        if (!targetPeriode) return [];
+
+        if (!Array.isArray(targetPeriode.santri_list)) {
+            targetPeriode.santri_list = JSON.parse(JSON.stringify(db.master_santri || DEFAULT_SANTRI_TEMPLATE));
+            this.saveLocalOnly(db);
+        }
+
+        return targetPeriode.santri_list.sort((a, b) => 
+            (b.is_active - a.is_active) || 
+            ((a.urutan || 0) - (b.urutan || 0)) || 
+            (a.id - b.id)
+        );
     },
 
-    getActiveSantri() {
-        return this.getAllSantri().filter(s => s.is_active === 1);
+    getAllSantri(periodeId) {
+        return this.getSantriByPeriode(periodeId);
     },
 
-    getBoyongSantri() {
-        return this.getAllSantri().filter(s => s.is_active === 0);
+    getActiveSantri(periodeId) {
+        return this.getSantriByPeriode(periodeId).filter(s => s.is_active === 1);
     },
 
-    addSantri({ nama_santri, kamar_kelas }) {
-        const db = this.getData();
-        const newId = this.getNextId(db.master_santri);
-        const maxUrutan = db.master_santri.reduce((max, s) => Math.max(max, s.urutan || 0), 0);
-        
-        const newSantri = {
-            id: newId,
-            nama_santri,
-            kamar_kelas: kamar_kelas || '',
-            is_active: 1,
-            urutan: maxUrutan + 1,
-            tgl_boyong: null
-        };
-        db.master_santri.push(newSantri);
-        this.saveData(db);
-        return newSantri;
-    },
-
-    updateSantri(id, { nama_santri, kamar_kelas }) {
-        const db = this.getData();
-        const santri = db.master_santri.find(s => s.id === parseInt(id));
-        if (!santri) throw new Error('Santri tidak ditemukan!');
-        santri.nama_santri = nama_santri.trim();
-        santri.kamar_kelas = (kamar_kelas || '').trim();
-        this.saveData(db);
-        return santri;
+    getBoyongSantri(periodeId) {
+        return this.getSantriByPeriode(periodeId).filter(s => s.is_active === 0);
     },
 
     /**
-     * Nonaktifkan santri (Boyong / Lulus)
-     * Riwayat pembayaran di periode lama tetap utuh, tapi tidak lagi menjadi beban di periode aktif/baru.
+     * Tambah santri baru:
+     * Santri baru HANYA ditambahkan ke periode target dan periode-periode yang dibuat setelahnya (p.id >= targetId).
+     * Periode masa lalu (p.id < targetId, misalnya data periode 2024/2025) tetap utuh tanpa bertambah!
      */
-    boyongSantri(id, alasan = '') {
+    addSantri({ nama_santri, kamar_kelas }, targetPeriodeId) {
         const db = this.getData();
-        const santri = db.master_santri.find(s => s.id === parseInt(id));
-        if (!santri) throw new Error('Santri tidak ditemukan!');
-        santri.is_active = 0;
-        santri.tgl_boyong = new Date().toISOString().split('T')[0];
-        santri.alasan_boyong = alasan || 'Lulus / Boyong';
+        const activeP = this.getActivePeriode();
+        const tid = parseInt(targetPeriodeId || (activeP ? activeP.id : 1));
+
+        // Cari ID tertinggi lintas database untuk ID unik global
+        let globalMaxId = 0;
+        db.periode.forEach(p => {
+            if (Array.isArray(p.santri_list)) {
+                p.santri_list.forEach(s => { if ((s.id || 0) > globalMaxId) globalMaxId = s.id; });
+            }
+        });
+        if (Array.isArray(db.master_santri)) {
+            db.master_santri.forEach(s => { if ((s.id || 0) > globalMaxId) globalMaxId = s.id; });
+        }
+        const newId = globalMaxId + 1;
+        let createdSantri = null;
+
+        // Tambahkan ke periode target dan periode setelahnya (p.id >= tid)
+        db.periode.forEach(p => {
+            if (p.id >= tid) {
+                if (!Array.isArray(p.santri_list)) p.santri_list = [];
+                const maxUrutan = p.santri_list.reduce((max, s) => Math.max(max, s.urutan || 0), 0);
+                const newObj = {
+                    id: newId,
+                    nama_santri: nama_santri.trim(),
+                    kamar_kelas: (kamar_kelas || '').trim(),
+                    is_active: 1,
+                    urutan: maxUrutan + 1,
+                    tgl_boyong: null,
+                    alasan_boyong: null
+                };
+                p.santri_list.push(newObj);
+                if (p.id === tid) createdSantri = newObj;
+            }
+        });
+
+        // Simpan juga ke master_santri global untuk template masa depan
+        if (!Array.isArray(db.master_santri)) db.master_santri = [];
+        if (!db.master_santri.some(s => s.id === newId)) {
+            db.master_santri.push({
+                id: newId,
+                nama_santri: nama_santri.trim(),
+                kamar_kelas: (kamar_kelas || '').trim(),
+                is_active: 1,
+                urutan: newId,
+                tgl_boyong: null
+            });
+        }
+
         this.saveData(db);
-        return santri;
+        return createdSantri || { id: newId, nama_santri, kamar_kelas };
+    },
+
+    updateSantri(id, { nama_santri, kamar_kelas }, targetPeriodeId) {
+        const db = this.getData();
+        const tid = parseInt(targetPeriodeId || (this.getActivePeriode() || {}).id);
+        const sid = parseInt(id);
+        let updated = null;
+
+        db.periode.forEach(p => {
+            if (p.id >= tid && Array.isArray(p.santri_list)) {
+                const s = p.santri_list.find(x => x.id === sid);
+                if (s) {
+                    s.nama_santri = nama_santri.trim();
+                    s.kamar_kelas = (kamar_kelas || '').trim();
+                    if (p.id === tid) updated = s;
+                }
+            }
+        });
+
+        if (Array.isArray(db.master_santri)) {
+            const ms = db.master_santri.find(x => x.id === sid);
+            if (ms) {
+                ms.nama_santri = nama_santri.trim();
+                ms.kamar_kelas = (kamar_kelas || '').trim();
+            }
+        }
+
+        this.saveData(db);
+        return updated;
+    },
+
+    /**
+     * Tandai santri Lulus / Boyong:
+     * Dikecualikan dari total santri aktif dan tunggakan di periode aktif/berikutnya,
+     * tetapi tetap tersimpan utuh di periode lampau.
+     */
+    boyongSantri(id, alasan = '', targetPeriodeId) {
+        const db = this.getData();
+        const tid = parseInt(targetPeriodeId || (this.getActivePeriode() || {}).id);
+        const sid = parseInt(id);
+        let target = null;
+
+        db.periode.forEach(p => {
+            if (p.id >= tid && Array.isArray(p.santri_list)) {
+                const s = p.santri_list.find(x => x.id === sid);
+                if (s) {
+                    s.is_active = 0;
+                    s.tgl_boyong = new Date().toISOString().split('T')[0];
+                    s.alasan_boyong = alasan || 'Lulus / Boyong Pondok';
+                    if (p.id === tid) target = s;
+                }
+            }
+        });
+
+        if (Array.isArray(db.master_santri)) {
+            const ms = db.master_santri.find(x => x.id === sid);
+            if (ms) {
+                ms.is_active = 0;
+                ms.tgl_boyong = new Date().toISOString().split('T')[0];
+                ms.alasan_boyong = alasan || 'Lulus / Boyong Pondok';
+            }
+        }
+
+        this.saveData(db);
+        return target;
     },
 
     /**
      * Aktifkan kembali santri yang boyong (Reaktivasi)
      */
-    reaktivasiSantri(id) {
+    reaktivasiSantri(id, targetPeriodeId) {
         const db = this.getData();
-        const santri = db.master_santri.find(s => s.id === parseInt(id));
-        if (!santri) throw new Error('Santri tidak ditemukan!');
-        santri.is_active = 1;
-        santri.tgl_boyong = null;
-        santri.alasan_boyong = null;
+        const tid = parseInt(targetPeriodeId || (this.getActivePeriode() || {}).id);
+        const sid = parseInt(id);
+        let target = null;
+
+        db.periode.forEach(p => {
+            if (p.id >= tid && Array.isArray(p.santri_list)) {
+                const s = p.santri_list.find(x => x.id === sid);
+                if (s) {
+                    s.is_active = 1;
+                    s.tgl_boyong = null;
+                    s.alasan_boyong = null;
+                    if (p.id === tid) target = s;
+                }
+            }
+        });
+
+        if (Array.isArray(db.master_santri)) {
+            const ms = db.master_santri.find(x => x.id === sid);
+            if (ms) {
+                ms.is_active = 1;
+                ms.tgl_boyong = null;
+                ms.alasan_boyong = null;
+            }
+        }
+
         this.saveData(db);
-        return santri;
+        return target;
     },
 
-    toggleSantriStatus(id, isActive) {
+    toggleSantriStatus(id, isActive, targetPeriodeId) {
         if (isActive) {
-            return this.reaktivasiSantri(id);
+            return this.reaktivasiSantri(id, targetPeriodeId);
         } else {
-            return this.boyongSantri(id);
+            return this.boyongSantri(id, '', targetPeriodeId);
         }
     },
 
-    deleteSantri(id) {
+    deleteSantri(id, targetPeriodeId) {
         const db = this.getData();
-        const targetId = parseInt(id);
-        const target = db.master_santri.find(s => s.id === targetId);
-        if (!target) throw new Error('Santri tidak ditemukan!');
+        const tid = parseInt(targetPeriodeId || (this.getActivePeriode() || {}).id);
+        const sid = parseInt(id);
 
-        db.master_santri = db.master_santri.filter(s => s.id !== targetId);
-        db.matriks_kas_bulanan = (db.matriks_kas_bulanan || []).filter(m => m.santri_id !== targetId);
+        db.periode.forEach(p => {
+            if (p.id >= tid && Array.isArray(p.santri_list)) {
+                p.santri_list = p.santri_list.filter(s => s.id !== sid);
+            }
+        });
+
+        if (Array.isArray(db.master_santri)) {
+            db.master_santri = db.master_santri.filter(s => s.id !== sid);
+        }
+
+        db.matriks_kas_bulanan = (db.matriks_kas_bulanan || []).filter(m => !(m.santri_id === sid && m.periode_id >= tid));
         this.saveData(db);
-        return target;
+        return true;
     },
 
     // ========================================================
@@ -466,15 +665,15 @@ const Storage = {
     // ========================================================
     getMatriksByPeriode(periodeId) {
         const db = this.getData();
-        const pid = parseInt(periodeId);
-        // Daftar seluruh santri (santri aktif di atas, santri boyong di bawah)
-        // Santri boyong tetap ditampilkan di matriks dengan gaya transparan kemerahan
-        const allSantri = this.getAllSantri();
+        const pid = parseInt(periodeId || (this.getActivePeriode() || {}).id);
         const periode = db.periode.find(p => p.id === pid) || { tipe_bulan: 'juli_juni' };
+
+        // Ambil daftar santri khusus periode ini (santriList mandiri)
+        const santriList = this.getSantriByPeriode(pid);
         const records = (db.matriks_kas_bulanan || []).filter(m => m.periode_id === pid);
 
         // Format data: daftar santri dengan map status bulan { 1: '...', ..., 12: '...' }
-        const result = allSantri.map(s => {
+        const result = santriList.map(s => {
             const statusMap = {};
             for (let b = 1; b <= 12; b++) {
                 statusMap[b] = 'kosong';

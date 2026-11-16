@@ -342,18 +342,31 @@ function renderProgressBar() {
     if (total === 0) {
         document.getElementById('progress-fill').style.width = '0%';
         document.getElementById('progress-label').textContent = '0%';
-        document.getElementById('progress-detail').textContent = 'Belum ada data santri aktif';
+        document.getElementById('progress-detail').textContent = 'Belum ada data santri aktif pada periode ini';
+        const elBelum = document.getElementById('dash-belum-santri');
+        const elTarget = document.getElementById('dash-target-kurang');
+        if (elBelum) elBelum.textContent = '0';
+        if (elTarget) elTarget.textContent = 'Rp 0';
         return;
     }
     let sudah = 0;
     activeSantri.forEach(s => {
         if (s.status && s.status[currentMonth] === 'sudah') sudah++;
     });
+    const sisaBelum = Math.max(0, total - sudah);
+    const tarifKas = 10000;
+    const targetKurang = sisaBelum * tarifKas;
     const pct = Math.round((sudah / total) * 100);
+
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-label').textContent = pct + '%';
     document.getElementById('progress-detail').textContent =
-        `${sudah} dari ${total} santri aktif sudah bayar kas bulan ${getBulanNama(currentMonth)} (santri boyong tidak dihitung tunggakan)`;
+        `${sudah} dari ${total} santri aktif sudah bayar kas bulan ${getBulanNama(currentMonth)}. Santri boyong dikecualikan dari perhitungan.`;
+
+    const elBelum = document.getElementById('dash-belum-santri');
+    const elTarget = document.getElementById('dash-target-kurang');
+    if (elBelum) elBelum.textContent = sisaBelum;
+    if (elTarget) elTarget.textContent = formatRp(targetKurang);
 }
 
 function renderDashPinjaman(data) {
@@ -513,19 +526,21 @@ function tambahSantri() {
     }
 
     try {
-        const s = Storage.addSantri({ nama_santri: nama, kamar_kelas: kamar });
-        showToast(`Santri "${s.nama_santri}" berhasil ditambahkan ke Master Data!`, 'success');
+        // Tambahkan santri khusus ke periode aktif ini dan periode berikutnya (periode lampau tetap utuh)
+        const s = Storage.addSantri({ nama_santri: nama, kamar_kelas: kamar }, activePeriodeId);
+        showToast(`Santri "${s.nama_santri}" berhasil ditambahkan ke periode aktif ini!`, 'success');
         inputNama.value = '';
         if (inputKamar) inputKamar.value = '';
         loadMatriks();
         loadDashboard();
+        updateBoyongCountBadge();
     } catch (e) {
         showToast(e.message, 'error');
     }
 }
 
 // ============================================================
-// PENGELOLAAN MASTER DATA SANTRI (LULUS / BOYONG)
+// PENGELOLAAN MASTER DATA SANTRI (PER-PERIODE)
 // ============================================================
 function openModalMasterSantri() {
     openModal('modal-master-santri');
@@ -533,7 +548,7 @@ function openModalMasterSantri() {
 }
 
 function loadMasterSantriList() {
-    allMasterSantri = Storage.getAllSantri();
+    allMasterSantri = Storage.getAllSantri(activePeriodeId);
     renderMasterSantriTable(allMasterSantri);
 }
 
@@ -550,7 +565,7 @@ function renderMasterSantriTable(list) {
     document.getElementById('ms-boyong-count').textContent = boyongCount;
 
     if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada santri ditemukan</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada santri pada periode ini</td></tr>';
         return;
     }
 
@@ -558,7 +573,7 @@ function renderMasterSantriTable(list) {
         const isAktif = (s.is_active === 1);
         const statusBadge = isAktif
             ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Aktif</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200 text-slate-600">Lulus / Boyong</span>';
+            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-700">Lulus / Boyong</span>';
 
         const toggleBtn = isAktif
             ? `<button class="px-2 py-1 text-[11px] rounded bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 font-medium" onclick="toggleStatusSantri(${s.id}, 0, '${escHtml(s.nama_santri)}')">Set Boyong</button>`
@@ -568,13 +583,13 @@ function renderMasterSantriTable(list) {
             <td class="p-2 text-center col-aksi">
                 <div class="flex items-center justify-center gap-1">
                     ${toggleBtn}
-                    <button class="p-1 text-red-500 hover:text-red-700 rounded hover:bg-red-50" title="Hapus Permanen" onclick="konfirmasiHapusSantri(${s.id}, '${escHtml(s.nama_santri)}')">
+                    <button class="p-1 text-red-500 hover:text-red-700 rounded hover:bg-red-50" title="Hapus dari Periode Ini" onclick="konfirmasiHapusSantri(${s.id}, '${escHtml(s.nama_santri)}')">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>
             </td>` : `<td class="p-2 text-center col-aksi text-slate-400">-</td>`;
 
-        return `<tr class="${!isAktif ? 'bg-slate-50 opacity-75' : ''}">
+        return `<tr class="${!isAktif ? 'bg-rose-50/50 opacity-80' : ''}">
             <td class="p-2 text-center text-slate-400">${idx + 1}</td>
             <td class="p-2 font-medium text-slate-800">${escHtml(s.nama_santri)}</td>
             <td class="p-2 text-slate-500">${escHtml(s.kamar_kelas || '-')}</td>
@@ -605,10 +620,10 @@ function toggleStatusSantri(santriId, newActive, nama) {
     }
     try {
         if (newActive === 0) {
-            Storage.boyongSantri(santriId);
-            showToast(`Santri "${nama}" telah dipindahkan ke Arsip Santri Boyong. Riwayat kasnya tetap aman.`, 'info');
+            Storage.boyongSantri(santriId, 'Lulus / Boyong Pondok', activePeriodeId);
+            showToast(`Santri "${nama}" telah dipindahkan ke Arsip Santri Boyong pada periode ini.`, 'info');
         } else {
-            Storage.reaktivasiSantri(santriId);
+            Storage.reaktivasiSantri(santriId, activePeriodeId);
             showToast(`Santri "${nama}" berhasil diaktifkan kembali!`, 'success');
         }
         loadMasterSantriList();
@@ -621,11 +636,11 @@ function toggleStatusSantri(santriId, newActive, nama) {
 }
 
 // ============================================================
-// ARSIP SANTRI BOYONG & REAKTIVASI
+// ARSIP SANTRI BOYONG & REAKTIVASI (PER-PERIODE)
 // ============================================================
 function updateBoyongCountBadge() {
     try {
-        const boyongList = Storage.getBoyongSantri();
+        const boyongList = Storage.getBoyongSantri(activePeriodeId);
         const badge = document.getElementById('badge-boyong-count');
         if (badge) badge.textContent = boyongList.length;
         const totalAb = document.getElementById('ab-count-total');
@@ -639,7 +654,7 @@ function openModalArsipBoyong() {
 }
 
 function loadArsipBoyongList() {
-    const list = Storage.getBoyongSantri();
+    const list = Storage.getBoyongSantri(activePeriodeId);
     renderArsipBoyongTable(list);
 }
 
@@ -650,7 +665,7 @@ function renderArsipBoyongTable(list) {
     if (!tbody) return;
 
     if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada santri yang berstatus lulus atau boyong. Seluruh santri berstatus aktif mondok.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada santri yang berstatus lulus atau boyong pada periode ini. Seluruh santri berstatus aktif mondok.</td></tr>';
         return;
     }
 
@@ -675,7 +690,7 @@ function renderArsipBoyongTable(list) {
                 <span class="text-[10px] text-slate-400">${escHtml(alasan)}</span>
             </td>
             <td class="p-2.5 text-center">
-                <span class="badge-boyong">Lulus / Boyong</span>
+                <span class="badge-status-boyong">Boyong</span>
             </td>
             ${aksiCol}
         </tr>`;
@@ -685,7 +700,7 @@ function renderArsipBoyongTable(list) {
 
 function filterArsipBoyongTable() {
     const q = (document.getElementById('ab-search-input')?.value || '').toLowerCase().trim();
-    const all = Storage.getBoyongSantri();
+    const all = Storage.getBoyongSantri(activePeriodeId);
     if (!q) {
         renderArsipBoyongTable(all);
         return;
@@ -703,7 +718,7 @@ function reaktivasiSantriDariArsip(id, nama) {
         return;
     }
     try {
-        Storage.reaktivasiSantri(id);
+        Storage.reaktivasiSantri(id, activePeriodeId);
         showToast(`Alhamdulillah! Santri "${nama}" berhasil diaktifkan kembali ke pondok!`, 'success');
         loadArsipBoyongList();
         loadMasterSantriList();
@@ -720,16 +735,17 @@ function konfirmasiHapusSantri(id, nama) {
         showToast('Akses ditolak!', 'warning');
         return;
     }
-    document.getElementById('confirm-message').textContent = `Hapus permanen santri "${nama}" dari Master Data?`;
+    document.getElementById('confirm-message').textContent = `Hapus santri "${nama}" dari periode aktif ini?`;
     const btn = document.getElementById('confirm-btn');
     btn.onclick = () => {
         try {
-            Storage.deleteSantri(id);
-            showToast('Santri berhasil dihapus dari Master Data', 'success');
+            Storage.deleteSantri(id, activePeriodeId);
+            showToast('Santri berhasil dihapus dari periode ini', 'success');
             closeModal('modal-confirm');
             loadMasterSantriList();
             loadMatriks();
             loadDashboard();
+            updateBoyongCountBadge();
         } catch (e) {
             showToast(e.message, 'error');
         }
@@ -739,7 +755,7 @@ function konfirmasiHapusSantri(id, nama) {
 }
 
 // ============================================================
-// KALKULATOR CEK FISIK UANG TUNAI
+// KALKULATOR CEK FISIK / COUNTDOWN TARGET KAS
 // ============================================================
 function populateCalcBulan() {
     const sel = document.getElementById('calc-bulan');
@@ -766,13 +782,49 @@ function hitungCekFisik() {
 
     const bulan = parseInt(selBulan.value) || 1;
     const tarif = parseFloat(inputTarif.value) || 10000;
+
+    // Santri aktif periode ini (santri boyong tidak masuk target & tunggakan)
+    const activeSantri = (matriksData || []).filter(s => s.is_active === 1);
+    const totalSantriAktif = activeSantri.length;
+
     let jmlSudah = 0;
-    matriksData.forEach(s => {
+    activeSantri.forEach(s => {
         if (s.status && s.status[bulan] === 'sudah') jmlSudah++;
     });
-    const target = jmlSudah * tarif;
-    document.getElementById('calc-jml').textContent = jmlSudah;
-    document.getElementById('calc-target').textContent = formatRp(target);
+
+    // Sistem countdown (pengurangan dari total):
+    // Sisa Santri Belum Bayar = Total Santri Aktif Periode Ini - Jumlah Santri Aktif Berstatus Sudah
+    const sisaBelum = Math.max(0, totalSantriAktif - jmlSudah);
+    const targetAwal = totalSantriAktif * tarif;
+    const terkumpul = jmlSudah * tarif;
+    const targetKurang = sisaBelum * tarif;
+
+    // Update UI Cek Fisik Countdown
+    const elTotal = document.getElementById('calc-total-santri');
+    const elSudah = document.getElementById('calc-jml-sudah');
+    const elBelum = document.getElementById('calc-jml-belum');
+    const elTargetAwal = document.getElementById('calc-target-awal');
+    const elTargetKurang = document.getElementById('calc-target-kurang');
+    const elTerkumpul = document.getElementById('calc-terkumpul');
+
+    if (elTotal) elTotal.textContent = totalSantriAktif;
+    if (elSudah) elSudah.textContent = jmlSudah;
+    if (elBelum) elBelum.textContent = sisaBelum;
+    if (elTargetAwal) elTargetAwal.textContent = formatRp(targetAwal);
+    if (elTargetKurang) {
+        if (sisaBelum === 0 && totalSantriAktif > 0) {
+            elTargetKurang.innerHTML = 'Rp 0 <span class="text-xs font-bold text-emerald-600 block">(Lunas 100% 🎉)</span>';
+        } else {
+            elTargetKurang.textContent = formatRp(targetKurang);
+        }
+    }
+    if (elTerkumpul) elTerkumpul.textContent = formatRp(terkumpul);
+
+    // Fallback lama jika ada elemen yang membaca ID lama
+    const elOldJml = document.getElementById('calc-jml');
+    const elOldTarget = document.getElementById('calc-target');
+    if (elOldJml) elOldJml.textContent = sisaBelum;
+    if (elOldTarget) elOldTarget.textContent = formatRp(targetKurang);
 }
 
 // ============================================================
@@ -1418,21 +1470,37 @@ Storage.subscribe(() => {
 // ============================================================
 // INISIALISASI HALAMAN
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Cek autentikasi sesi pengguna
+document.addEventListener('DOMContentLoaded', async () => {
+    // 0. Pengaman beforeunload untuk auto-save permanen
+    window.addEventListener('beforeunload', () => {
+        if (typeof Storage !== 'undefined' && Storage.autoSaveSync) {
+            Storage.autoSaveSync();
+        }
+    });
+
+    // 1. Tunggu pembacaan cloud once('value') saat inisialisasi sebelum render
+    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.hasValidConfig()) {
+        try {
+            await FirebaseSync.waitForInitialSync(4000);
+        } catch (e) {
+            console.warn('[App] Bypass initial cloud sync:', e);
+        }
+    }
+
+    // 2. Cek autentikasi sesi pengguna
     const user = Auth.checkAuth(true);
     if (!user) return;
 
-    // 2. Terapkan kontrol hak akses UI
+    // 3. Terapkan kontrol hak akses UI
     Auth.applyUIPermissions();
 
-    // 3. Muat periode aktif dan seluruh data tab
+    // 4. Muat periode aktif dan seluruh data tab
     loadPeriode();
 
-    // 4. Perbarui badge jumlah santri boyong
+    // 5. Perbarui badge jumlah santri boyong
     updateBoyongCountBadge();
 
-    // 5. Perbarui status cloud badge
+    // 6. Perbarui status cloud badge
     if (typeof FirebaseSync !== 'undefined' && FirebaseSync.updateUIStatusBadge) {
         FirebaseSync.updateUIStatusBadge();
     }
