@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +16,7 @@
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css">
-    
+
     <!-- Firebase SDK CDN (Compat) untuk Sinkronisasi Cloud Realtime Lintas Perangkat -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -32,1183 +33,1317 @@
         }
     </script>
 </head>
+
 <body class="bg-slate-100 text-slate-800">
 
-<!-- ============================================================ -->
-<!-- TOAST CONTAINER                                               -->
-<!-- ============================================================ -->
-<div id="toast-container"></div>
+    <!-- ============================================================ -->
+    <!-- TOAST CONTAINER                                               -->
+    <!-- ============================================================ -->
+    <div id="toast-container"></div>
 
-<!-- ============================================================ -->
-<!-- HEADER — Sticky Top                                           -->
-<!-- ============================================================ -->
-<header id="app-header" class="bg-white/95 border-b border-slate-200 shadow-sm">
-    <div class="header-inner max-w-screen-2xl mx-auto px-4 py-2 flex items-center justify-between gap-3 flex-wrap lg:flex-nowrap">
-        <!-- 1. Sisi Kiri: Identitas Aplikasi -->
-        <div class="flex items-center gap-2 shrink-0">
-            <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-                <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+    <!-- ============================================================ -->
+    <!-- HEADER — Sticky Top                                           -->
+    <!-- ============================================================ -->
+    <header id="app-header" class="bg-white/95 border-b border-slate-200 shadow-sm">
+        <div
+            class="header-inner max-w-screen-2xl mx-auto px-4 py-2 flex items-center justify-between gap-3 flex-wrap lg:flex-nowrap">
+            <!-- 1. Sisi Kiri: Identitas Aplikasi -->
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                    <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+                </div>
+                <div class="leading-tight hidden min-[420px]:block">
+                    <h1 class="text-sm font-bold text-slate-800">E-Bendahara</h1>
+                    <p class="text-[10px] text-slate-400 font-medium">Kas Asrama & Pondok</p>
+                </div>
             </div>
-            <div class="leading-tight hidden min-[420px]:block">
-                <h1 class="text-sm font-bold text-slate-800">E-Bendahara</h1>
-                <p class="text-[10px] text-slate-400 font-medium">Kas Asrama & Pondok</p>
-            </div>
-        </div>
 
-        <!-- 2. Bagian Tengah: 4 Tombol Tab Navigasi Utama Menyamping -->
-        <nav class="flex items-center justify-center gap-1 overflow-x-auto order-last sm:order-none w-full sm:w-auto">
-            <button class="tab-btn active px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
+            <!-- 2. Bagian Tengah: 4 Tombol Tab Navigasi Utama Menyamping -->
+            <nav
+                class="flex items-center justify-center gap-1 overflow-x-auto order-last sm:order-none w-full sm:w-auto">
+                <button
+                    class="tab-btn active px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
                     data-tab="dashboard" onclick="switchTab('dashboard')">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                <span class="hidden md:inline">Dashboard</span>
-            </button>
-            <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Dashboard</span>
+                </button>
+                <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
                     data-tab="matriks" onclick="switchTab('matriks')">
-                <i data-lucide="grid-3x3" class="w-4 h-4"></i>
-                <span class="hidden md:inline">Matriks Kas</span>
-            </button>
-            <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
+                    <i data-lucide="grid-3x3" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Matriks Kas</span>
+                </button>
+                <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
                     data-tab="bukukas" onclick="switchTab('bukukas')">
-                <i data-lucide="book-open" class="w-4 h-4"></i>
-                <span class="hidden md:inline">Buku Kas</span>
-            </button>
-            <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Buku Kas</span>
+                </button>
+                <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
                     data-tab="pinjaman" onclick="switchTab('pinjaman')">
-                <i data-lucide="hand-coins" class="w-4 h-4"></i>
-                <span class="hidden md:inline">Pinjaman</span>
-            </button>
-        </nav>
+                    <i data-lucide="hand-coins" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Pinjaman</span>
+                </button>
+            </nav>
 
-        <!-- 3. Sisi Kanan: Profil User, Tombol Backup/Restore, Menu Kelola User, & Tombol Logout -->
-        <div class="flex items-center gap-2 shrink-0">
-            <!-- Profil User Pill (Klik untuk Pengaturan Profil Mandiri) -->
-            <button onclick="openModalProfile()"
+            <!-- 3. Sisi Kanan: Profil User, Tombol Backup/Restore, Menu Kelola User, & Tombol Logout -->
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Profil User Pill (Klik untuk Pengaturan Profil Mandiri) -->
+                <button onclick="openModalProfile()"
                     class="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 active:scale-95 border border-slate-200 hover:border-blue-300 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer text-left group"
                     title="Klik untuk membuka pengaturan Profil & Akun Saya">
-                <div id="user-profile-avatar" class="w-6 h-6 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center font-bold text-[11px] shrink-0 transition">
-                    U
-                </div>
-                <div class="hidden sm:block leading-tight">
-                    <p id="user-profile-name" class="font-bold text-slate-700 group-hover:text-blue-700 max-w-[130px] truncate transition">Memuat...</p>
-                    <span id="user-profile-role" class="inline-block text-[10px] font-semibold text-blue-600">
-                        Pengurus
-                    </span>
-                </div>
-                <i data-lucide="user-cog" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 ml-1 transition"></i>
-            </button>
+                    <div id="user-profile-avatar"
+                        class="w-6 h-6 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center font-bold text-[11px] shrink-0 transition">
+                        U
+                    </div>
+                    <div class="hidden sm:block leading-tight">
+                        <p id="user-profile-name"
+                            class="font-bold text-slate-700 group-hover:text-blue-700 max-w-[130px] truncate transition">
+                            Memuat...</p>
+                        <span id="user-profile-role" class="inline-block text-[10px] font-semibold text-blue-600">
+                            Pengurus
+                        </span>
+                    </div>
+                    <i data-lucide="user-cog"
+                        class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 ml-1 transition"></i>
+                </button>
 
-            <!-- Status Indikator Cloud / Firebase Realtime -->
-            <button id="btn-cloud-status" onclick="openModalFirebaseConfig()"
+                <!-- Status Indikator Cloud / Firebase Realtime -->
+                <button id="btn-cloud-status" onclick="openModalFirebaseConfig()"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm border bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 cursor-pointer"
                     title="Status & Pengaturan Cloud Database Firebase">
-                <span class="relative flex h-2 w-2">
-                    <span id="cloud-indicator-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" style="display:none"></span>
-                    <span id="cloud-indicator-dot" class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
-                </span>
-                <span id="cloud-status-text" class="hidden md:inline">Mode Lokal (Offline)</span>
-            </button>
+                    <span class="relative flex h-2 w-2">
+                        <span id="cloud-indicator-ping"
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+                            style="display:none"></span>
+                        <span id="cloud-indicator-dot"
+                            class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
+                    </span>
+                    <span id="cloud-status-text" class="hidden md:inline">Mode Lokal (Offline)</span>
+                </button>
 
-            <!-- Tombol Backup / Restore JSON (Khusus Bendahara Utama) -->
-            <button id="btn-backup-restore" onclick="openModalBackup()"
+                <!-- Tombol Backup / Restore JSON (Khusus Bendahara Utama) -->
+                <button id="btn-backup-restore" onclick="openModalBackup()"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 transition shadow-sm"
                     title="Cadangkan atau Pulihkan Data (JSON)">
-                <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
-                <span class="hidden xl:inline">Backup Data</span>
-            </button>
+                    <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+                    <span class="hidden xl:inline">Backup Data</span>
+                </button>
 
-            <!-- Tombol Kelola User & Hak Akses (Khusus role bendahara_utama) -->
-            <button id="btn-kelola-users" onclick="openModalUsers()"
+                <!-- Tombol Kelola User & Hak Akses (Khusus role bendahara_utama) -->
+                <button id="btn-kelola-users" onclick="openModalUsers()"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1.5 transition shadow-sm"
                     title="Kelola Pengguna & Hak Akses">
-                <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
-                <span class="hidden lg:inline">Kelola User</span>
-            </button>
+                    <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
+                    <span class="hidden lg:inline">Kelola User</span>
+                </button>
 
-            <!-- Tombol Logout -->
-            <button onclick="Auth.logout()"
-               class="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center gap-1.5 transition cursor-pointer"
-               title="Keluar dari Aplikasi">
-                <i data-lucide="log-out" class="w-4 h-4 text-rose-600"></i>
-                <span class="hidden sm:inline">Logout</span>
-            </button>
+                <!-- Tombol Logout -->
+                <button onclick="Auth.logout()"
+                    class="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center gap-1.5 transition cursor-pointer"
+                    title="Keluar dari Aplikasi">
+                    <i data-lucide="log-out" class="w-4 h-4 text-rose-600"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
         </div>
-    </div>
-</header>
+    </header>
 
-<!-- ============================================================ -->
-<!-- TOOLBAR — Judul Halaman + Dropdown Periode + Tombol           -->
-<!-- ============================================================ -->
-<div id="toolbar-area" class="bg-white border-b border-slate-200">
-    <div class="max-w-screen-2xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <!-- Judul halaman aktif -->
-        <h2 id="page-title" class="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <i data-lucide="layout-dashboard" class="w-5 h-5 text-blue-500"></i>
-            Dashboard Ringkasan Kas
-        </h2>
+    <!-- ============================================================ -->
+    <!-- TOOLBAR — Judul Halaman + Dropdown Periode + Tombol           -->
+    <!-- ============================================================ -->
+    <div id="toolbar-area" class="bg-white border-b border-slate-200">
+        <div class="max-w-screen-2xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Judul halaman aktif -->
+            <h2 id="page-title" class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 text-blue-500"></i>
+                Dashboard Ringkasan Kas
+            </h2>
 
-        <!-- Controls -->
-        <div class="flex items-center gap-2 flex-wrap">
-            <!-- Dropdown Periode & Tombol Hapus Periode Aktif -->
-            <div class="flex items-center gap-1.5">
-                <select id="periode-select" class="quick-input text-sm font-medium min-w-[210px]" onchange="onPeriodeChange()">
-                    <option value="">Memuat periode...</option>
-                </select>
-                <!-- Tombol Ikon Hapus Periode Aktif -->
-                <button id="btn-hapus-periode" class="p-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition" 
+            <!-- Controls -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Dropdown Periode & Tombol Hapus Periode Aktif -->
+                <div class="flex items-center gap-1.5">
+                    <select id="periode-select" class="quick-input text-sm font-medium min-w-[210px]"
+                        onchange="onPeriodeChange()">
+                        <option value="">Memuat periode...</option>
+                    </select>
+                    <!-- Tombol Ikon Hapus Periode Aktif -->
+                    <button id="btn-hapus-periode"
+                        class="p-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition"
                         title="Hapus Periode Aktif" onclick="konfirmasiHapusPeriode()">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Tombol Cetak LPJ -->
+                <button class="btn-primary" onclick="openModalCetakLPJ()">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    Cetak LPJ
+                </button>
+
+                <!-- Tombol + Tahun Ajaran -->
+                <button id="btn-tambah-periode" class="btn-primary bg-emerald-600 hover:bg-emerald-700"
+                    onclick="openModalTambahPeriode()">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    Tahun Ajaran
                 </button>
             </div>
-
-            <!-- Tombol Cetak LPJ -->
-            <button class="btn-primary" onclick="openModalCetakLPJ()">
-                <i data-lucide="printer" class="w-4 h-4"></i>
-                Cetak LPJ
-            </button>
-
-            <!-- Tombol + Tahun Ajaran -->
-            <button id="btn-tambah-periode" class="btn-primary bg-emerald-600 hover:bg-emerald-700" onclick="openModalTambahPeriode()">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                Tahun Ajaran
-            </button>
         </div>
     </div>
-</div>
 
-<!-- ============================================================ -->
-<!-- MAIN CONTENT — Tab Panels                                     -->
-<!-- ============================================================ -->
-<main class="max-w-screen-2xl mx-auto px-4 py-6">
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT — Tab Panels                                     -->
+    <!-- ============================================================ -->
+    <main class="max-w-screen-2xl mx-auto px-4 py-6">
 
-    <!-- ========== TAB: DASHBOARD ========== -->
-    <section id="tab-dashboard" class="tab-content">
-        <!-- 4 Kartu Ringkasan -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="stat-card">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Saldo Kas Akhir</span>
-                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="wallet" class="w-4 h-4 text-blue-600"></i>
+        <!-- ========== TAB: DASHBOARD ========== -->
+        <section id="tab-dashboard" class="tab-content">
+            <!-- 4 Kartu Ringkasan -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Saldo Kas
+                            Akhir</span>
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="wallet" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                    </div>
+                    <p id="card-saldo" class="text-2xl font-extrabold text-slate-800">Rp 0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total
+                            Pemasukan</span>
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="trending-up" class="w-4 h-4 text-green-600"></i>
+                        </div>
+                    </div>
+                    <p id="card-debit" class="text-2xl font-extrabold text-green-600">Rp 0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total
+                            Pengeluaran</span>
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="trending-down" class="w-4 h-4 text-red-600"></i>
+                        </div>
+                    </div>
+                    <p id="card-kredit" class="text-2xl font-extrabold text-red-600">Rp 0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pinjaman Belum
+                            Kembali</span>
+                        <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+                        </div>
+                    </div>
+                    <p id="card-pinjaman" class="text-2xl font-extrabold text-amber-600">Rp 0</p>
+                </div>
+            </div>
+
+            <!-- Progress Bar Kepatuhan Iuran & Countdown Target Kas -->
+            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500"></i>
+                        Kepatuhan Iuran Santri (Bulan Berjalan)
+                    </h3>
+                    <span id="progress-label" class="text-xs font-bold text-blue-600">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progress-fill" class="progress-bar-fill bg-gradient-to-r from-blue-500 to-blue-600"
+                        style="width: 0%">
                     </div>
                 </div>
-                <p id="card-saldo" class="text-2xl font-extrabold text-slate-800">Rp 0</p>
+                <p id="progress-detail" class="text-xs text-slate-500 mt-2">Memuat data...</p>
+
+                <div
+                    class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span
+                            class="px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 border border-rose-200 font-semibold flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-rose-600"></i>
+                            Sisa Santri Belum: <strong id="dash-belum-santri" class="text-rose-800">0</strong>
+                        </span>
+                        <span
+                            class="px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-semibold flex items-center gap-1">
+                            <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i>
+                            Target Kurang: <strong id="dash-target-kurang" class="text-amber-900">Rp 0</strong>
+                        </span>
+                    </div>
+                    <span class="text-[11px] text-slate-400">Target berkurang otomatis (countdown) setiap santri
+                        lunas</span>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Pemasukan</span>
-                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="trending-up" class="w-4 h-4 text-green-600"></i>
+
+            <!-- 2 Kolom: Pinjaman Belum Lunas + 5 Transaksi Terakhir -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Daftar Pinjaman Belum Lunas -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-4">
+                        <i data-lucide="hand-coins" class="w-4 h-4 text-amber-500"></i>
+                        Pinjaman Belum Lunas
+                    </h3>
+                    <div id="dash-pinjaman-list" class="space-y-2">
+                        <p class="text-xs text-slate-400">Memuat...</p>
                     </div>
                 </div>
-                <p id="card-debit" class="text-2xl font-extrabold text-green-600">Rp 0</p>
-            </div>
-            <div class="stat-card">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Pengeluaran</span>
-                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="trending-down" class="w-4 h-4 text-red-600"></i>
+
+                <!-- 5 Transaksi Terakhir Buku Kas -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-4">
+                        <i data-lucide="receipt" class="w-4 h-4 text-blue-500"></i>
+                        5 Transaksi Terakhir Buku Kas
+                    </h3>
+                    <div id="dash-transaksi-list" class="space-y-2">
+                        <p class="text-xs text-slate-400">Memuat...</p>
                     </div>
                 </div>
-                <p id="card-kredit" class="text-2xl font-extrabold text-red-600">Rp 0</p>
             </div>
-            <div class="stat-card">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pinjaman Belum Kembali</span>
-                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+        </section>
+
+        <!-- ========== TAB: MATRIKS KAS ========== -->
+        <section id="tab-matriks" class="tab-content hidden">
+            <!-- Kalkulator Cek Fisik + Form Tambah Santri -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                <!-- Kalkulator Cek Fisik Uang Tunai -->
+                <div class="kalkulator-box">
+                    <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+                        <i data-lucide="calculator" class="w-4 h-4 text-blue-600"></i>
+                        Kalkulator Cek Fisik Uang Tunai
+                    </h3>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <div>
+                            <label class="text-xs font-medium text-slate-500 block mb-1">Pilih Bulan</label>
+                            <select id="calc-bulan" class="quick-input text-sm" onchange="hitungCekFisik()">
+                                <!-- Diisi JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-slate-500 block mb-1">Tarif Kas (Rp)</label>
+                            <input type="number" id="calc-tarif" class="quick-input text-sm w-32" value="10000"
+                                onchange="hitungCekFisik()" oninput="hitungCekFisik()">
+                        </div>
+                        <div class="flex-1 min-w-[260px]">
+                            <div id="calc-result"
+                                class="bg-white rounded-xl p-3.5 border border-blue-200 shadow-sm space-y-2">
+                                <div class="flex items-center justify-between text-xs text-slate-500">
+                                    <span>Target Awal (<span id="calc-total-santri">0</span> santri):</span>
+                                    <span id="calc-target-awal" class="font-bold text-slate-700">Rp 0</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs text-emerald-600">
+                                    <span>Sudah Terkumpul (<span id="calc-jml-sudah">0</span> santri):</span>
+                                    <span id="calc-terkumpul" class="font-bold">Rp 0</span>
+                                </div>
+                                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                    <div>
+                                        <span
+                                            class="text-[10px] font-bold text-rose-500 uppercase tracking-wider block">Sisa
+                                            Santri Belum:</span>
+                                        <span class="text-sm font-extrabold text-rose-600"><strong
+                                                id="calc-jml-belum">0</strong> santri</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span
+                                            class="text-[10px] font-bold text-rose-500 uppercase tracking-wider block">Target
+                                            Kurang:</span>
+                                        <span id="calc-target-kurang" class="text-lg font-black text-rose-600">Rp
+                                            0</span>
+                                    </div>
+                                </div>
+                                <!-- Fallback hidden untuk selector lama -->
+                                <span id="calc-jml" class="hidden">0</span>
+                                <span id="calc-target" class="hidden">Rp 0</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <p id="card-pinjaman" class="text-2xl font-extrabold text-amber-600">Rp 0</p>
-            </div>
-        </div>
 
-        <!-- Progress Bar Kepatuhan Iuran & Countdown Target Kas -->
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-6">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500"></i>
-                    Kepatuhan Iuran Santri (Bulan Berjalan)
-                </h3>
-                <span id="progress-label" class="text-xs font-bold text-blue-600">0%</span>
-            </div>
-            <div class="progress-bar-bg">
-                <div id="progress-fill" class="progress-bar-fill bg-gradient-to-r from-blue-500 to-blue-600" style="width: 0%">
-                </div>
-            </div>
-            <p id="progress-detail" class="text-xs text-slate-500 mt-2">Memuat data...</p>
-
-            <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span class="px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 border border-rose-200 font-semibold flex items-center gap-1">
-                        <i data-lucide="clock" class="w-3.5 h-3.5 text-rose-600"></i>
-                        Sisa Santri Belum: <strong id="dash-belum-santri" class="text-rose-800">0</strong>
-                    </span>
-                    <span class="px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-semibold flex items-center gap-1">
-                        <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i>
-                        Target Kurang: <strong id="dash-target-kurang" class="text-amber-900">Rp 0</strong>
-                    </span>
-                </div>
-                <span class="text-[11px] text-slate-400">Target berkurang otomatis (countdown) setiap santri lunas</span>
-            </div>
-        </div>
-
-        <!-- 2 Kolom: Pinjaman Belum Lunas + 5 Transaksi Terakhir -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Daftar Pinjaman Belum Lunas -->
-            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-4">
-                    <i data-lucide="hand-coins" class="w-4 h-4 text-amber-500"></i>
-                    Pinjaman Belum Lunas
-                </h3>
-                <div id="dash-pinjaman-list" class="space-y-2">
-                    <p class="text-xs text-slate-400">Memuat...</p>
+                <!-- Form Tambah Cepat Santri & Kelola Master Santri -->
+                <div id="box-tambah-santri"
+                    class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="user-plus" class="w-4 h-4 text-emerald-600"></i>
+                                Tambah Cepat Santri Baru
+                            </h3>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <button
+                                    class="text-xs text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition border border-blue-200"
+                                    onclick="openModalMasterSantri()">
+                                    <i data-lucide="users" class="w-3.5 h-3.5"></i> Master Santri
+                                </button>
+                                <button
+                                    class="text-xs text-amber-700 font-semibold hover:text-amber-800 flex items-center gap-1 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-md transition border border-amber-200"
+                                    onclick="openModalArsipBoyong()" title="Buka Daftar Santri yang Lulus atau Boyong">
+                                    <i data-lucide="archive" class="w-3.5 h-3.5 text-amber-600"></i> Arsip Boyong (<span
+                                        id="badge-boyong-count">0</span>)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="input-nama-santri" class="quick-input flex-1"
+                                placeholder="Nama santri baru..." onkeydown="if(event.key==='Enter')tambahSantri()">
+                            <input type="text" id="input-kamar-santri" class="quick-input w-36 hidden sm:block"
+                                placeholder="Kamar / Kelas (opsional)">
+                            <button class="btn-primary bg-emerald-600 hover:bg-emerald-700 shrink-0"
+                                onclick="tambahSantri()">
+                                <i data-lucide="plus" class="w-4 h-4"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400">
+                        Santri baru otomatis ditambahkan ke periode aktif ini dan periode berikutnya, tanpa mengubah
+                        riwayat periode terdahulu.
+                    </p>
                 </div>
             </div>
 
-            <!-- 5 Transaksi Terakhir Buku Kas -->
-            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-4">
-                    <i data-lucide="receipt" class="w-4 h-4 text-blue-500"></i>
-                    5 Transaksi Terakhir Buku Kas
-                </h3>
-                <div id="dash-transaksi-list" class="space-y-2">
-                    <p class="text-xs text-slate-400">Memuat...</p>
-                </div>
+            <!-- Tabel Matriks -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+                <table class="matriks-table w-full">
+                    <thead id="matriks-thead">
+                        <tr>
+                            <th class="col-no">No</th>
+                            <th class="col-nama">Nama Santri</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matriks-tbody">
+                        <tr>
+                            <td colspan="14" class="py-8 text-center text-slate-400 text-sm">Memuat data matriks...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ========== TAB: MATRIKS KAS ========== -->
-    <section id="tab-matriks" class="tab-content hidden">
-        <!-- Kalkulator Cek Fisik + Form Tambah Santri -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <!-- Kalkulator Cek Fisik Uang Tunai -->
-            <div class="kalkulator-box">
+        <!-- ========== TAB: BUKU KAS ========== -->
+        <section id="tab-bukukas" class="tab-content hidden">
+            <!-- Form Input Cepat -->
+            <div id="box-tambah-bukukas" class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm mb-4">
                 <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
-                    <i data-lucide="calculator" class="w-4 h-4 text-blue-600"></i>
-                    Kalkulator Cek Fisik Uang Tunai
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-blue-500"></i>
+                    Tambah Transaksi Buku Kas
                 </h3>
-                <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-wrap items-end gap-2">
                     <div>
-                        <label class="text-xs font-medium text-slate-500 block mb-1">Pilih Bulan</label>
-                        <select id="calc-bulan" class="quick-input text-sm" onchange="hitungCekFisik()">
-                            <!-- Diisi JS -->
-                        </select>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Tanggal</label>
+                        <input type="date" id="bk-tanggal" class="quick-input text-sm">
                     </div>
-                    <div>
-                        <label class="text-xs font-medium text-slate-500 block mb-1">Tarif Kas (Rp)</label>
-                        <input type="number" id="calc-tarif" class="quick-input text-sm w-32" value="10000" onchange="hitungCekFisik()" oninput="hitungCekFisik()">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Nama Barang</label>
+                        <input type="text" id="bk-nama" class="quick-input text-sm w-full"
+                            placeholder="Nama barang/uraian">
                     </div>
-                    <div class="flex-1 min-w-[260px]">
-                        <div id="calc-result" class="bg-white rounded-xl p-3.5 border border-blue-200 shadow-sm space-y-2">
-                            <div class="flex items-center justify-between text-xs text-slate-500">
-                                <span>Target Awal (<span id="calc-total-santri">0</span> santri):</span>
-                                <span id="calc-target-awal" class="font-bold text-slate-700">Rp 0</span>
-                            </div>
-                            <div class="flex items-center justify-between text-xs text-emerald-600">
-                                <span>Sudah Terkumpul (<span id="calc-jml-sudah">0</span> santri):</span>
-                                <span id="calc-terkumpul" class="font-bold">Rp 0</span>
-                            </div>
-                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                                <div>
-                                    <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider block">Sisa Santri Belum:</span>
-                                    <span class="text-sm font-extrabold text-rose-600"><strong id="calc-jml-belum">0</strong> santri</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider block">Target Kurang:</span>
-                                    <span id="calc-target-kurang" class="text-lg font-black text-rose-600">Rp 0</span>
-                                </div>
-                            </div>
-                            <!-- Fallback hidden untuk selector lama -->
-                            <span id="calc-jml" class="hidden">0</span>
-                            <span id="calc-target" class="hidden">Rp 0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Form Tambah Cepat Santri & Kelola Master Santri -->
-            <div id="box-tambah-santri" class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <i data-lucide="user-plus" class="w-4 h-4 text-emerald-600"></i>
-                            Tambah Cepat Santri Baru
-                        </h3>
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <button class="text-xs text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition border border-blue-200" onclick="openModalMasterSantri()">
-                                <i data-lucide="users" class="w-3.5 h-3.5"></i> Master Santri
-                            </button>
-                            <button class="text-xs text-amber-700 font-semibold hover:text-amber-800 flex items-center gap-1 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-md transition border border-amber-200" onclick="openModalArsipBoyong()" title="Buka Daftar Santri yang Lulus atau Boyong">
-                                <i data-lucide="archive" class="w-3.5 h-3.5 text-amber-600"></i> Arsip Boyong (<span id="badge-boyong-count">0</span>)
-                            </button>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 mb-2">
-                        <input type="text" id="input-nama-santri" class="quick-input flex-1"
-                               placeholder="Nama santri baru..." onkeydown="if(event.key==='Enter')tambahSantri()">
-                        <input type="text" id="input-kamar-santri" class="quick-input w-36 hidden sm:block"
-                               placeholder="Kamar / Kelas (opsional)">
-                        <button class="btn-primary bg-emerald-600 hover:bg-emerald-700 shrink-0" onclick="tambahSantri()">
-                            <i data-lucide="plus" class="w-4 h-4"></i> Tambah
-                        </button>
-                    </div>
-                </div>
-                <p class="text-[11px] text-slate-400">
-                    Santri baru otomatis ditambahkan ke periode aktif ini dan periode berikutnya, tanpa mengubah riwayat periode terdahulu.
-                </p>
-            </div>
-        </div>
-
-        <!-- Tabel Matriks -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-            <table class="matriks-table w-full">
-                <thead id="matriks-thead">
-                    <tr><th class="col-no">No</th><th class="col-nama">Nama Santri</th></tr>
-                </thead>
-                <tbody id="matriks-tbody">
-                    <tr><td colspan="14" class="py-8 text-center text-slate-400 text-sm">Memuat data matriks...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <!-- ========== TAB: BUKU KAS ========== -->
-    <section id="tab-bukukas" class="tab-content hidden">
-        <!-- Form Input Cepat -->
-        <div id="box-tambah-bukukas" class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm mb-4">
-            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
-                <i data-lucide="plus-circle" class="w-4 h-4 text-blue-500"></i>
-                Tambah Transaksi Buku Kas
-            </h3>
-            <div class="flex flex-wrap items-end gap-2">
-                <div>
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Tanggal</label>
-                    <input type="date" id="bk-tanggal" class="quick-input text-sm">
-                </div>
-                <div class="flex-1 min-w-[150px]">
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Nama Barang</label>
-                    <input type="text" id="bk-nama" class="quick-input text-sm w-full" placeholder="Nama barang/uraian">
-                </div>
-                <div class="flex-1 min-w-[120px]">
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Keterangan</label>
-                    <input type="text" id="bk-ket" class="quick-input text-sm w-full" placeholder="Keterangan transaksi">
-                </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Debit (Rp)</label>
-                    <input type="number" id="bk-debit" class="quick-input text-sm w-28" placeholder="0" min="0">
-                </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Kredit (Rp)</label>
-                    <input type="number" id="bk-kredit" class="quick-input text-sm w-28" placeholder="0" min="0">
-                </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Bukti</label>
-                    <input type="text" id="bk-bukti" class="quick-input text-sm w-28" placeholder="Nota / -">
-                </div>
-                <button class="btn-primary" onclick="tambahBukuKas()">
-                    <i data-lucide="save" class="w-4 h-4"></i> Simpan
-                </button>
-            </div>
-        </div>
-
-        <!-- Tabel Buku Kas -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-            <table class="bukukas-table">
-                <thead>
-                    <tr>
-                        <th class="w-12">No</th>
-                        <th class="w-28">Hari/Tanggal</th>
-                        <th>Nama Barang</th>
-                        <th>Keterangan</th>
-                        <th class="w-28">Debit</th>
-                        <th class="w-28">Kredit</th>
-                        <th class="w-32">Saldo</th>
-                        <th class="w-24">Bukti</th>
-                        <th class="w-28 col-aksi">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="bukukas-tbody">
-                    <tr><td colspan="9" class="py-8 text-center text-slate-400 text-sm">Memuat data buku kas...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <!-- ========== TAB: PINJAMAN ========== -->
-    <section id="tab-pinjaman" class="tab-content hidden">
-        <!-- Form Tambah Pinjaman -->
-        <div id="box-tambah-pinjaman" class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm mb-4">
-            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
-                <i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i>
-                Catat Pinjaman / Kasbon Baru
-            </h3>
-            <div class="flex flex-wrap items-end gap-2">
-                <div>
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Tanggal</label>
-                    <input type="date" id="pj-tanggal" class="quick-input text-sm">
-                </div>
-                <div class="flex-1 min-w-[140px]">
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Nama Peminjam</label>
-                    <input type="text" id="pj-nama" class="quick-input text-sm w-full" placeholder="Nama peminjam">
-                </div>
-                <div class="flex-1 min-w-[140px]">
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Keperluan</label>
-                    <input type="text" id="pj-keperluan" class="quick-input text-sm w-full" placeholder="Untuk apa">
-                </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Total Ambil (Rp)</label>
-                    <input type="number" id="pj-jumlah" class="quick-input text-sm w-32" placeholder="0" min="0">
-                </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-500 block mb-1">Tanda Bukti</label>
-                    <input type="text" id="pj-bukti" class="quick-input text-sm w-28" placeholder="Kwitansi">
-                </div>
-                <button class="btn-primary bg-amber-600 hover:bg-amber-700" onclick="tambahPinjaman()">
-                    <i data-lucide="save" class="w-4 h-4"></i> Simpan
-                </button>
-            </div>
-        </div>
-
-        <!-- Tabel Pinjaman -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-            <table class="pinjaman-table">
-                <thead>
-                    <tr>
-                        <th class="w-12">No</th>
-                        <th class="w-28">Tanggal</th>
-                        <th>Nama</th>
-                        <th>Keperluan</th>
-                        <th class="w-28">Total Ambil</th>
-                        <th class="w-28">Total Kembali</th>
-                        <th class="w-28">Tgl Kembali</th>
-                        <th class="w-24">Tanda Bukti</th>
-                        <th class="w-32">Status</th>
-                        <th class="w-28 col-aksi">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="pinjaman-tbody">
-                    <tr><td colspan="10" class="py-8 text-center text-slate-400 text-sm">Memuat data pinjaman...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-</main>
-
-<!-- ============================================================ -->
-<!-- MODAL: Tambah Periode / Tahun Ajaran Baru                     -->
-<!-- ============================================================ -->
-<div id="modal-periode" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-periode')">
-    <div class="modal-box">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="calendar-plus" class="w-5 h-5 text-emerald-600"></i>
-                Buat Periode / Tahun Ajaran Baru
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-periode')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="text-sm font-semibold text-slate-600 block mb-1">Nama Periode</label>
-                <input type="text" id="mp-nama" class="quick-input w-full" placeholder="Contoh: Tahun Ajaran 2027/2028">
-            </div>
-            <div>
-                <label class="text-sm font-semibold text-slate-600 block mb-1">Urutan Bulan</label>
-                <select id="mp-tipe" class="quick-input w-full">
-                    <option value="juli_juni">Juli — Juni (Tahun Ajaran)</option>
-                    <option value="januari_desember">Januari — Desember (Tahun Kalender)</option>
-                </select>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
-                <div class="flex items-start gap-2 text-xs text-blue-800">
-                    <i data-lucide="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
-                    <span><strong>Master Data Santri Permanen:</strong> Seluruh daftar santri aktif otomatis langsung muncul pada periode baru dengan status bulan awal (-) tanpa perlu input atau menyalin ulang.</span>
-                </div>
-                <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer pt-2 border-t border-blue-200">
-                    <input type="checkbox" id="mp-saldo" class="w-4 h-4 rounded text-blue-600" checked>
-                    <span>Bawa sisa saldo terakhir sebagai baris pertama Debit di Buku Kas baru</span>
-                </label>
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button class="btn-secondary" onclick="closeModal('modal-periode')">Batal</button>
-                <button class="btn-primary bg-emerald-600 hover:bg-emerald-700" onclick="simpanPeriodeBaru()">
-                    <i data-lucide="check" class="w-4 h-4"></i> Buat Periode
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Konfirmasi Hapus Periode                               -->
-<!-- ============================================================ -->
-<div id="modal-hapus-periode" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-hapus-periode')">
-    <div class="modal-box max-w-md">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2 text-red-600">
-                <i data-lucide="alert-octagon" class="w-5 h-5 text-red-500"></i>
-                Hapus Periode / Tahun Ajaran
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-hapus-periode')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div class="space-y-4">
-            <p class="text-sm text-slate-600">
-                Anda akan menghapus periode: <strong id="mhp-nama-periode" class="text-slate-800"></strong>
-            </p>
-            <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 space-y-1">
-                <p class="font-bold flex items-center gap-1">
-                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-500"></i> PERHATIAN:
-                </p>
-                <p>
-                    Menghapus periode ini akan <strong>menghapus permanen seluruh catatan Buku Kas Umum, catatan iuran bulanan Matriks Kas, dan data Pinjaman</strong> yang terdaftar pada periode tersebut.
-                </p>
-                <p class="text-slate-500 italic mt-1">
-                    *Master Data Santri tetap aman dan tidak akan terhapus.
-                </p>
-            </div>
-            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                <button class="btn-secondary" onclick="closeModal('modal-hapus-periode')">Batal</button>
-                <button class="btn-primary bg-red-600 hover:bg-red-700" onclick="prosesHapusPeriode()">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> Ya, Hapus Periode
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Edit Baris Buku Kas                                    -->
-<!-- ============================================================ -->
-<div id="modal-edit-bk" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-edit-bk')">
-    <div class="modal-box">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="edit-3" class="w-5 h-5 text-blue-600"></i>
-                Edit Baris Buku Kas
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-edit-bk')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <input type="hidden" id="edit-bk-id">
-        <div class="space-y-3">
-            <div>
-                <label class="text-sm font-semibold text-slate-600 block mb-1">Tanggal</label>
-                <input type="date" id="edit-bk-tanggal" class="quick-input w-full">
-            </div>
-            <div>
-                <label class="text-sm font-semibold text-slate-600 block mb-1">Nama Barang</label>
-                <input type="text" id="edit-bk-nama" class="quick-input w-full">
-            </div>
-            <div>
-                <label class="text-sm font-semibold text-slate-600 block mb-1">Keterangan</label>
-                <input type="text" id="edit-bk-ket" class="quick-input w-full">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="text-sm font-semibold text-slate-600 block mb-1">Debit (Rp)</label>
-                    <input type="number" id="edit-bk-debit" class="quick-input w-full" min="0">
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-600 block mb-1">Kredit (Rp)</label>
-                    <input type="number" id="edit-bk-kredit" class="quick-input w-full" min="0">
-                </div>
-            </div>
-            <div>
-                <label class="text-sm font-semibold text-slate-600 block mb-1">Bukti</label>
-                <input type="text" id="edit-bk-bukti" class="quick-input w-full">
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button class="btn-secondary" onclick="closeModal('modal-edit-bk')">Batal</button>
-                <button class="btn-primary" onclick="simpanEditBukuKas()">
-                    <i data-lucide="check" class="w-4 h-4"></i> Simpan Perubahan
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Cicil / Lunasi Pinjaman                                -->
-<!-- ============================================================ -->
-<div id="modal-cicil" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-cicil')">
-    <div class="modal-box max-w-md">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="banknote" class="w-5 h-5 text-green-600"></i>
-                Cicil / Lunasi Pinjaman
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-cicil')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <input type="hidden" id="cicil-id">
-        <div class="bg-amber-50 rounded-lg p-3 mb-4">
-            <p class="text-sm text-slate-600">Peminjam: <strong id="cicil-nama" class="text-slate-800"></strong></p>
-            <p class="text-sm text-slate-600">Sisa Hutang: <strong id="cicil-sisa" class="text-red-600"></strong></p>
-        </div>
-        <div class="space-y-3">
-            <div>
-                <div class="flex items-center justify-between mb-1">
-                    <label class="text-sm font-semibold text-slate-600">Jumlah Bayar (Rp)</label>
-                    <button type="button" class="text-xs text-blue-600 font-semibold hover:underline" onclick="setLunasiPenuh()">Lunasi Penuh</button>
-                </div>
-                <input type="number" id="cicil-jumlah" class="quick-input w-full" min="0" placeholder="Jumlah yang dibayar">
-            </div>
-            <div>
-                <label class="text-sm font-semibold text-slate-600 block mb-1">Tanggal Pengembalian</label>
-                <input type="date" id="cicil-tanggal" class="quick-input w-full">
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button class="btn-secondary" onclick="closeModal('modal-cicil')">Batal</button>
-                <button class="btn-primary bg-green-600 hover:bg-green-700" onclick="prosesCicilan()">
-                    <i data-lucide="check" class="w-4 h-4"></i> Catat Pembayaran
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Pengelolaan Master Data Santri Permanen                -->
-<!-- ============================================================ -->
-<div id="modal-master-santri" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-master-santri')">
-    <div class="modal-box max-w-2xl">
-        <div class="flex items-center justify-between mb-2">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
-                Master Data Santri (Permanen Lintas Periode)
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-master-santri')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <p class="text-xs text-slate-500 mb-4">
-            Santri berstatus <strong>Aktif</strong> otomatis tampil pada matriks kas di seluruh tahun ajaran. Ubah status menjadi <strong>Lulus/Boyong</strong> untuk menonaktifkan tanpa menghapus riwayat masa lalu.
-        </p>
-
-        <!-- Bar info & pencarian -->
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
-            <div class="flex items-center gap-3 text-xs">
-                <span class="font-medium text-slate-600">Total: <strong id="ms-total-count" class="text-slate-800">0</strong></span>
-                <span class="font-medium text-emerald-600">Aktif: <strong id="ms-aktif-count">0</strong></span>
-                <span class="font-medium text-amber-600">Lulus/Boyong: <strong id="ms-boyong-count">0</strong></span>
-            </div>
-            <input type="text" id="ms-search-input" class="quick-input text-xs w-48"
-                   placeholder="Cari nama santri..." oninput="filterMasterSantriTable()">
-        </div>
-
-        <!-- Tabel Santri -->
-        <div class="border border-slate-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto mb-4">
-            <table class="w-full text-xs text-left">
-                <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
-                    <tr>
-                        <th class="p-2.5 w-10 text-center">No</th>
-                        <th class="p-2.5">Nama Santri</th>
-                        <th class="p-2.5">Kamar / Kelas</th>
-                        <th class="p-2.5 w-28 text-center">Status</th>
-                        <th class="p-2.5 w-32 text-center col-aksi">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="ms-table-body" class="divide-y divide-slate-100">
-                    <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat master santri...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="flex justify-end pt-2 border-t border-slate-100">
-            <button class="btn-secondary" onclick="closeModal('modal-master-santri')">Tutup</button>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Konfirmasi Hapus                                       -->
-<!-- ============================================================ -->
-<div id="modal-confirm" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-confirm')">
-    <div class="modal-box max-w-sm text-center">
-        <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i data-lucide="alert-triangle" class="w-7 h-7 text-red-500"></i>
-        </div>
-        <h3 class="text-lg font-bold text-slate-800 mb-2">Konfirmasi Tindakan</h3>
-        <p id="confirm-message" class="text-sm text-slate-500 mb-6">Apakah Anda yakin ingin menghapus data ini?</p>
-        <div class="flex justify-center gap-3">
-            <button class="btn-secondary px-6" onclick="closeModal('modal-confirm')">Batal</button>
-            <button id="confirm-btn" class="btn-primary bg-red-600 hover:bg-red-700 px-6">
-                <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Profil & Akun Saya (Mandiri untuk Semua Pengguna)     -->
-<!-- ============================================================ -->
-<div id="modal-profile" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-profile')">
-    <div class="modal-box max-w-md">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="user-cog" class="w-5 h-5 text-blue-600"></i>
-                Profil & Akun Saya
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-profile')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-
-        <div class="space-y-4 text-xs">
-            <!-- Informasi Role Aktif -->
-            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
-                <div>
-                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide block">Tingkat Hak Akses</span>
-                    <span class="text-xs text-slate-700 font-medium">Peran akun Anda saat ini:</span>
-                </div>
-                <div id="prof-role-badge">
-                    <!-- Badge role dimuat dinamis -->
-                </div>
-            </div>
-
-            <!-- Nama Lengkap -->
-            <div>
-                <label class="font-semibold text-slate-700 block mb-1">Nama Lengkap</label>
-                <input type="text" id="prof-nama" class="quick-input w-full text-xs" placeholder="Nama lengkap Anda...">
-            </div>
-
-            <!-- Username -->
-            <div>
-                <label class="font-semibold text-slate-700 block mb-1">Username (Login)</label>
-                <input type="text" id="prof-username" class="quick-input w-full text-xs font-mono" placeholder="Username login...">
-                <p class="text-[10px] text-slate-400 mt-0.5">Username unik untuk masuk ke dalam sistem.</p>
-            </div>
-
-            <!-- Bagian Ganti Password -->
-            <div class="pt-3 border-t border-slate-100">
-                <h4 class="font-bold text-slate-700 mb-2 flex items-center gap-1.5 text-xs">
-                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i> Ubah Password <span class="text-[10px] text-slate-400 font-normal">(Kosongkan jika tidak ingin ganti)</span>
-                </h4>
-                
-                <div class="space-y-2.5">
-                    <div>
-                        <label class="font-medium text-slate-600 block mb-1">Password Lama <span class="text-red-500">*wajib jika ganti password</span></label>
-                        <input type="password" id="prof-pwd-lama" class="quick-input w-full text-xs" placeholder="Masukkan password lama Anda...">
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Keterangan</label>
+                        <input type="text" id="bk-ket" class="quick-input text-sm w-full"
+                            placeholder="Keterangan transaksi">
                     </div>
                     <div>
-                        <label class="font-medium text-slate-600 block mb-1">Password Baru</label>
-                        <input type="password" id="prof-pwd-baru" class="quick-input w-full text-xs" placeholder="Minimal 4 karakter...">
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Debit (Rp)</label>
+                        <input type="number" id="bk-debit" class="quick-input text-sm w-28" placeholder="0" min="0">
                     </div>
                     <div>
-                        <label class="font-medium text-slate-600 block mb-1">Konfirmasi Password Baru</label>
-                        <input type="password" id="prof-pwd-konfirm" class="quick-input w-full text-xs" placeholder="Ulangi password baru...">
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Kredit (Rp)</label>
+                        <input type="number" id="bk-kredit" class="quick-input text-sm w-28" placeholder="0" min="0">
                     </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Bukti</label>
+                        <input type="text" id="bk-bukti" class="quick-input text-sm w-28" placeholder="Nota / -">
+                    </div>
+                    <button class="btn-primary" onclick="tambahBukuKas()">
+                        <i data-lucide="save" class="w-4 h-4"></i> Simpan
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div class="flex justify-end gap-2 pt-4 mt-4 border-t border-slate-100">
-            <button class="btn-secondary text-xs" onclick="closeModal('modal-profile')">Batal</button>
-            <button class="btn-primary text-xs" onclick="simpanProfilSaya()">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i> Simpan Perubahan
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Kelola User & Hak Akses (Khusus Bendahara Utama)       -->
-<!-- ============================================================ -->
-<div id="modal-users" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-users')">
-    <div class="modal-box max-w-3xl">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="shield-check" class="w-5 h-5 text-indigo-600"></i>
-                Kelola Pengguna & Hak Akses Pengurus
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-users')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-
-        <!-- Penjelasan Role -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 text-[11px]">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
-                <p class="font-bold text-blue-700 flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Bendahara Utama</p>
-                <p class="text-slate-500 mt-0.5">Akses penuh sistem, kelola user, backup data, hapus periode, dan seluruh transaksi.</p>
+            <!-- Tabel Buku Kas -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+                <table class="bukukas-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12">No</th>
+                            <th class="w-28">Hari/Tanggal</th>
+                            <th>Nama Barang</th>
+                            <th>Keterangan</th>
+                            <th class="w-28">Debit</th>
+                            <th class="w-28">Kredit</th>
+                            <th class="w-32">Saldo</th>
+                            <th class="w-24">Bukti</th>
+                            <th class="w-28 col-aksi">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bukukas-tbody">
+                        <tr>
+                            <td colspan="9" class="py-8 text-center text-slate-400 text-sm">Memuat data buku kas...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
-                <p class="font-bold text-emerald-700 flex items-center gap-1"><i data-lucide="edit" class="w-3.5 h-3.5"></i> Sekretaris Kas</p>
-                <p class="text-slate-500 mt-0.5">Input & edit Matriks Kas, Buku Kas, Pinjaman. Tidak bisa kelola user/hapus periode.</p>
-            </div>
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
-                <p class="font-bold text-amber-700 flex items-center gap-1"><i data-lucide="eye" class="w-3.5 h-3.5"></i> Pembina / Pantau</p>
-                <p class="text-slate-500 mt-0.5">Hanya bisa melihat dashboard, kas, dan cetak LPJ (Read-Only).</p>
-            </div>
-        </div>
+        </section>
 
-        <!-- Form Tambah User Baru -->
-        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-5">
-            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i> Tambah Pengurus Baru
-            </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 mb-2">
+        <!-- ========== TAB: PINJAMAN ========== -->
+        <section id="tab-pinjaman" class="tab-content hidden">
+            <!-- Form Tambah Pinjaman -->
+            <div id="box-tambah-pinjaman" class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm mb-4">
+                <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i>
+                    Catat Pinjaman / Kasbon Baru
+                </h3>
+                <div class="flex flex-wrap items-end gap-2">
+                    <div>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Tanggal</label>
+                        <input type="date" id="pj-tanggal" class="quick-input text-sm">
+                    </div>
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Nama Peminjam</label>
+                        <input type="text" id="pj-nama" class="quick-input text-sm w-full" placeholder="Nama peminjam">
+                    </div>
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Keperluan</label>
+                        <input type="text" id="pj-keperluan" class="quick-input text-sm w-full" placeholder="Untuk apa">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Total Ambil (Rp)</label>
+                        <input type="number" id="pj-jumlah" class="quick-input text-sm w-32" placeholder="0" min="0">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Tanda Bukti</label>
+                        <input type="text" id="pj-bukti" class="quick-input text-sm w-28" placeholder="Kwitansi">
+                    </div>
+                    <button class="btn-primary bg-amber-600 hover:bg-amber-700" onclick="tambahPinjaman()">
+                        <i data-lucide="save" class="w-4 h-4"></i> Simpan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Pinjaman -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+                <table class="pinjaman-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12">No</th>
+                            <th class="w-28">Tanggal</th>
+                            <th>Nama</th>
+                            <th>Keperluan</th>
+                            <th class="w-28">Total Ambil</th>
+                            <th class="w-28">Total Kembali</th>
+                            <th class="w-28">Tgl Kembali</th>
+                            <th class="w-24">Tanda Bukti</th>
+                            <th class="w-32">Status</th>
+                            <th class="w-28 col-aksi">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pinjaman-tbody">
+                        <tr>
+                            <td colspan="10" class="py-8 text-center text-slate-400 text-sm">Memuat data pinjaman...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Tambah Periode / Tahun Ajaran Baru                     -->
+    <!-- ============================================================ -->
+    <div id="modal-periode" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-periode')">
+        <div class="modal-box">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="calendar-plus" class="w-5 h-5 text-emerald-600"></i>
+                    Buat Periode / Tahun Ajaran Baru
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-periode')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-500 block mb-1">Nama Lengkap</label>
-                    <input type="text" id="nu-nama" class="quick-input w-full text-xs" placeholder="Contoh: Siti Fatimah">
+                    <label class="text-sm font-semibold text-slate-600 block mb-1">Nama Periode</label>
+                    <input type="text" id="mp-nama" class="quick-input w-full"
+                        placeholder="Contoh: Tahun Ajaran 2027/2028">
                 </div>
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-500 block mb-1">Username</label>
-                    <input type="text" id="nu-username" class="quick-input w-full text-xs" placeholder="username_login">
-                </div>
-                <div>
-                    <label class="text-[11px] font-semibold text-slate-500 block mb-1">Password</label>
-                    <input type="password" id="nu-password" class="quick-input w-full text-xs" placeholder="Minimal 4 karakter">
-                </div>
-                <div>
-                    <label class="text-[11px] font-semibold text-slate-500 block mb-1">Tingkat Hak Akses / Role</label>
-                    <select id="nu-role" class="quick-input w-full text-xs">
-                        <option value="sekretaris_kas">Sekretaris Kas (Input/Edit)</option>
-                        <option value="bendahara_utama">Bendahara Utama (Akses Penuh)</option>
-                        <option value="anggota_pantau">Anggota Pantau (Read-Only)</option>
-                        <option value="pembina">Pembina (Read-Only & LPJ)</option>
+                    <label class="text-sm font-semibold text-slate-600 block mb-1">Urutan Bulan</label>
+                    <select id="mp-tipe" class="quick-input w-full">
+                        <option value="juli_juni">Juli — Juni (Tahun Ajaran)</option>
+                        <option value="januari_desember">Januari — Desember (Tahun Kalender)</option>
                     </select>
                 </div>
-            </div>
-            <div class="flex justify-end pt-1">
-                <button class="btn-primary bg-indigo-600 hover:bg-indigo-700 text-xs py-1.5 px-3" onclick="tambahUserBaru()">
-                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Tambah Pengguna
-                </button>
-            </div>
-        </div>
-
-        <!-- Tabel Daftar Pengguna -->
-        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <i data-lucide="users" class="w-4 h-4 text-slate-600"></i> Daftar Akun Pengurus Terdaftar
-        </h4>
-        <div class="border border-slate-200 rounded-lg overflow-hidden max-h-60 overflow-y-auto mb-4">
-            <table class="w-full text-xs text-left">
-                <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
-                    <tr>
-                        <th class="p-2.5 w-10 text-center">No</th>
-                        <th class="p-2.5">Nama Lengkap</th>
-                        <th class="p-2.5">Username</th>
-                        <th class="p-2.5 text-center">Hak Akses / Role</th>
-                        <th class="p-2.5 text-center w-36">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="users-table-body" class="divide-y divide-slate-100">
-                    <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data pengguna...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="flex justify-end pt-2 border-t border-slate-100">
-            <button class="btn-secondary" onclick="closeModal('modal-users')">Tutup</button>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Reset Password User                                    -->
-<!-- ============================================================ -->
-<div id="modal-reset-pwd" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-reset-pwd')">
-    <div class="modal-box max-w-sm">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="key-round" class="w-4 h-4 text-amber-600"></i>
-                Reset Password Pengguna
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-reset-pwd')">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-        </div>
-        <input type="hidden" id="rp-user-id">
-        <p class="text-xs text-slate-600 mb-3">
-            Reset password untuk user: <strong id="rp-username" class="text-slate-800"></strong>
-        </p>
-        <div class="space-y-3">
-            <div>
-                <label class="text-xs font-semibold text-slate-600 block mb-1">Password Baru</label>
-                <input type="password" id="rp-new-password" class="quick-input w-full text-xs" placeholder="Masukkan password baru...">
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button class="btn-secondary text-xs" onclick="closeModal('modal-reset-pwd')">Batal</button>
-                <button class="btn-primary bg-amber-600 hover:bg-amber-700 text-xs" onclick="simpanResetPassword()">
-                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Simpan Password
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Backup & Restore Data JSON                             -->
-<!-- ============================================================ -->
-<div id="modal-backup" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-backup')">
-    <div class="modal-box max-w-xl">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="database" class="w-5 h-5 text-emerald-600"></i>
-                Cadangkan & Pulihkan Data Kas (JSON Backup)
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-backup')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <p class="text-xs text-slate-500 mb-5 leading-relaxed">
-            Karena aplikasi ini berjalan 100% pada peramban Anda (GitHub Pages), data disimpan permanen di <strong>localStorage</strong>. Gunakan fitur di bawah untuk mencadangkan data ke file JSON agar dapat dipindahkan ke komputer/HP lain secara aman.
-        </p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-            <!-- Card Ekspor -->
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                    <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mb-2">
-                        <i data-lucide="download" class="w-5 h-5"></i>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                    <div class="flex items-start gap-2 text-xs text-blue-800">
+                        <i data-lucide="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+                        <span><strong>Master Data Santri Permanen:</strong> Seluruh daftar santri aktif otomatis
+                            langsung muncul pada periode baru dengan status bulan awal (-) tanpa perlu input atau
+                            menyalin ulang.</span>
                     </div>
-                    <h4 class="font-bold text-sm text-slate-800 mb-1">Ekspor Cadangan</h4>
-                    <p class="text-xs text-slate-500 mb-4 leading-normal">
-                        Unduh seluruh data (Santri, Periode, Buku Kas, Pinjaman, Akun) dalam 1 file <code>.json</code>.
+                    <label
+                        class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer pt-2 border-t border-blue-200">
+                        <input type="checkbox" id="mp-saldo" class="w-4 h-4 rounded text-blue-600" checked>
+                        <span>Bawa sisa saldo terakhir sebagai baris pertama Debit di Buku Kas baru</span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button class="btn-secondary" onclick="closeModal('modal-periode')">Batal</button>
+                    <button class="btn-primary bg-emerald-600 hover:bg-emerald-700" onclick="simpanPeriodeBaru()">
+                        <i data-lucide="check" class="w-4 h-4"></i> Buat Periode
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Konfirmasi Hapus Periode                               -->
+    <!-- ============================================================ -->
+    <div id="modal-hapus-periode" class="modal-overlay"
+        onclick="if(event.target===this)closeModal('modal-hapus-periode')">
+        <div class="modal-box max-w-md">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2 text-red-600">
+                    <i data-lucide="alert-octagon" class="w-5 h-5 text-red-500"></i>
+                    Hapus Periode / Tahun Ajaran
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-hapus-periode')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-sm text-slate-600">
+                    Anda akan menghapus periode: <strong id="mhp-nama-periode" class="text-slate-800"></strong>
+                </p>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 space-y-1">
+                    <p class="font-bold flex items-center gap-1">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-500"></i> PERHATIAN:
+                    </p>
+                    <p>
+                        Menghapus periode ini akan <strong>menghapus permanen seluruh catatan Buku Kas Umum, catatan
+                            iuran bulanan Matriks Kas, dan data Pinjaman</strong> yang terdaftar pada periode tersebut.
+                    </p>
+                    <p class="text-slate-500 italic mt-1">
+                        *Master Data Santri tetap aman dan tidak akan terhapus.
                     </p>
                 </div>
-                <button onclick="eksporDataJSON()" class="btn-primary w-full justify-center text-xs py-2 bg-blue-600 hover:bg-blue-700">
-                    <i data-lucide="download" class="w-4 h-4"></i> Unduh File JSON
-                </button>
-            </div>
-
-            <!-- Card Impor -->
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                    <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">
-                        <i data-lucide="upload" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-800 mb-1">Pulihkan / Impor</h4>
-                    <p class="text-xs text-slate-500 mb-4 leading-normal">
-                        Pilih file cadangan JSON yang sebelumnya diunduh untuk memulihkan seluruh data.
-                    </p>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button class="btn-secondary" onclick="closeModal('modal-hapus-periode')">Batal</button>
+                    <button class="btn-primary bg-red-600 hover:bg-red-700" onclick="prosesHapusPeriode()">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Ya, Hapus Periode
+                    </button>
                 </div>
-                <label class="btn-primary w-full justify-center text-xs py-2 bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
-                    <i data-lucide="folder-up" class="w-4 h-4"></i> Pilih File Backup
-                    <input type="file" id="input-import-json" accept=".json" class="hidden" onchange="imporDataJSON(event)">
-                </label>
             </div>
-        </div>
-
-        <!-- Tombol Reset ke Default -->
-        <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
-            <div class="text-rose-700">
-                <strong class="font-semibold block">Reset Setelan Awal Pabrik</strong>
-                Kembalikan data ke setelan sampel pondok semula.
-            </div>
-            <button onclick="resetDataKeAwal()" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition shrink-0">
-                Reset Database
-            </button>
-        </div>
-
-        <div class="flex justify-end pt-4 mt-2 border-t border-slate-100">
-            <button class="btn-secondary" onclick="closeModal('modal-backup')">Tutup</button>
         </div>
     </div>
-</div>
 
-<!-- ============================================================ -->
-<!-- MODAL: Konfigurasi Cloud Realtime (Firebase)                 -->
-<!-- ============================================================ -->
-<div id="modal-firebase-config" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-firebase-config')">
-    <div class="modal-box max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="cloud" class="w-5 h-5 text-blue-600"></i>
-                Konfigurasi Cloud & Sinkronisasi Real-Time
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-firebase-config')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-
-        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-            Hubungkan E-Bendahara ke <strong>Firebase Realtime Database</strong> (100% Gratis dari Google) agar seluruh data kas, matriks, buku kas, dan pinjaman otomatis sinkron secara <em>real-time</em> di seluruh HP dan laptop pengurus tanpa mengulang dari awal saat berganti perangkat.
-        </p>
-
-        <!-- Status Koneksi Saat Ini -->
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4 flex items-center justify-between gap-3 flex-wrap">
-            <div class="flex items-center gap-2.5">
-                <span id="modal-cloud-status-dot" class="w-3 h-3 rounded-full bg-slate-400 ring-4 ring-slate-100"></span>
+    <!-- ============================================================ -->
+    <!-- MODAL: Edit Baris Buku Kas                                    -->
+    <!-- ============================================================ -->
+    <div id="modal-edit-bk" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-edit-bk')">
+        <div class="modal-box">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-blue-600"></i>
+                    Edit Baris Buku Kas
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-edit-bk')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <input type="hidden" id="edit-bk-id">
+            <div class="space-y-3">
                 <div>
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Status Koneksi:</span>
-                    <strong id="modal-cloud-status-desc" class="text-xs text-slate-700">Mode Offline (Lokal)</strong>
+                    <label class="text-sm font-semibold text-slate-600 block mb-1">Tanggal</label>
+                    <input type="date" id="edit-bk-tanggal" class="quick-input w-full">
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-slate-600 block mb-1">Nama Barang</label>
+                    <input type="text" id="edit-bk-nama" class="quick-input w-full">
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-slate-600 block mb-1">Keterangan</label>
+                    <input type="text" id="edit-bk-ket" class="quick-input w-full">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-sm font-semibold text-slate-600 block mb-1">Debit (Rp)</label>
+                        <input type="number" id="edit-bk-debit" class="quick-input w-full" min="0">
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold text-slate-600 block mb-1">Kredit (Rp)</label>
+                        <input type="number" id="edit-bk-kredit" class="quick-input w-full" min="0">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-slate-600 block mb-1">Bukti</label>
+                    <input type="text" id="edit-bk-bukti" class="quick-input w-full">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button class="btn-secondary" onclick="closeModal('modal-edit-bk')">Batal</button>
+                    <button class="btn-primary" onclick="simpanEditBukuKas()">
+                        <i data-lucide="check" class="w-4 h-4"></i> Simpan Perubahan
+                    </button>
                 </div>
             </div>
-            <button onclick="syncLocalToCloudNow()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition shadow-sm">
-                <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i> Unggah Data Lokal ke Cloud
-            </button>
         </div>
+    </div>
 
-        <!-- Form Konfigurasi -->
-        <div class="space-y-3 mb-5">
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Tempel Konfigurasi JSON / Salinan dari Firebase Console (Cara Cepat)
-                </label>
-                <textarea id="fc-json-paste" rows="3" class="quick-input w-full font-mono text-[11px]"
-                          placeholder='Tempel di sini, misal: { "apiKey": "...", "databaseURL": "https://...", "projectId": "..." }'></textarea>
-                <button type="button" onclick="parseJsonConfigToInputs()" class="mt-1 text-[11px] text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1">
-                    <i data-lucide="sparkles" class="w-3 h-3"></i> Terapkan dari Teks di Atas
+    <!-- ============================================================ -->
+    <!-- MODAL: Cicil / Lunasi Pinjaman                                -->
+    <!-- ============================================================ -->
+    <div id="modal-cicil" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-cicil')">
+        <div class="modal-box max-w-md">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="banknote" class="w-5 h-5 text-green-600"></i>
+                    Cicil / Lunasi Pinjaman
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-cicil')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <input type="hidden" id="cicil-id">
+            <div class="bg-amber-50 rounded-lg p-3 mb-4">
+                <p class="text-sm text-slate-600">Peminjam: <strong id="cicil-nama" class="text-slate-800"></strong></p>
+                <p class="text-sm text-slate-600">Sisa Hutang: <strong id="cicil-sisa" class="text-red-600"></strong>
+                </p>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-sm font-semibold text-slate-600">Jumlah Bayar (Rp)</label>
+                        <button type="button" class="text-xs text-blue-600 font-semibold hover:underline"
+                            onclick="setLunasiPenuh()">Lunasi Penuh</button>
+                    </div>
+                    <input type="number" id="cicil-jumlah" class="quick-input w-full" min="0"
+                        placeholder="Jumlah yang dibayar">
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-slate-600 block mb-1">Tanggal Pengembalian</label>
+                    <input type="date" id="cicil-tanggal" class="quick-input w-full">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button class="btn-secondary" onclick="closeModal('modal-cicil')">Batal</button>
+                    <button class="btn-primary bg-green-600 hover:bg-green-700" onclick="prosesCicilan()">
+                        <i data-lucide="check" class="w-4 h-4"></i> Catat Pembayaran
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Pengelolaan Master Data Santri Permanen                -->
+    <!-- ============================================================ -->
+    <div id="modal-master-santri" class="modal-overlay"
+        onclick="if(event.target===this)closeModal('modal-master-santri')">
+        <div class="modal-box max-w-2xl">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                    Master Data Santri (Permanen Lintas Periode)
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-master-santri')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">
+                Santri berstatus <strong>Aktif</strong> otomatis tampil pada matriks kas di seluruh tahun ajaran. Ubah
+                status menjadi <strong>Lulus/Boyong</strong> untuk menonaktifkan tanpa menghapus riwayat masa lalu.
+            </p>
+
+            <!-- Bar info & pencarian -->
+            <div
+                class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="font-medium text-slate-600">Total: <strong id="ms-total-count"
+                            class="text-slate-800">0</strong></span>
+                    <span class="font-medium text-emerald-600">Aktif: <strong id="ms-aktif-count">0</strong></span>
+                    <span class="font-medium text-amber-600">Lulus/Boyong: <strong
+                            id="ms-boyong-count">0</strong></span>
+                </div>
+                <input type="text" id="ms-search-input" class="quick-input text-xs w-48"
+                    placeholder="Cari nama santri..." oninput="filterMasterSantriTable()">
+            </div>
+
+            <!-- Tabel Santri -->
+            <div class="border border-slate-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto mb-4">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
+                        <tr>
+                            <th class="p-2.5 w-10 text-center">No</th>
+                            <th class="p-2.5">Nama Santri</th>
+                            <th class="p-2.5">Kamar / Kelas</th>
+                            <th class="p-2.5 w-28 text-center">Status</th>
+                            <th class="p-2.5 w-32 text-center col-aksi">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ms-table-body" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="5" class="p-4 text-center text-slate-400">Memuat master santri...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button class="btn-secondary" onclick="closeModal('modal-master-santri')">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Konfirmasi Hapus                                       -->
+    <!-- ============================================================ -->
+    <div id="modal-confirm" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-confirm')">
+        <div class="modal-box max-w-sm text-center">
+            <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-7 h-7 text-red-500"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Konfirmasi Tindakan</h3>
+            <p id="confirm-message" class="text-sm text-slate-500 mb-6">Apakah Anda yakin ingin menghapus data ini?</p>
+            <div class="flex justify-center gap-3">
+                <button class="btn-secondary px-6" onclick="closeModal('modal-confirm')">Batal</button>
+                <button id="confirm-btn" class="btn-primary bg-red-600 hover:bg-red-700 px-6">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Profil & Akun Saya (Mandiri untuk Semua Pengguna)     -->
+    <!-- ============================================================ -->
+    <div id="modal-profile" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-profile')">
+        <div class="modal-box max-w-md">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="user-cog" class="w-5 h-5 text-blue-600"></i>
+                    Profil & Akun Saya
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-profile')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <div class="pt-2 border-t border-slate-100">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Atau Isi Parameter Secara Manual:</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div class="space-y-4 text-xs">
+                <!-- Informasi Role Aktif -->
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Database URL <span class="text-red-500">*wajib</span></label>
-                        <input type="text" id="fc-databaseURL" class="quick-input w-full text-xs font-mono" placeholder="https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app">
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide block">Tingkat Hak
+                            Akses</span>
+                        <span class="text-xs text-slate-700 font-medium">Peran akun Anda saat ini:</span>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">API Key <span class="text-red-500">*wajib</span></label>
-                        <input type="text" id="fc-apiKey" class="quick-input w-full text-xs font-mono" placeholder="AIzaSy...">
+                    <div id="prof-role-badge">
+                        <!-- Badge role dimuat dinamis -->
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Project ID <span class="text-red-500">*wajib</span></label>
-                        <input type="text" id="fc-projectId" class="quick-input w-full text-xs font-mono" placeholder="e-bendahara-pondok">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Auth Domain</label>
-                        <input type="text" id="fc-authDomain" class="quick-input w-full text-xs font-mono" placeholder="e-bendahara-pondok.firebaseapp.com">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">App ID</label>
-                        <input type="text" id="fc-appId" class="quick-input w-full text-xs font-mono" placeholder="1:123456:web:abcd...">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Storage Bucket (opsional)</label>
-                        <input type="text" id="fc-storageBucket" class="quick-input w-full text-xs font-mono" placeholder="e-bendahara-pondok.appspot.com">
+                </div>
+
+                <!-- Nama Lengkap -->
+                <div>
+                    <label class="font-semibold text-slate-700 block mb-1">Nama Lengkap</label>
+                    <input type="text" id="prof-nama" class="quick-input w-full text-xs"
+                        placeholder="Nama lengkap Anda...">
+                </div>
+
+                <!-- Username -->
+                <div>
+                    <label class="font-semibold text-slate-700 block mb-1">Username (Login)</label>
+                    <input type="text" id="prof-username" class="quick-input w-full text-xs font-mono"
+                        placeholder="Username login...">
+                    <p class="text-[10px] text-slate-400 mt-0.5">Username unik untuk masuk ke dalam sistem.</p>
+                </div>
+
+                <!-- Bagian Ganti Password -->
+                <div class="pt-3 border-t border-slate-100">
+                    <h4 class="font-bold text-slate-700 mb-2 flex items-center gap-1.5 text-xs">
+                        <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i> Ubah Password <span
+                            class="text-[10px] text-slate-400 font-normal">(Kosongkan jika tidak ingin ganti)</span>
+                    </h4>
+
+                    <div class="space-y-2.5">
+                        <div>
+                            <label class="font-medium text-slate-600 block mb-1">Password Lama <span
+                                    class="text-red-500">*wajib jika ganti password</span></label>
+                            <input type="password" id="prof-pwd-lama" class="quick-input w-full text-xs"
+                                placeholder="Masukkan password lama Anda...">
+                        </div>
+                        <div>
+                            <label class="font-medium text-slate-600 block mb-1">Password Baru</label>
+                            <input type="password" id="prof-pwd-baru" class="quick-input w-full text-xs"
+                                placeholder="Minimal 4 karakter...">
+                        </div>
+                        <div>
+                            <label class="font-medium text-slate-600 block mb-1">Konfirmasi Password Baru</label>
+                            <input type="password" id="prof-pwd-konfirm" class="quick-input w-full text-xs"
+                                placeholder="Ulangi password baru...">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Panduan Pembuatan Firebase Gratis -->
-        <details class="bg-blue-50/60 border border-blue-200 rounded-xl p-3 mb-5 text-xs text-slate-700">
-            <summary class="font-bold text-blue-800 cursor-pointer flex items-center gap-1.5">
-                <i data-lucide="help-circle" class="w-4 h-4 text-blue-600"></i>
-                Panduan 2 Menit Membuat Firebase Realtime Database (Gratis Selamanya)
-            </summary>
-            <div class="mt-2.5 space-y-2 text-slate-600 leading-relaxed text-[11px]">
-                <p>1. Buka <strong><a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline font-bold">console.firebase.google.com</a></strong> dan login dengan akun Google Anda.</p>
-                <p>2. Klik <strong>"Add project"</strong>, beri nama misalnya <code>e-bendahara</code> (lewati Google Analytics).</p>
-                <p>3. Di menu sebelah kiri, buka <strong>Build ➔ Realtime Database</strong>, lalu klik <strong>Create Database</strong> (pilih lokasi <em>Singapore / asia-southeast1</em> atau <em>United States</em>).</p>
-                <p>4. Pada tab <strong>Rules</strong> di Realtime Database, ubah menjadi:</p>
-                <pre class="cloud-code-box">{
+            <div class="flex justify-end gap-2 pt-4 mt-4 border-t border-slate-100">
+                <button class="btn-secondary text-xs" onclick="closeModal('modal-profile')">Batal</button>
+                <button class="btn-primary text-xs" onclick="simpanProfilSaya()">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Kelola User & Hak Akses (Khusus Bendahara Utama)       -->
+    <!-- ============================================================ -->
+    <div id="modal-users" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-users')">
+        <div class="modal-box max-w-3xl">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-indigo-600"></i>
+                    Kelola Pengguna & Hak Akses Pengurus
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-users')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Penjelasan Role -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 text-[11px]">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+                    <p class="font-bold text-blue-700 flex items-center gap-1"><i data-lucide="check-circle"
+                            class="w-3.5 h-3.5"></i> Bendahara Utama</p>
+                    <p class="text-slate-500 mt-0.5">Akses penuh sistem, kelola user, backup data, hapus periode, dan
+                        seluruh transaksi.</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
+                    <p class="font-bold text-emerald-700 flex items-center gap-1"><i data-lucide="edit"
+                            class="w-3.5 h-3.5"></i> Sekretaris Kas</p>
+                    <p class="text-slate-500 mt-0.5">Input & edit Matriks Kas, Buku Kas, Pinjaman. Tidak bisa kelola
+                        user/hapus periode.</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+                    <p class="font-bold text-amber-700 flex items-center gap-1"><i data-lucide="eye"
+                            class="w-3.5 h-3.5"></i> Pembina / Pantau</p>
+                    <p class="text-slate-500 mt-0.5">Hanya bisa melihat dashboard, kas, dan cetak LPJ (Read-Only).</p>
+                </div>
+            </div>
+
+            <!-- Form Tambah User Baru -->
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-5">
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i> Tambah Pengurus Baru
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 mb-2">
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Nama Lengkap</label>
+                        <input type="text" id="nu-nama" class="quick-input w-full text-xs"
+                            placeholder="Contoh: Siti Fatimah">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Username</label>
+                        <input type="text" id="nu-username" class="quick-input w-full text-xs"
+                            placeholder="username_login">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Password</label>
+                        <input type="password" id="nu-password" class="quick-input w-full text-xs"
+                            placeholder="Minimal 4 karakter">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Tingkat Hak Akses /
+                            Role</label>
+                        <select id="nu-role" class="quick-input w-full text-xs">
+                            <option value="sekretaris_kas">Sekretaris Kas (Input/Edit)</option>
+                            <option value="bendahara_utama">Bendahara Utama (Akses Penuh)</option>
+                            <option value="anggota_pantau">Anggota Pantau (Read-Only)</option>
+                            <option value="pembina">Pembina (Read-Only & LPJ)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end pt-1">
+                    <button class="btn-primary bg-indigo-600 hover:bg-indigo-700 text-xs py-1.5 px-3"
+                        onclick="tambahUserBaru()">
+                        <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Tambah Pengguna
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Daftar Pengguna -->
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <i data-lucide="users" class="w-4 h-4 text-slate-600"></i> Daftar Akun Pengurus Terdaftar
+            </h4>
+            <div class="border border-slate-200 rounded-lg overflow-hidden max-h-60 overflow-y-auto mb-4">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
+                        <tr>
+                            <th class="p-2.5 w-10 text-center">No</th>
+                            <th class="p-2.5">Nama Lengkap</th>
+                            <th class="p-2.5">Username</th>
+                            <th class="p-2.5 text-center">Hak Akses / Role</th>
+                            <th class="p-2.5 text-center w-36">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="5" class="p-4 text-center text-slate-400">Memuat data pengguna...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button class="btn-secondary" onclick="closeModal('modal-users')">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Reset Password User                                    -->
+    <!-- ============================================================ -->
+    <div id="modal-reset-pwd" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-reset-pwd')">
+        <div class="modal-box max-w-sm">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="key-round" class="w-4 h-4 text-amber-600"></i>
+                    Reset Password Pengguna
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-reset-pwd')">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <input type="hidden" id="rp-user-id">
+            <p class="text-xs text-slate-600 mb-3">
+                Reset password untuk user: <strong id="rp-username" class="text-slate-800"></strong>
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Password Baru</label>
+                    <input type="password" id="rp-new-password" class="quick-input w-full text-xs"
+                        placeholder="Masukkan password baru...">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button class="btn-secondary text-xs" onclick="closeModal('modal-reset-pwd')">Batal</button>
+                    <button class="btn-primary bg-amber-600 hover:bg-amber-700 text-xs" onclick="simpanResetPassword()">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Simpan Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Backup & Restore Data JSON                             -->
+    <!-- ============================================================ -->
+    <div id="modal-backup" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-backup')">
+        <div class="modal-box max-w-xl">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="database" class="w-5 h-5 text-emerald-600"></i>
+                    Cadangkan & Pulihkan Data Kas (JSON Backup)
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-backup')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-5 leading-relaxed">
+                Karena aplikasi ini berjalan 100% pada peramban Anda (GitHub Pages), data disimpan permanen di
+                <strong>localStorage</strong>. Gunakan fitur di bawah untuk mencadangkan data ke file JSON agar dapat
+                dipindahkan ke komputer/HP lain secara aman.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <!-- Card Ekspor -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mb-2">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">Ekspor Cadangan</h4>
+                        <p class="text-xs text-slate-500 mb-4 leading-normal">
+                            Unduh seluruh data (Santri, Periode, Buku Kas, Pinjaman, Akun) dalam 1 file
+                            <code>.json</code>.
+                        </p>
+                    </div>
+                    <button onclick="eksporDataJSON()"
+                        class="btn-primary w-full justify-center text-xs py-2 bg-blue-600 hover:bg-blue-700">
+                        <i data-lucide="download" class="w-4 h-4"></i> Unduh File JSON
+                    </button>
+                </div>
+
+                <!-- Card Impor -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">
+                            <i data-lucide="upload" class="w-5 h-5"></i>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">Pulihkan / Impor</h4>
+                        <p class="text-xs text-slate-500 mb-4 leading-normal">
+                            Pilih file cadangan JSON yang sebelumnya diunduh untuk memulihkan seluruh data.
+                        </p>
+                    </div>
+                    <label
+                        class="btn-primary w-full justify-center text-xs py-2 bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
+                        <i data-lucide="folder-up" class="w-4 h-4"></i> Pilih File Backup
+                        <input type="file" id="input-import-json" accept=".json" class="hidden"
+                            onchange="imporDataJSON(event)">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tombol Reset ke Default -->
+            <div
+                class="bg-rose-50 border border-rose-200 rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
+                <div class="text-rose-700">
+                    <strong class="font-semibold block">Reset Setelan Awal Pabrik</strong>
+                    Kembalikan data ke setelan sampel pondok semula.
+                </div>
+                <button onclick="resetDataKeAwal()"
+                    class="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition shrink-0">
+                    Reset Database
+                </button>
+            </div>
+
+            <div class="flex justify-end pt-4 mt-2 border-t border-slate-100">
+                <button class="btn-secondary" onclick="closeModal('modal-backup')">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Konfigurasi Cloud Realtime (Firebase)                 -->
+    <!-- ============================================================ -->
+    <div id="modal-firebase-config" class="modal-overlay"
+        onclick="if(event.target===this)closeModal('modal-firebase-config')">
+        <div class="modal-box max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="cloud" class="w-5 h-5 text-blue-600"></i>
+                    Konfigurasi Cloud & Sinkronisasi Real-Time
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-firebase-config')">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Hubungkan E-Bendahara ke <strong>Firebase Realtime Database</strong> (100% Gratis dari Google) agar
+                seluruh data kas, matriks, buku kas, dan pinjaman otomatis sinkron secara <em>real-time</em> di seluruh
+                HP dan laptop pengurus tanpa mengulang dari awal saat berganti perangkat.
+            </p>
+
+            <!-- Status Koneksi Saat Ini -->
+            <div
+                class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4 flex items-center justify-between gap-3 flex-wrap">
+                <div class="flex items-center gap-2.5">
+                    <span id="modal-cloud-status-dot"
+                        class="w-3 h-3 rounded-full bg-slate-400 ring-4 ring-slate-100"></span>
+                    <div>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Status
+                            Koneksi:</span>
+                        <strong id="modal-cloud-status-desc" class="text-xs text-slate-700">Mode Offline
+                            (Lokal)</strong>
+                    </div>
+                </div>
+                <button onclick="syncLocalToCloudNow()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition shadow-sm">
+                    <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i> Unggah Data Lokal ke Cloud
+                </button>
+            </div>
+
+            <!-- Form Konfigurasi -->
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tempel Konfigurasi JSON / Salinan dari Firebase Console (Cara Cepat)
+                    </label>
+                    <textarea id="fc-json-paste" rows="3" class="quick-input w-full font-mono text-[11px]"
+                        placeholder='Tempel di sini, misal: { "apiKey": "...", "databaseURL": "https://...", "projectId": "..." }'></textarea>
+                    <button type="button" onclick="parseJsonConfigToInputs()"
+                        class="mt-1 text-[11px] text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1">
+                        <i data-lucide="sparkles" class="w-3 h-3"></i> Terapkan dari Teks di Atas
+                    </button>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Atau Isi Parameter
+                        Secara Manual:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Database URL <span
+                                    class="text-red-500">*wajib</span></label>
+                            <input type="text" id="fc-databaseURL" class="quick-input w-full text-xs font-mono"
+                                placeholder="https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">API Key <span
+                                    class="text-red-500">*wajib</span></label>
+                            <input type="text" id="fc-apiKey" class="quick-input w-full text-xs font-mono"
+                                placeholder="AIzaSy...">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Project ID <span
+                                    class="text-red-500">*wajib</span></label>
+                            <input type="text" id="fc-projectId" class="quick-input w-full text-xs font-mono"
+                                placeholder="e-bendahara-pondok">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Auth Domain</label>
+                            <input type="text" id="fc-authDomain" class="quick-input w-full text-xs font-mono"
+                                placeholder="e-bendahara-pondok.firebaseapp.com">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">App ID</label>
+                            <input type="text" id="fc-appId" class="quick-input w-full text-xs font-mono"
+                                placeholder="1:123456:web:abcd...">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Storage Bucket
+                                (opsional)</label>
+                            <input type="text" id="fc-storageBucket" class="quick-input w-full text-xs font-mono"
+                                placeholder="e-bendahara-pondok.appspot.com">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panduan Pembuatan Firebase Gratis -->
+            <details class="bg-blue-50/60 border border-blue-200 rounded-xl p-3 mb-5 text-xs text-slate-700">
+                <summary class="font-bold text-blue-800 cursor-pointer flex items-center gap-1.5">
+                    <i data-lucide="help-circle" class="w-4 h-4 text-blue-600"></i>
+                    Panduan 2 Menit Membuat Firebase Realtime Database (Gratis Selamanya)
+                </summary>
+                <div class="mt-2.5 space-y-2 text-slate-600 leading-relaxed text-[11px]">
+                    <p>1. Buka <strong><a href="https://console.firebase.google.com" target="_blank"
+                                class="text-blue-600 underline font-bold">console.firebase.google.com</a></strong> dan
+                        login dengan akun Google Anda.</p>
+                    <p>2. Klik <strong>"Add project"</strong>, beri nama misalnya <code>e-bendahara</code> (lewati
+                        Google Analytics).</p>
+                    <p>3. Di menu sebelah kiri, buka <strong>Build ➔ Realtime Database</strong>, lalu klik
+                        <strong>Create Database</strong> (pilih lokasi <em>Singapore / asia-southeast1</em> atau
+                        <em>United States</em>).</p>
+                    <p>4. Pada tab <strong>Rules</strong> di Realtime Database, ubah menjadi:</p>
+                    <pre class="cloud-code-box">{
   "rules": {
     ".read": true,
     ".write": true
   }
 }</pre>
-                <p>Lalu klik <strong>Publish</strong>.</p>
-                <p>5. Klik ikon gerigi (Project Settings) di pojok kiri atas ➔ gulir ke bawah ➔ klik ikon Web (<code>&lt;/&gt;</code>) ➔ salin isi <code>const firebaseConfig = { ... }</code> lalu tempelkan pada kolom di atas!</p>
-            </div>
-        </details>
+                    <p>Lalu klik <strong>Publish</strong>.</p>
+                    <p>5. Klik ikon gerigi (Project Settings) di pojok kiri atas ➔ gulir ke bawah ➔ klik ikon Web
+                        (<code>&lt;/&gt;</code>) ➔ salin isi <code>const firebaseConfig = { ... }</code> lalu tempelkan
+                        pada kolom di atas!</p>
+                </div>
+            </details>
 
-        <!-- Aksi Tombol -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
-            <button type="button" onclick="useOfflineMode()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                Gunakan Mode Offline (Lokal Saja)
-            </button>
-            <div class="flex items-center gap-2">
-                <button type="button" class="btn-secondary text-xs" onclick="closeModal('modal-firebase-config')">Tutup</button>
-                <button type="button" onclick="simpanFirebaseConfig()" class="btn-primary bg-blue-600 hover:bg-blue-700 text-xs">
-                    <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan & Hubungkan
+            <!-- Aksi Tombol -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onclick="useOfflineMode()"
+                    class="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                    Gunakan Mode Offline (Lokal Saja)
                 </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="btn-secondary text-xs"
+                        onclick="closeModal('modal-firebase-config')">Tutup</button>
+                    <button type="button" onclick="simpanFirebaseConfig()"
+                        class="btn-primary bg-blue-600 hover:bg-blue-700 text-xs">
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan & Hubungkan
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ============================================================ -->
-<!-- MODAL: Arsip Santri Boyong & Lulus Pondok                     -->
-<!-- ============================================================ -->
-<div id="modal-arsip-boyong" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-arsip-boyong')">
-    <div class="modal-box max-w-3xl max-h-[85vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-2">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="archive" class="w-5 h-5 text-amber-600"></i>
-                Arsip Santri Boyong & Lulus Pondok
-            </h3>
-            <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-arsip-boyong')">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-            Daftar santri yang telah lulus atau boyong dari pondok. Riwayat iuran dan catatan pembayaran mereka pada tahun-tahun ajaran lama tetap <strong>utuh 100%</strong> dan tidak terhapus. Namun, nama mereka tidak lagi menjadi tanggungan pada tahun ajaran baru. Klik tombol <strong>Aktifkan Kembali</strong> jika santri kembali mondok.
-        </p>
-
-        <!-- Bar pencarian & info -->
-        <div class="flex items-center justify-between gap-3 mb-4 bg-amber-50/60 p-3 rounded-lg border border-amber-200 flex-wrap">
-            <div class="flex items-center gap-2 text-xs text-amber-900 font-medium">
-                <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0"></i>
-                <span>Jumlah Santri di Arsip: <strong id="ab-count-total">0</strong> orang</span>
-            </div>
-            <input type="text" id="ab-search-input" class="quick-input text-xs w-56"
-                   placeholder="Cari santri boyong..." oninput="filterArsipBoyongTable()">
-        </div>
-
-        <!-- Tabel Santri Boyong -->
-        <div class="border border-slate-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto mb-4">
-            <table class="w-full text-xs text-left">
-                <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
-                    <tr>
-                        <th class="p-2.5 w-10 text-center">No</th>
-                        <th class="p-2.5">Nama Santri</th>
-                        <th class="p-2.5">Kamar / Kelas</th>
-                        <th class="p-2.5">Tgl Boyong / Keterangan</th>
-                        <th class="p-2.5 w-24 text-center">Status</th>
-                        <th class="p-2.5 w-36 text-center col-aksi">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="ab-table-body" class="divide-y divide-slate-100">
-                    <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data arsip boyong...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="flex justify-end pt-2 border-t border-slate-100">
-            <button class="btn-secondary" onclick="closeModal('modal-arsip-boyong')">Tutup</button>
-        </div>
-    </div>
-</div>
-
-
-<!-- ============================================================ -->
-<!-- MODAL: Cetak LPJ (Pratinjau Cetak)                            -->
-<!-- ============================================================ -->
-<div id="modal-cetak" class="modal-overlay print-target" onclick="if(event.target===this)closeModal('modal-cetak')">
-    <div class="modal-box max-w-4xl">
-        <div class="flex items-center justify-between mb-4 no-print">
-            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="printer" class="w-5 h-5 text-blue-600"></i>
-                Pratinjau Cetak LPJ
-            </h3>
-            <div class="flex items-center gap-2">
-                <button class="btn-primary" onclick="window.print()">
-                    <i data-lucide="printer" class="w-4 h-4"></i> Cetak Dokumen
-                </button>
-                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-cetak')">
+    <!-- ============================================================ -->
+    <!-- MODAL: Arsip Santri Boyong & Lulus Pondok                     -->
+    <!-- ============================================================ -->
+    <div id="modal-arsip-boyong" class="modal-overlay"
+        onclick="if(event.target===this)closeModal('modal-arsip-boyong')">
+        <div class="modal-box max-w-3xl max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="archive" class="w-5 h-5 text-amber-600"></i>
+                    Arsip Santri Boyong & Lulus Pondok
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-arsip-boyong')">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-        </div>
-        <div id="cetak-content">
-            <!-- Konten cetak diisi JS -->
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Daftar santri yang telah lulus atau boyong dari pondok. Riwayat iuran dan catatan pembayaran mereka pada
+                tahun-tahun ajaran lama tetap <strong>utuh 100%</strong> dan tidak terhapus. Namun, nama mereka tidak
+                lagi menjadi tanggungan pada tahun ajaran baru. Klik tombol <strong>Aktifkan Kembali</strong> jika
+                santri kembali mondok.
+            </p>
+
+            <!-- Bar pencarian & info -->
+            <div
+                class="flex items-center justify-between gap-3 mb-4 bg-amber-50/60 p-3 rounded-lg border border-amber-200 flex-wrap">
+                <div class="flex items-center gap-2 text-xs text-amber-900 font-medium">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                    <span>Jumlah Santri di Arsip: <strong id="ab-count-total">0</strong> orang</span>
+                </div>
+                <input type="text" id="ab-search-input" class="quick-input text-xs w-56"
+                    placeholder="Cari santri boyong..." oninput="filterArsipBoyongTable()">
+            </div>
+
+            <!-- Tabel Santri Boyong -->
+            <div class="border border-slate-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto mb-4">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
+                        <tr>
+                            <th class="p-2.5 w-10 text-center">No</th>
+                            <th class="p-2.5">Nama Santri</th>
+                            <th class="p-2.5">Kamar / Kelas</th>
+                            <th class="p-2.5">Tgl Boyong / Keterangan</th>
+                            <th class="p-2.5 w-24 text-center">Status</th>
+                            <th class="p-2.5 w-36 text-center col-aksi">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ab-table-body" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="6" class="p-4 text-center text-slate-400">Memuat data arsip boyong...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button class="btn-secondary" onclick="closeModal('modal-arsip-boyong')">Tutup</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Application Core Scripts -->
-<script src="assets/js/app.js"></script>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: Cetak LPJ (Pratinjau Cetak)                            -->
+    <!-- ============================================================ -->
+    <div id="modal-cetak" class="modal-overlay print-target" onclick="if(event.target===this)closeModal('modal-cetak')">
+        <div class="modal-box max-w-4xl">
+            <div class="flex items-center justify-between mb-4 no-print">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="printer" class="w-5 h-5 text-blue-600"></i>
+                    Pratinjau Cetak LPJ
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button class="btn-primary" onclick="window.print()">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Cetak Dokumen
+                    </button>
+                    <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-cetak')">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="cetak-content">
+                <!-- Konten cetak diisi JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Core Scripts -->
+    <script src="assets/js/app.js"></script>
 </body>
-</html>
 
+</html>

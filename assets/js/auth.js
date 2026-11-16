@@ -47,21 +47,46 @@ const Auth = {
      */
     login(username, password) {
         const cleanUser = (username || '').trim().toLowerCase();
-        const users = Storage.getUsers();
-        const found = users.find(u => 
+        let users = Storage.getUsers();
+
+        // PENGAMAN: Jika daftar user kosong (data lama/corrupt), re-inject akun default
+        if (!users || users.length === 0) {
+            console.warn('[Auth] Daftar user kosong, re-seeding akun bawaan...');
+            const db = Storage.getData();
+            db.users = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA.users));
+            Storage.saveData(db);
+            users = db.users;
+        }
+
+        let found = users.find(u => 
             u.username.toLowerCase() === cleanUser && 
             u.password === password
         );
 
+        // PEMULIHAN OTOMATIS: Jika login dengan salah satu akun bawaan (admin, bendahara, sekretaris, pembina)
+        // namun tidak cocok / terhapus di database lokal lama, pulihkan seketika
         if (!found) {
-            const userExists = users.find(u => u.username.toLowerCase() === cleanUser);
-            if (userExists) {
-                throw new Error('Password salah! Silakan periksa kembali password Anda.');
-            } else {
-                throw new Error(
-                    `Akun "${username}" belum terdaftar di perangkat ini! Jika akun ini baru dibuat di HP/laptop lain, pastikan Firebase Cloud sudah terhubung agar sinkron otomatis. Di perangkat baru, silakan gunakan akun bawaan: username "admin" & password "admin123".`
-                );
+            const defaultMatch = (typeof DEFAULT_SEED_DATA !== 'undefined' && DEFAULT_SEED_DATA.users)
+                ? DEFAULT_SEED_DATA.users.find(u => u.username.toLowerCase() === cleanUser && u.password === password)
+                : null;
+
+            if (defaultMatch) {
+                console.warn(`[Auth] Memulihkan akun bawaan "${cleanUser}"...`);
+                const db = Storage.getData();
+                if (!Array.isArray(db.users)) db.users = [];
+                const existingIdx = db.users.findIndex(u => (u.username || '').toLowerCase() === cleanUser);
+                if (existingIdx >= 0) {
+                    db.users[existingIdx] = JSON.parse(JSON.stringify(defaultMatch));
+                } else {
+                    db.users.push(JSON.parse(JSON.stringify(defaultMatch)));
+                }
+                Storage.saveData(db);
+                found = defaultMatch;
             }
+        }
+
+        if (!found) {
+            throw new Error('Username atau password salah! Periksa kembali akun Anda.');
         }
 
         const sessionUser = {

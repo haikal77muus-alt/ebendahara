@@ -152,8 +152,28 @@ const Storage = {
             return data;
         }
 
-        // Migrasi & Validasi Manajemen Santri Per-Periode (santri_list tersimpan mandiri di tiap periode)
+        // Migrasi & Validasi
         let needsSave = false;
+
+        // PENGAMAN: Pastikan akun bawaan (terutama admin) selalu tersedia
+        if (!Array.isArray(data.users) || data.users.length === 0) {
+            console.warn('[Storage] Daftar pengguna kosong, memasang akun bawaan');
+            data.users = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA.users));
+            needsSave = true;
+        } else {
+            // Pastikan minimal akun admin bawaan selalu ada jika terhapus/hilang di localStorage lama
+            const hasAdmin = data.users.some(u => (u.username || '').toLowerCase() === 'admin');
+            if (!hasAdmin) {
+                console.warn('[Storage] Akun admin tidak ditemukan di database lokal lama, menambahkan kembali akun admin');
+                const defaultAdmin = DEFAULT_SEED_DATA.users.find(u => u.username === 'admin');
+                if (defaultAdmin) {
+                    data.users.unshift(JSON.parse(JSON.stringify(defaultAdmin)));
+                    needsSave = true;
+                }
+            }
+        }
+
+        // Manajemen Santri Per-Periode (santri_list tersimpan mandiri di tiap periode)
         const fallbackSantri = (Array.isArray(data.master_santri) && data.master_santri.length > 0)
             ? data.master_santri
             : DEFAULT_SANTRI_TEMPLATE;

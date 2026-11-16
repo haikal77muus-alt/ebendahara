@@ -140,6 +140,12 @@
     <p class="text-center text-xs text-slate-400 mt-4">
         &copy; 2026 E-Bendahara Asrama & Pondok. Siap di-deploy di GitHub Pages.
     </p>
+    <p class="text-center mt-2">
+        <button type="button" onclick="resetDataBawaan()"
+                class="text-[10px] text-slate-400 hover:text-red-500 transition underline cursor-pointer">
+            🔄 Reset ke Data Bawaan (jika login terus gagal)
+        </button>
+    </p>
 </div>
 
 <!-- Load Database Storage & Auth Scripts -->
@@ -340,6 +346,17 @@
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status') === 'logged_out') {
         showAlert('Anda telah berhasil keluar dari sistem.', true);
+    }
+
+    function resetDataBawaan() {
+        const yakin = window.confirm('⚠️ PERINGATAN: Seluruh data akan direset ke data bawaan. Apakah Anda yakin?');
+        if (yakin) {
+            localStorage.removeItem('ebendahara_database_v1');
+            sessionStorage.removeItem('ebendahara_current_session');
+            localStorage.removeItem('ebendahara_current_session');
+            Storage.init();
+            showAlert('Data berhasil direset ke bawaan! Silakan login kembali dengan admin / admin123.', true);
+        }
     }
 </script>
 </body>
