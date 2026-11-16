@@ -21,17 +21,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-    <!-- Konfigurasi Firebase, Storage Engine, & Auth -->
+    <!-- Konfigurasi Firebase, Storage Engine, & Keamanan Ber-PIN -->
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/storage.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script>
-        // Cek login segera sebelum render untuk mencegah FOUC (Flash of Unauthenticated Content)
-        if (!Auth.checkAuth(true)) {
-            // Pengalihan otomatis ke login.html
-            document.write('<p style="padding:2rem;text-align:center;font-family:sans-serif;">Memverifikasi sesi pengurus...</p>');
-        }
-    </script>
 </head>
 
 <body class="bg-slate-100 text-slate-800">
@@ -84,28 +77,8 @@
                 </button>
             </nav>
 
-            <!-- 3. Sisi Kanan: Profil User, Tombol Backup/Restore, Menu Kelola User, & Tombol Logout -->
+            <!-- 3. Sisi Kanan: Status Cloud, Backup, Mode Edit / Kunci Tampilan Ber-PIN, & Ubah PIN -->
             <div class="flex items-center gap-2 shrink-0">
-                <!-- Profil User Pill (Klik untuk Pengaturan Profil Mandiri) -->
-                <button onclick="openModalProfile()"
-                    class="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 active:scale-95 border border-slate-200 hover:border-blue-300 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer text-left group"
-                    title="Klik untuk membuka pengaturan Profil & Akun Saya">
-                    <div id="user-profile-avatar"
-                        class="w-6 h-6 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center font-bold text-[11px] shrink-0 transition">
-                        U
-                    </div>
-                    <div class="hidden sm:block leading-tight">
-                        <p id="user-profile-name"
-                            class="font-bold text-slate-700 group-hover:text-blue-700 max-w-[130px] truncate transition">
-                            Memuat...</p>
-                        <span id="user-profile-role" class="inline-block text-[10px] font-semibold text-blue-600">
-                            Pengurus
-                        </span>
-                    </div>
-                    <i data-lucide="user-cog"
-                        class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 ml-1 transition"></i>
-                </button>
-
                 <!-- Status Indikator Cloud / Firebase Realtime -->
                 <button id="btn-cloud-status" onclick="openModalFirebaseConfig()"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm border bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 cursor-pointer"
@@ -120,28 +93,28 @@
                     <span id="cloud-status-text" class="hidden md:inline">Mode Lokal (Offline)</span>
                 </button>
 
-                <!-- Tombol Backup / Restore JSON (Khusus Bendahara Utama) -->
+                <!-- Tombol Backup / Restore JSON -->
                 <button id="btn-backup-restore" onclick="openModalBackup()"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 transition shadow-sm"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1.5 transition shadow-sm"
                     title="Cadangkan atau Pulihkan Data (JSON)">
-                    <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+                    <i data-lucide="database" class="w-4 h-4 text-blue-600"></i>
                     <span class="hidden xl:inline">Backup Data</span>
                 </button>
 
-                <!-- Tombol Kelola User & Hak Akses (Khusus role bendahara_utama) -->
-                <button id="btn-kelola-users" onclick="openModalUsers()"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1.5 transition shadow-sm"
-                    title="Kelola Pengguna & Hak Akses">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
-                    <span class="hidden lg:inline">Kelola User</span>
+                <!-- Tombol Mode Edit / Kunci Tampilan Ber-PIN -->
+                <button id="btn-toggle-edit-mode" onclick="toggleEditModeSecurity()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                    title="Kunci Tampilan Aktif. Klik untuk Membuka Mode Edit dengan PIN (Bawaan: 1234)">
+                    <i id="edit-mode-icon" data-lucide="lock" class="w-4 h-4 text-amber-600"></i>
+                    <span id="edit-mode-text">Mode Pantau (Terkunci)</span>
                 </button>
 
-                <!-- Tombol Logout -->
-                <button onclick="Auth.logout()"
-                    class="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center gap-1.5 transition cursor-pointer"
-                    title="Keluar dari Aplikasi">
-                    <i data-lucide="log-out" class="w-4 h-4 text-rose-600"></i>
-                    <span class="hidden sm:inline">Logout</span>
+                <!-- Tombol Ubah PIN (Hanya tampil saat Mode Edit Aktif) -->
+                <button id="btn-change-pin" onclick="openModalUbahPIN()" style="display:none;"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                    title="Ubah PIN Keamanan Mode Edit">
+                    <i data-lucide="key-round" class="w-3.5 h-3.5 text-slate-600"></i>
+                    <span class="hidden sm:inline">Ubah PIN</span>
                 </button>
             </div>
         </div>
@@ -815,221 +788,86 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- MODAL: Profil & Akun Saya (Mandiri untuk Semua Pengguna)     -->
+    <!-- MODAL: Buka Mode Edit (Verifikasi PIN Keamanan)              -->
     <!-- ============================================================ -->
-    <div id="modal-profile" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-profile')">
-        <div class="modal-box max-w-md">
-            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="user-cog" class="w-5 h-5 text-blue-600"></i>
-                    Profil & Akun Saya
-                </h3>
-                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-profile')">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+    <div id="modal-unlock-pin" class="modal-overlay hidden" style="display:none;" onclick="if(event.target===this)closeModalUnlockPIN()">
+        <div class="modal-box max-w-sm bg-white rounded-2xl p-6 shadow-2xl border border-slate-100">
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm">
+                    <i data-lucide="lock" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Buka Mode Edit</h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Masukkan PIN keamanan untuk mengaktifkan mode penambahan, perubahan, dan pengelolaan kas:
+                </p>
+                <div class="mt-2">
+                    <span class="inline-block text-[11px] font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                        🔑 PIN Bawaan: <strong>1234</strong>
+                    </span>
+                </div>
             </div>
 
-            <div class="space-y-4 text-xs">
-                <!-- Informasi Role Aktif -->
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide block">Tingkat Hak
-                            Akses</span>
-                        <span class="text-xs text-slate-700 font-medium">Peran akun Anda saat ini:</span>
-                    </div>
-                    <div id="prof-role-badge">
-                        <!-- Badge role dimuat dinamis -->
-                    </div>
-                </div>
-
-                <!-- Nama Lengkap -->
+            <form onsubmit="submitUnlockPIN(event)" class="space-y-4">
                 <div>
-                    <label class="font-semibold text-slate-700 block mb-1">Nama Lengkap</label>
-                    <input type="text" id="prof-nama" class="quick-input w-full text-xs"
-                        placeholder="Nama lengkap Anda...">
+                    <label for="unlock-pin-input" class="block text-xs font-semibold text-slate-700 mb-1.5 text-center">PIN Keamanan</label>
+                    <input type="password" id="unlock-pin-input" maxlength="10" required autocomplete="current-password"
+                        class="w-full text-center text-xl tracking-widest font-mono py-2.5 px-3 rounded-lg border border-slate-300 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                        placeholder="••••">
                 </div>
 
-                <!-- Username -->
-                <div>
-                    <label class="font-semibold text-slate-700 block mb-1">Username (Login)</label>
-                    <input type="text" id="prof-username" class="quick-input w-full text-xs font-mono"
-                        placeholder="Username login...">
-                    <p class="text-[10px] text-slate-400 mt-0.5">Username unik untuk masuk ke dalam sistem.</p>
-                </div>
-
-                <!-- Bagian Ganti Password -->
-                <div class="pt-3 border-t border-slate-100">
-                    <h4 class="font-bold text-slate-700 mb-2 flex items-center gap-1.5 text-xs">
-                        <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i> Ubah Password <span
-                            class="text-[10px] text-slate-400 font-normal">(Kosongkan jika tidak ingin ganti)</span>
-                    </h4>
-
-                    <div class="space-y-2.5">
-                        <div>
-                            <label class="font-medium text-slate-600 block mb-1">Password Lama <span
-                                    class="text-red-500">*wajib jika ganti password</span></label>
-                            <input type="password" id="prof-pwd-lama" class="quick-input w-full text-xs"
-                                placeholder="Masukkan password lama Anda...">
-                        </div>
-                        <div>
-                            <label class="font-medium text-slate-600 block mb-1">Password Baru</label>
-                            <input type="password" id="prof-pwd-baru" class="quick-input w-full text-xs"
-                                placeholder="Minimal 4 karakter...">
-                        </div>
-                        <div>
-                            <label class="font-medium text-slate-600 block mb-1">Konfirmasi Password Baru</label>
-                            <input type="password" id="prof-pwd-konfirm" class="quick-input w-full text-xs"
-                                placeholder="Ulangi password baru...">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-4 mt-4 border-t border-slate-100">
-                <button class="btn-secondary text-xs" onclick="closeModal('modal-profile')">Batal</button>
-                <button class="btn-primary text-xs" onclick="simpanProfilSaya()">
-                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Simpan Perubahan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- MODAL: Kelola User & Hak Akses (Khusus Bendahara Utama)       -->
-    <!-- ============================================================ -->
-    <div id="modal-users" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-users')">
-        <div class="modal-box max-w-3xl">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-5 h-5 text-indigo-600"></i>
-                    Kelola Pengguna & Hak Akses Pengurus
-                </h3>
-                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-users')">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Penjelasan Role -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 text-[11px]">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
-                    <p class="font-bold text-blue-700 flex items-center gap-1"><i data-lucide="check-circle"
-                            class="w-3.5 h-3.5"></i> Bendahara Utama</p>
-                    <p class="text-slate-500 mt-0.5">Akses penuh sistem, kelola user, backup data, hapus periode, dan
-                        seluruh transaksi.</p>
-                </div>
-                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
-                    <p class="font-bold text-emerald-700 flex items-center gap-1"><i data-lucide="edit"
-                            class="w-3.5 h-3.5"></i> Sekretaris Kas</p>
-                    <p class="text-slate-500 mt-0.5">Input & edit Matriks Kas, Buku Kas, Pinjaman. Tidak bisa kelola
-                        user/hapus periode.</p>
-                </div>
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
-                    <p class="font-bold text-amber-700 flex items-center gap-1"><i data-lucide="eye"
-                            class="w-3.5 h-3.5"></i> Pembina / Pantau</p>
-                    <p class="text-slate-500 mt-0.5">Hanya bisa melihat dashboard, kas, dan cetak LPJ (Read-Only).</p>
-                </div>
-            </div>
-
-            <!-- Form Tambah User Baru -->
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-5">
-                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                    <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i> Tambah Pengurus Baru
-                </h4>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 mb-2">
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Nama Lengkap</label>
-                        <input type="text" id="nu-nama" class="quick-input w-full text-xs"
-                            placeholder="Contoh: Siti Fatimah">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Username</label>
-                        <input type="text" id="nu-username" class="quick-input w-full text-xs"
-                            placeholder="username_login">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Password</label>
-                        <input type="password" id="nu-password" class="quick-input w-full text-xs"
-                            placeholder="Minimal 4 karakter">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Tingkat Hak Akses /
-                            Role</label>
-                        <select id="nu-role" class="quick-input w-full text-xs">
-                            <option value="sekretaris_kas">Sekretaris Kas (Input/Edit)</option>
-                            <option value="bendahara_utama">Bendahara Utama (Akses Penuh)</option>
-                            <option value="anggota_pantau">Anggota Pantau (Read-Only)</option>
-                            <option value="pembina">Pembina (Read-Only & LPJ)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex justify-end pt-1">
-                    <button class="btn-primary bg-indigo-600 hover:bg-indigo-700 text-xs py-1.5 px-3"
-                        onclick="tambahUserBaru()">
-                        <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Tambah Pengguna
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="closeModalUnlockPIN()" class="btn-secondary flex-1 text-xs py-2 justify-center">Batal</button>
+                    <button type="submit" class="btn-primary flex-1 bg-amber-600 hover:bg-amber-700 text-xs py-2 justify-center">
+                        <i data-lucide="lock-open" class="w-4 h-4"></i> Buka Kunci
                     </button>
                 </div>
-            </div>
-
-            <!-- Tabel Daftar Pengguna -->
-            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                <i data-lucide="users" class="w-4 h-4 text-slate-600"></i> Daftar Akun Pengurus Terdaftar
-            </h4>
-            <div class="border border-slate-200 rounded-lg overflow-hidden max-h-60 overflow-y-auto mb-4">
-                <table class="w-full text-xs text-left">
-                    <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 border-b border-slate-200">
-                        <tr>
-                            <th class="p-2.5 w-10 text-center">No</th>
-                            <th class="p-2.5">Nama Lengkap</th>
-                            <th class="p-2.5">Username</th>
-                            <th class="p-2.5 text-center">Hak Akses / Role</th>
-                            <th class="p-2.5 text-center w-36">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table-body" class="divide-y divide-slate-100">
-                        <tr>
-                            <td colspan="5" class="p-4 text-center text-slate-400">Memuat data pengguna...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex justify-end pt-2 border-t border-slate-100">
-                <button class="btn-secondary" onclick="closeModal('modal-users')">Tutup</button>
-            </div>
+            </form>
         </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- MODAL: Reset Password User                                    -->
+    <!-- MODAL: Ubah PIN Keamanan Mode Edit                            -->
     <!-- ============================================================ -->
-    <div id="modal-reset-pwd" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-reset-pwd')">
-        <div class="modal-box max-w-sm">
-            <div class="flex items-center justify-between mb-3">
+    <div id="modal-ubah-pin" class="modal-overlay hidden" style="display:none;" onclick="if(event.target===this)closeModalUbahPIN()">
+        <div class="modal-box max-w-sm bg-white rounded-2xl p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="key-round" class="w-4 h-4 text-amber-600"></i>
-                    Reset Password Pengguna
+                    <i data-lucide="key-round" class="w-5 h-5 text-blue-600"></i>
+                    Ubah PIN Mode Edit
                 </h3>
-                <button class="text-slate-400 hover:text-slate-600" onclick="closeModal('modal-reset-pwd')">
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeModalUbahPIN()">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <input type="hidden" id="rp-user-id">
-            <p class="text-xs text-slate-600 mb-3">
-                Reset password untuk user: <strong id="rp-username" class="text-slate-800"></strong>
+
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Ubah PIN pengaman agar hanya pengurus berwenang yang dapat membuka Mode Edit:
             </p>
-            <div class="space-y-3">
+
+            <form onsubmit="submitUbahPIN(event)" class="space-y-3">
                 <div>
-                    <label class="text-xs font-semibold text-slate-600 block mb-1">Password Baru</label>
-                    <input type="password" id="rp-new-password" class="quick-input w-full text-xs"
-                        placeholder="Masukkan password baru...">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Lama</label>
+                    <input type="password" id="up-pin-lama" required maxlength="10"
+                        class="quick-input w-full text-sm font-mono tracking-wider" placeholder="Masukkan PIN lama (default: 1234)">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button class="btn-secondary text-xs" onclick="closeModal('modal-reset-pwd')">Batal</button>
-                    <button class="btn-primary bg-amber-600 hover:bg-amber-700 text-xs" onclick="simpanResetPassword()">
-                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Simpan Password
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Baru (min. 4 angka/karakter)</label>
+                    <input type="password" id="up-pin-baru" required maxlength="10"
+                        class="quick-input w-full text-sm font-mono tracking-wider" placeholder="Masukkan PIN baru...">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Konfirmasi PIN Baru</label>
+                    <input type="password" id="up-pin-konfirm" required maxlength="10"
+                        class="quick-input w-full text-sm font-mono tracking-wider" placeholder="Ulangi PIN baru...">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModalUbahPIN()" class="btn-secondary text-xs">Batal</button>
+                    <button type="submit" class="btn-primary bg-blue-600 hover:bg-blue-700 text-xs">
+                        <i data-lucide="save" class="w-4 h-4"></i> Simpan PIN
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 

@@ -153,6 +153,10 @@ function switchTab(tab) {
     }
 }
 
+function renderCurrentTab() {
+    switchTab(currentTab || 'dashboard');
+}
+
 // ============================================================
 // PERIODE (TAHUN AJARAN)
 // ============================================================
@@ -223,7 +227,7 @@ function loadAllData() {
 // ============================================================
 function openModalTambahPeriode() {
     if (Auth.isReadOnly()) {
-        showToast('Akses ditolak: Anda hanya memiliki hak memantau.', 'warning');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah data.', 'warning');
         return;
     }
     document.getElementById('mp-nama').value = '';
@@ -266,7 +270,7 @@ function simpanPeriodeBaru() {
 // ============================================================
 function konfirmasiHapusPeriode() {
     if (!Auth.isBendaharaUtama()) {
-        showToast('Akses ditolak: Hanya Bendahara Utama yang berhak menghapus periode!', 'error');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk menghapus periode.', 'warning');
         return;
     }
 
@@ -464,7 +468,7 @@ function renderMatriksTable() {
             const st = (s.status && s.status[b]) ? s.status[b] : 'kosong';
             const label = st === 'sudah' ? 'Sudah' : (st === 'belum' ? 'Blom' : '-');
             const clickAttr = Auth.isReadOnly()
-                ? `onclick="showToast('Akses Read-Only: Pembina/Pantau tidak dapat mengubah status kas.', 'info')"`
+                ? `onclick="showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah status kas.', 'warning')"`
                 : `onclick="toggleStatus(${s.id}, ${b}, '${st}')"`;
             bodyHTML += `<td class="status-cell status-${st}" ${clickAttr} title="Klik untuk mengubah status">${label}</td>`;
         });
@@ -489,7 +493,7 @@ function renderMatriksTable() {
 
 function toggleStatus(santriId, bulan, currentStatus) {
     if (Auth.isReadOnly()) {
-        showToast('Akses Read-Only: Anda hanya memiliki hak memantau.', 'warning');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah status kas.', 'warning');
         return;
     }
 
@@ -512,7 +516,7 @@ function toggleStatus(santriId, bulan, currentStatus) {
 
 function tambahSantri() {
     if (Auth.isReadOnly()) {
-        showToast('Akses ditolak: Anda hanya memiliki hak memantau.', 'warning');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah data.', 'warning');
         return;
     }
     const inputNama = document.getElementById('input-nama-santri');
@@ -615,7 +619,7 @@ function filterMasterSantriTable() {
 
 function toggleStatusSantri(santriId, newActive, nama) {
     if (Auth.isReadOnly()) {
-        showToast('Akses ditolak: Anda hanya memiliki hak memantau.', 'warning');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah data.', 'warning');
         return;
     }
     try {
@@ -714,7 +718,7 @@ function filterArsipBoyongTable() {
 
 function reaktivasiSantriDariArsip(id, nama) {
     if (Auth.isReadOnly()) {
-        showToast('Akses ditolak: Anda hanya memiliki hak memantau.', 'warning');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah data.', 'warning');
         return;
     }
     try {
@@ -873,7 +877,7 @@ function renderBukuKasTable() {
 
 function tambahBukuKas() {
     if (Auth.isReadOnly()) {
-        showToast('Akses ditolak: Anda hanya memiliki hak memantau.', 'warning');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah data.', 'warning');
         return;
     }
     const tanggal = document.getElementById('bk-tanggal').value;
@@ -1034,7 +1038,7 @@ function renderPinjamanTable() {
 
 function tambahPinjaman() {
     if (Auth.isReadOnly()) {
-        showToast('Akses ditolak: Anda hanya memiliki hak memantau.', 'warning');
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah data.', 'warning');
         return;
     }
     const tanggal   = document.getElementById('pj-tanggal').value;
@@ -1271,10 +1275,6 @@ function openModalCetakLPJ() {
 // BACKUP & RESTORE JSON
 // ============================================================
 function openModalBackup() {
-    if (!Auth.isBendaharaUtama()) {
-        showToast('Akses ditolak: Hanya Bendahara Utama yang berhak mencadangkan/memulihkan data!', 'error');
-        return;
-    }
     openModal('modal-backup');
 }
 
@@ -1288,6 +1288,11 @@ function eksporDataJSON() {
 }
 
 function imporDataJSON(e) {
+    if (!Auth.isBendaharaUtama()) {
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk memulihkan cadangan data.', 'warning');
+        if (e && e.target) e.target.value = '';
+        return;
+    }
     const file = e.target.files[0];
     if (!file) return;
 
@@ -1311,6 +1316,10 @@ function imporDataJSON(e) {
 }
 
 function resetDataKeAwal() {
+    if (!Auth.isBendaharaUtama()) {
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mereset database.', 'warning');
+        return;
+    }
     document.getElementById('confirm-message').textContent = 'PERINGATAN: Apakah Anda yakin ingin mereset seluruh data kembali ke setelan pabrik? Seluruh perubahan baru akan hilang.';
     const btn = document.getElementById('confirm-btn');
     btn.onclick = () => {

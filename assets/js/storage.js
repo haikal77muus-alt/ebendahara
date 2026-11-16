@@ -27,6 +27,9 @@ const DEFAULT_SANTRI_TEMPLATE = [
 
 // Seed Data Awal jika database masih baru/kosong
 const DEFAULT_SEED_DATA = {
+    settings: {
+        edit_pin: '1234'
+    },
     users: [
         { id: 1, nama: 'Ustadzah Siti Aisyah', username: 'admin', password: 'admin123', role: 'bendahara_utama' },
         { id: 2, nama: 'Hj. Nurul Hidayah',    username: 'bendahara', password: 'bendahara123', role: 'bendahara_utama' },
@@ -154,6 +157,13 @@ const Storage = {
 
         // Migrasi & Validasi
         let needsSave = false;
+
+        // PENGAMAN PIN KEAMANAN: Pastikan settings.edit_pin selalu tersedia (default '1234')
+        if (!data.settings || typeof data.settings.edit_pin !== 'string' || !data.settings.edit_pin.trim()) {
+            if (!data.settings) data.settings = {};
+            data.settings.edit_pin = '1234';
+            needsSave = true;
+        }
 
         // PENGAMAN: Pastikan akun bawaan (terutama admin) selalu tersedia
         if (!Array.isArray(data.users) || data.users.length === 0) {
@@ -881,6 +891,22 @@ const Storage = {
     },
 
     // ========================================================
+    // PENGATURAN KEAMANAN (PIN MODE EDIT)
+    // ========================================================
+    getEditPin() {
+        const db = this.getData();
+        return (db.settings && db.settings.edit_pin) ? db.settings.edit_pin : '1234';
+    },
+
+    setEditPin(newPin) {
+        const db = this.getData();
+        if (!db.settings) db.settings = {};
+        db.settings.edit_pin = (newPin || '').trim() || '1234';
+        this.saveData(db);
+        return db.settings.edit_pin;
+    },
+
+    // ========================================================
     // BACKUP & RESTORE JSON
     // ========================================================
     exportBackupJSON() {
@@ -903,9 +929,10 @@ const Storage = {
         try {
             const parsed = JSON.parse(jsonStr);
             // Validasi skema dasar
-            if (!parsed.users || !parsed.periode || !parsed.master_santri || !parsed.buku_kas || !parsed.pinjaman) {
+            if (!parsed.periode || !parsed.buku_kas || !parsed.pinjaman) {
                 throw new Error('Format file backup tidak valid atau tidak lengkap!');
             }
+            if (!parsed.settings) parsed.settings = { edit_pin: '1234' };
             this.saveData(parsed);
             return true;
         } catch (e) {
