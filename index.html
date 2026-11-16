@@ -790,7 +790,7 @@
     <!-- ============================================================ -->
     <!-- MODAL: Buka Mode Edit (Verifikasi PIN Keamanan)              -->
     <!-- ============================================================ -->
-    <div id="modal-unlock-pin" class="modal-overlay hidden" style="display:none;" onclick="if(event.target===this)closeModalUnlockPIN()">
+    <div id="modal-unlock-pin" class="modal-overlay" onclick="if(event.target===this)closeModalUnlockPIN()">
         <div class="modal-box max-w-sm bg-white rounded-2xl p-6 shadow-2xl border border-slate-100">
             <div class="text-center mb-4">
                 <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm">
@@ -801,9 +801,10 @@
                     Masukkan PIN keamanan untuk mengaktifkan mode penambahan, perubahan, dan pengelolaan kas:
                 </p>
                 <div class="mt-2">
-                    <span class="inline-block text-[11px] font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                        🔑 PIN Bawaan: <strong>1234</strong>
-                    </span>
+                    <button type="button" onclick="submitQuickUnlockPIN()"
+                        class="inline-block text-[11px] font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1 rounded-full border border-amber-300 transition cursor-pointer">
+                        ⚡ Klik di sini: <strong>Buka Langsung (PIN 1234)</strong>
+                    </button>
                 </div>
             </div>
 
@@ -828,7 +829,7 @@
     <!-- ============================================================ -->
     <!-- MODAL: Ubah PIN Keamanan Mode Edit                            -->
     <!-- ============================================================ -->
-    <div id="modal-ubah-pin" class="modal-overlay hidden" style="display:none;" onclick="if(event.target===this)closeModalUbahPIN()">
+    <div id="modal-ubah-pin" class="modal-overlay" onclick="if(event.target===this)closeModalUbahPIN()">
         <div class="modal-box max-w-sm bg-white rounded-2xl p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">

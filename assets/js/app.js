@@ -107,12 +107,17 @@ function showToast(message, type = 'success') {
 // ============================================================
 function openModal(id) {
     const el = document.getElementById(id);
-    if (el) el.classList.add('show');
+    if (el) {
+        el.classList.remove('hidden');
+        el.classList.add('show');
+    }
 }
 
 function closeModal(id) {
     const el = document.getElementById(id);
-    if (el) el.classList.remove('show');
+    if (el) {
+        el.classList.remove('show');
+    }
 }
 
 // ============================================================
