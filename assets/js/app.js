@@ -24,7 +24,7 @@ let currentCicilSisa = 0;
 // ============================================================
 function renderIcons() {
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        try { renderIcons(); } catch (e) { console.warn('[Lucide] Error:', e); }
+        try { lucide.createIcons(); } catch (e) { console.warn('[Lucide] Error:', e); }
     }
 }
 
@@ -442,12 +442,15 @@ function renderMatriksTable() {
     const bulanOrder = getBulanOrder(matriksTipeBulan);
     const thead = document.getElementById('matriks-thead');
     const tbody = document.getElementById('matriks-tbody');
+    const tarif = parseFloat(document.getElementById('calc-tarif')?.value) || 10000;
 
     // Header Kolom
     let headerHTML = '<tr><th class="col-no">No</th><th class="col-nama">Nama Santri</th>';
     bulanOrder.forEach(b => {
         headerHTML += `<th>${getBulanShort(b)}</th>`;
     });
+    // Kolom Tunggakan setelah bulan terakhir, sebelum Aksi
+    headerHTML += '<th class="col-tunggakan">Tunggakan</th>';
     if (!Auth.isReadOnly()) {
         headerHTML += '<th class="no-print col-aksi">Aksi</th>';
     }
@@ -455,13 +458,16 @@ function renderMatriksTable() {
     thead.innerHTML = headerHTML;
 
     // Body
+    const totalCols = bulanOrder.length + (Auth.isReadOnly() ? 3 : 4);
     if (matriksData.length === 0) {
-        const spanCols = bulanOrder.length + (Auth.isReadOnly() ? 2 : 3);
-        tbody.innerHTML = `<tr><td colspan="${spanCols}" class="py-8 text-center text-slate-400 text-sm">Belum ada data santri aktif. Tambahkan santri baru di form atas.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${totalCols}" class="py-8 text-center text-slate-400 text-sm">Belum ada data santri aktif. Tambahkan santri baru di form atas.</td></tr>`;
         return;
     }
 
     let bodyHTML = '';
+    let totalTunggakanAll = 0;
+    let totalBulanBelumAll = 0;
+
     matriksData.forEach((s, idx) => {
         const isBoyong = (s.is_active === 0);
         const rowClass = isBoyong ? 'row-boyong' : '';
@@ -474,7 +480,9 @@ function renderMatriksTable() {
             </div>
             ${s.kamar_kelas ? `<span class="block text-[10px] ${isBoyong ? 'text-slate-400' : 'text-slate-500'} font-normal">${escHtml(s.kamar_kelas)}</span>` : ''}
         </td>`;
-        
+
+        // Hitung tunggakan personal per-santri (hanya status 'belum' yang dihitung)
+        let bulanBelum = 0;
         bulanOrder.forEach(b => {
             const st = (s.status && s.status[b]) ? s.status[b] : 'kosong';
             const label = st === 'sudah' ? 'Sudah' : (st === 'belum' ? 'Blom' : '-');
@@ -482,7 +490,26 @@ function renderMatriksTable() {
                 ? `onclick="showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah status kas.', 'warning')"`
                 : `onclick="toggleStatus(${s.id}, ${b}, '${st}')"`;
             bodyHTML += `<td class="status-cell status-${st}" ${clickAttr} title="Klik untuk mengubah status">${label}</td>`;
+
+            // Hitung bulan 'belum' untuk tunggakan (hanya santri aktif)
+            if (!isBoyong && st === 'belum') {
+                bulanBelum++;
+            }
         });
+
+        // Kolom Tunggakan personal
+        if (isBoyong) {
+            bodyHTML += `<td class="col-tunggakan text-center text-xs text-slate-400 italic">Rp 0 <span class="block text-[10px]">(Boyong)</span></td>`;
+        } else {
+            const tunggakan = bulanBelum * tarif;
+            totalTunggakanAll += tunggakan;
+            totalBulanBelumAll += bulanBelum;
+            if (bulanBelum === 0) {
+                bodyHTML += `<td class="col-tunggakan text-center text-xs text-emerald-600 font-semibold">Rp 0 <span class="block text-[10px]">✓ Lunas</span></td>`;
+            } else {
+                bodyHTML += `<td class="col-tunggakan text-center text-xs text-rose-600 font-bold">${formatRp(tunggakan)} <span class="block text-[10px] font-normal text-rose-500">${bulanBelum} bln belum</span></td>`;
+            }
+        }
 
         if (!Auth.isReadOnly()) {
             bodyHTML += `<td class="no-print col-aksi">
@@ -498,6 +525,19 @@ function renderMatriksTable() {
         }
         bodyHTML += '</tr>';
     });
+
+    // Footer subtotal tunggakan keseluruhan santri aktif
+    const activeSantriCount = matriksData.filter(s => s.is_active === 1).length;
+    bodyHTML += `<tr class="bg-slate-50 border-t-2 border-slate-300 font-semibold">
+        <td colspan="${bulanOrder.length + 2}" class="text-right text-xs text-slate-600 py-2.5 px-3">
+            Total Tunggakan ${activeSantriCount} Santri Aktif (${totalBulanBelumAll} bulan belum):
+        </td>
+        <td class="text-center text-sm font-bold ${totalTunggakanAll > 0 ? 'text-rose-700 bg-rose-50' : 'text-emerald-700 bg-emerald-50'} py-2.5 rounded">
+            ${totalTunggakanAll > 0 ? formatRp(totalTunggakanAll) : 'Rp 0 ✓'}
+        </td>
+        ${!Auth.isReadOnly() ? '<td class="no-print col-aksi"></td>' : ''}
+    </tr>`;
+
     tbody.innerHTML = bodyHTML;
     renderIcons();
 }
@@ -1479,13 +1519,53 @@ function syncLocalToCloudNow() {
 // AUTO REALTIME SYNC LISTENER
 // ============================================================
 Storage.subscribe(() => {
+    // 1. Terapkan hak akses & status gembok yang tersinkron dari cloud
+    if (typeof Auth !== 'undefined' && Auth.applyUIPermissions) {
+        Auth.applyUIPermissions();
+    }
+
+    // 2. Refresh dropdown periode jika ada penambahan/perubahan periode dari perangkat lain
+    if (typeof Storage !== 'undefined' && typeof renderPeriodeDropdown === 'function') {
+        periodeList = Storage.getPeriodes();
+        const sel = document.getElementById('periode-select');
+        if (sel) {
+            const currentSelected = activePeriodeId;
+            sel.innerHTML = '';
+            periodeList.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.nama_periode;
+                if (p.is_active === 1) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            if (currentSelected && periodeList.some(p => p.id === currentSelected)) {
+                activePeriodeId = currentSelected;
+                sel.value = activePeriodeId;
+            } else {
+                const active = Storage.getActivePeriode();
+                activePeriodeId = active ? active.id : (periodeList[0]?.id || null);
+                if (activePeriodeId) sel.value = activePeriodeId;
+            }
+        }
+    }
+
     updateBoyongCountBadge();
-    // Render ulang tab aktif jika ada perubahan dari cloud atau perangkat lain
+
+    // 3. Render ulang tab aktif jika ada perubahan dari cloud atau perangkat lain
     if (currentTab === 'dashboard') loadDashboard();
     else if (currentTab === 'matriks') loadMatriks();
     else if (currentTab === 'bukukas') loadBukuKas();
     else if (currentTab === 'pinjaman') loadPinjaman();
 });
+
+// Alias method global
+window.quickAddSantri = function(nama, kamar) {
+    if (nama && typeof Storage !== 'undefined') {
+        return Storage.addSantri({ nama_santri: nama, kamar_kelas: kamar || '' }, activePeriodeId);
+    }
+    return tambahSantri();
+};
+window.submitPeriodeBaru = simpanPeriodeBaru;
 
 // ============================================================
 // INISIALISASI HALAMAN

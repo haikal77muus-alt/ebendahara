@@ -295,7 +295,7 @@
                         <div>
                             <label class="text-xs font-medium text-slate-500 block mb-1">Tarif Kas (Rp)</label>
                             <input type="number" id="calc-tarif" class="quick-input text-sm w-32" value="10000"
-                                onchange="hitungCekFisik()" oninput="hitungCekFisik()">
+                                onchange="hitungCekFisik(); renderMatriksTable()" oninput="hitungCekFisik()">
                         </div>
                         <div class="flex-1 min-w-[260px]">
                             <div id="calc-result"

@@ -27,6 +27,30 @@ const FIREBASE_CONFIG_DEFAULT = {
     appId: "1:1022493731526:web:b3aeb45df9c62a3ed705c7"
 };
 
+/**
+ * Firebase Realtime Database mengubah array JavaScript menjadi objek dengan kunci numerik (0,1,2,...).
+ * Saat data dibaca kembali, snapshot.val() KADANG mengembalikan objek bukan array.
+ * Fungsi ini mengonversi kembali objek-objek tersebut menjadi array yang valid secara rekursif.
+ */
+function sanitizeFirebaseData(data) {
+    if (data === null || data === undefined || typeof data !== 'object') return data;
+    if (Array.isArray(data)) return data.map(item => sanitizeFirebaseData(item));
+
+    const keys = Object.keys(data);
+    // Cek apakah objek ini seharusnya array (semua kunci = integer berurutan dari 0)
+    const isArrayLike = keys.length > 0 && keys.every((k, i) => String(i) === k);
+
+    if (isArrayLike) {
+        return keys.map(k => sanitizeFirebaseData(data[k]));
+    }
+
+    const result = {};
+    for (const key of keys) {
+        result[key] = sanitizeFirebaseData(data[key]);
+    }
+    return result;
+}
+
 const FirebaseSync = {
     app: null,
     db: null,
@@ -109,7 +133,10 @@ const FirebaseSync = {
                     if (!settled) {
                         settled = true;
                         clearTimeout(timer);
-                        const cloudData = snapshot.val();
+                        let cloudData = snapshot.val();
+                        if (cloudData && typeof cloudData === 'object') {
+                            cloudData = sanitizeFirebaseData(cloudData);
+                        }
                         if (cloudData && typeof cloudData === 'object' && Array.isArray(cloudData.periode)) {
                             if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
                                 Storage.saveLocalOnly(cloudData);
@@ -287,9 +314,12 @@ const FirebaseSync = {
 
             // Pasang Real-Time Listener
             this.ref.on('value', snapshot => {
-                const cloudData = snapshot.val();
+                let cloudData = snapshot.val();
                 if (this.isWritingRemote) return; // Hindari loop feedback saat sedang menulis
 
+                if (cloudData && typeof cloudData === 'object') {
+                    cloudData = sanitizeFirebaseData(cloudData);
+                }
                 if (cloudData && typeof cloudData === 'object' && Array.isArray(cloudData.periode)) {
                     // Update cache lokal dan beritahu aplikasi
                     if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {

@@ -28,7 +28,8 @@ const DEFAULT_SANTRI_TEMPLATE = [
 // Seed Data Awal jika database masih baru/kosong
 const DEFAULT_SEED_DATA = {
     settings: {
-        edit_pin: '1234'
+        edit_pin: '1234',
+        is_locked: false
     },
     users: [
         { id: 1, nama: 'Ustadzah Siti Aisyah', username: 'admin', password: 'admin123', role: 'bendahara_utama' },
@@ -162,6 +163,12 @@ const Storage = {
         if (!data.settings || typeof data.settings.edit_pin !== 'string' || !data.settings.edit_pin.trim()) {
             if (!data.settings) data.settings = {};
             data.settings.edit_pin = '1234';
+            needsSave = true;
+        }
+
+        // PENGAMAN: Pastikan settings.is_locked tersedia (default false)
+        if (data.settings && typeof data.settings.is_locked === 'undefined') {
+            data.settings.is_locked = false;
             needsSave = true;
         }
 
@@ -911,6 +918,31 @@ const Storage = {
         return db.settings.edit_pin;
     },
 
+    /**
+     * Status Kunci Tampilan (isLocked) — disinkronkan ke Firebase Cloud
+     * agar saat dikunci di 1 perangkat, semua perangkat lain ikut terkunci
+     */
+    getLockState() {
+        const db = this.getData();
+        return !!(db.settings && db.settings.is_locked);
+    },
+
+    setLockState(locked) {
+        const db = this.getData();
+        if (!db.settings) db.settings = {};
+        db.settings.is_locked = !!locked;
+        this.saveData(db);
+        return db.settings.is_locked;
+    },
+
+    isLocked() {
+        return this.getLockState();
+    },
+
+    setLocked(locked) {
+        return this.setLockState(locked);
+    },
+
     // ========================================================
     // BACKUP & RESTORE JSON
     // ========================================================
@@ -954,9 +986,26 @@ const Storage = {
 // Hubungkan ke listener FirebaseSync jika tersedia
 if (typeof FirebaseSync !== 'undefined' && FirebaseSync.onDataChange) {
     FirebaseSync.onDataChange((cloudData) => {
-        Storage.saveLocalOnly(cloudData);
+        // Data sudah di-save ke localStorage oleh listener .on('value') di firebase-config.js
+        // Di sini cukup periksa apakah status kunci (is_locked) berubah dari cloud
+        // dan terapkan ke UI agar semua device sinkron
+        if (cloudData && cloudData.settings && typeof Auth !== 'undefined' && Auth.applyUIPermissions) {
+            Auth.applyUIPermissions();
+        }
     });
 }
 
 // Pastikan storage diinisialisasi saat skrip dimuat
 Storage.init();
+
+// Alias StorageManager untuk interoperabilitas & akses state yang tersinkron ke cloud
+window.StorageManager = Storage;
+try {
+    Object.defineProperty(Storage, 'state', {
+        get() { return this.getData(); },
+        set(val) { this.saveData(val); },
+        configurable: true
+    });
+} catch (e) {
+    Storage.state = Storage.getData();
+}

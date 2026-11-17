@@ -150,6 +150,11 @@ body {
     box-shadow: 2px 0 5px -2px rgba(0,0,0,0.3);
 }
 
+.col-tunggakan {
+    min-width: 110px;
+    text-align: center;
+}
+
 /* Status cells */
 .status-cell {
     cursor: pointer;

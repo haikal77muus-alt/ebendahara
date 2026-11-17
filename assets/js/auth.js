@@ -17,6 +17,11 @@ const Auth = {
      */
     isEditMode() {
         try {
+            // Prioritas: baca dari Storage (tersinkron ke Firebase Cloud)
+            if (typeof Storage !== 'undefined' && Storage.getLockState) {
+                return !Storage.getLockState();
+            }
+            // Fallback: localStorage lama
             const val = localStorage.getItem(EDIT_MODE_KEY);
             return val !== 'false';
         } catch (e) {
@@ -29,6 +34,10 @@ const Auth = {
      */
     setEditMode(enabled) {
         try {
+            // Simpan ke Storage → otomatis sync ke Firebase Cloud (semua device ikut)
+            if (typeof Storage !== 'undefined' && Storage.setLockState) {
+                Storage.setLockState(!enabled);
+            }
             localStorage.setItem(EDIT_MODE_KEY, enabled ? 'true' : 'false');
         } catch (e) {
             console.warn('[Auth] Gagal menyimpan status sesi:', e);
