@@ -125,7 +125,7 @@ function closeModal(id) {
 // ============================================================
 const TAB_TITLES = {
     dashboard: { icon: 'layout-dashboard', text: 'Dashboard Ringkasan Kas' },
-    matriks:   { icon: 'grid-3x3',         text: 'Matriks Kas Bulanan' },
+    matriks:   { icon: 'grid-3x3',         text: 'Kas Santri Bulanan' },
     bukukas:   { icon: 'book-open',        text: 'Buku Kas Umum' },
     pinjaman:  { icon: 'hand-coins',       text: 'Pinjaman / Kasbon' }
 };

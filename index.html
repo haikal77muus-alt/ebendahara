@@ -18,16 +18,16 @@
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=2.2_tunggakan">
+    <link rel="stylesheet" href="assets/css/style.css?v=2.3_kassantri">
 
     <!-- Firebase SDK CDN (Compat) untuk Sinkronisasi Cloud Realtime Lintas Perangkat -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <!-- Konfigurasi Firebase, Storage Engine, & Keamanan Ber-PIN -->
-    <script src="assets/js/firebase-config.js?v=2.2_tunggakan"></script>
-    <script src="assets/js/storage.js?v=2.2_tunggakan"></script>
-    <script src="assets/js/auth.js?v=2.2_tunggakan"></script>
+    <script src="assets/js/firebase-config.js?v=2.3_kassantri"></script>
+    <script src="assets/js/storage.js?v=2.3_kassantri"></script>
+    <script src="assets/js/auth.js?v=2.3_kassantri"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-800">
@@ -66,7 +66,7 @@
                 <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
                     data-tab="matriks" onclick="switchTab('matriks')">
                     <i data-lucide="grid-3x3" class="w-4 h-4"></i>
-                    <span class="hidden md:inline">Matriks Kas</span>
+                    <span class="hidden md:inline">Kas Santri</span>
                 </button>
                 <button class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
                     data-tab="bukukas" onclick="switchTab('bukukas')">
@@ -599,7 +599,7 @@
                     </p>
                     <p>
                         Menghapus periode ini akan <strong>menghapus permanen seluruh catatan Buku Kas Umum, catatan
-                            iuran bulanan Matriks Kas, dan data Pinjaman</strong> yang terdaftar pada periode tersebut.
+                            iuran bulanan Kas Santri, dan data Pinjaman</strong> yang terdaftar pada periode tersebut.
                     </p>
                     <p class="text-slate-500 italic mt-1">
                         *Master Data Santri tetap aman dan tidak akan terhapus.
@@ -727,7 +727,7 @@
                 </button>
             </div>
             <p class="text-xs text-slate-500 mb-4">
-                Santri berstatus <strong>Aktif</strong> otomatis tampil pada matriks kas di seluruh tahun ajaran. Ubah
+                Santri berstatus <strong>Aktif</strong> otomatis tampil pada Kas Santri di seluruh tahun ajaran. Ubah
                 status menjadi <strong>Lulus/Boyong</strong> untuk menonaktifkan tanpa menghapus riwayat masa lalu.
             </p>
 
@@ -972,7 +972,7 @@
 
             <p class="text-xs text-slate-500 mb-4 leading-relaxed">
                 Hubungkan E-Bendahara ke <strong>Firebase Realtime Database</strong> (100% Gratis dari Google) agar
-                seluruh data kas, matriks, buku kas, dan pinjaman otomatis sinkron secara <em>real-time</em> di seluruh
+                seluruh data kas, kas santri, buku kas, dan pinjaman otomatis sinkron secara <em>real-time</em> di seluruh
                 HP dan laptop pengurus tanpa mengulang dari awal saat berganti perangkat.
             </p>
 
@@ -1185,7 +1185,7 @@
     </div>
 
     <!-- Application Core Scripts -->
-    <script src="assets/js/app.js?v=2.2_tunggakan"></script>
+    <script src="assets/js/app.js?v=2.3_kassantri"></script>
 </body>
 
 </html>
