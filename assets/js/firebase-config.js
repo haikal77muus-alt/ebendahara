@@ -18,13 +18,13 @@ const FIREBASE_DB_ROOT = 'ebendahara_database';
  * tanpa perlu mengedit kode sumber secara manual!
  */
 const FIREBASE_CONFIG_DEFAULT = {
-    apiKey: "",
-    authDomain: "",
-    databaseURL: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyAYKn6jqaBOsbDTUyIVceODpDCRcX0UpYs",
+    authDomain: "e-bendahara-asrama.firebaseapp.com",
+    databaseURL: "https://e-bendahara-asrama-default-rtdb.firebaseio.com",
+    projectId: "e-bendahara-asrama",
+    storageBucket: "e-bendahara-asrama.firebasestorage.app",
+    messagingSenderId: "1022493731526",
+    appId: "1:1022493731526:web:b3aeb45df9c62a3ed705c7"
 };
 
 const FirebaseSync = {
