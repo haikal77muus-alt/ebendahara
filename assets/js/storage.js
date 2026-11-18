@@ -9,6 +9,7 @@
  */
 
 const STORAGE_KEY = 'ebendahara_database_v1';
+window.STORAGE_KEY = STORAGE_KEY;
 
 // Template Santri Awal
 const DEFAULT_SANTRI_TEMPLATE = [
@@ -108,6 +109,70 @@ const DEFAULT_SEED_DATA = {
         { id: 3, periode_id: 2, tanggal: '2026-10-25', nama_peminjam: 'Pak Sulaiman', keperluan: 'Perbaikan pipa air kamar mandi', total_ambil: 100000, total_kembali: 0, tgl_kembali: null, tanda_bukti: 'Nota' }
     ]
 };
+
+/**
+ * Helper untuk menentukan ranking urutan kelas dari SD Kelas 1 hingga SMA Kelas 12
+ * SD (Kelas 1-6)      -> Rank 101 s.d. 106
+ * SMP/MTs (Kelas 7-9) -> Rank 207 s.d. 209 (atau 1 SMP -> 207, 2 SMP -> 208, 3 SMP -> 209)
+ * SMA/MA (Kelas 10-12)-> Rank 310 s.d. 312 (atau 1 SMA -> 310, 2 SMA -> 311, 3 SMA -> 312)
+ */
+function parseKelasRank(rawText) {
+    if (!rawText) return 9000;
+    const s = String(rawText).toLowerCase().trim();
+
+    const isSD = /\b(sd|mi|ibtidaiyah)\b/.test(s);
+    const isSMP = /\b(smp|mts|tsanawiyah)\b/.test(s);
+    const isSMA = /\b(sma|ma|smk|aliyah)\b/.test(s);
+
+    let angka = null;
+
+    // Romawi XII, XI, X, IX, VIII, VII, VI, V, IV, III, II, I
+    if (/\b(xii)\b/.test(s)) angka = 12;
+    else if (/\b(xi)\b/.test(s)) angka = 11;
+    else if (/\b(x)\b/.test(s)) angka = 10;
+    else if (/\b(ix)\b/.test(s)) angka = 9;
+    else if (/\b(viii)\b/.test(s)) angka = 8;
+    else if (/\b(vii)\b/.test(s)) angka = 7;
+    else if (/\b(vi)\b/.test(s)) angka = 6;
+    else if (/\b(v)\b/.test(s)) angka = 5;
+    else if (/\b(iv)\b/.test(s)) angka = 4;
+    else if (/\b(iii)\b/.test(s)) angka = 3;
+    else if (/\b(ii)\b/.test(s)) angka = 2;
+    else if (/\b(i)\b/.test(s)) angka = 1;
+
+    // Angka 1 s/d 12
+    if (angka === null) {
+        const m = s.match(/\b([1-9]|1[0-2])\b/);
+        if (m) angka = parseInt(m[1], 10);
+    }
+
+    if (isSD) {
+        const k = (angka && angka >= 1 && angka <= 6) ? angka : 1;
+        return 100 + k;
+    }
+
+    if (isSMP) {
+        if (angka && angka >= 7 && angka <= 9) return 200 + angka;
+        if (angka && angka >= 1 && angka <= 3) return 200 + (angka + 6); // 1 SMP -> 7
+        return 207;
+    }
+
+    if (isSMA) {
+        if (angka && angka >= 10 && angka <= 12) return 300 + angka;
+        if (angka && angka >= 1 && angka <= 3) return 300 + (angka + 9); // 1 SMA -> 10
+        return 310;
+    }
+
+    // Angka eksplisit tanpa label jenjang
+    if (angka !== null) {
+        if (angka >= 1 && angka <= 6) return 100 + angka; // Asumsi SD 1-6
+        if (angka >= 7 && angka <= 9) return 200 + angka; // Asumsi SMP 7-9
+        if (angka >= 10 && angka <= 12) return 300 + angka; // Asumsi SMA 10-12
+    }
+
+    return 9000;
+}
+window.parseKelasRank = parseKelasRank;
 
 const Storage = {
     subscribers: [],
@@ -499,7 +564,9 @@ const Storage = {
 
         return targetPeriode.santri_list.sort((a, b) => 
             (b.is_active - a.is_active) || 
+            (parseKelasRank(a.kamar_kelas) - parseKelasRank(b.kamar_kelas)) ||
             ((a.urutan || 0) - (b.urutan || 0)) || 
+            (a.nama_santri || '').localeCompare(b.nama_santri || '', 'id') ||
             (a.id - b.id)
         );
     },

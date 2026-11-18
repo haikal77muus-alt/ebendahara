@@ -438,6 +438,25 @@ function loadMatriks() {
     hitungCekFisik();
 }
 
+let matriksSearchQuery = '';
+
+function filterMatriksSantri() {
+    const input = document.getElementById('matriks-search-input');
+    const clearBtn = document.getElementById('btn-clear-search-matriks');
+    matriksSearchQuery = (input?.value || '').trim().toLowerCase();
+    if (clearBtn) {
+        clearBtn.style.display = matriksSearchQuery ? 'inline-flex' : 'none';
+    }
+    renderMatriksTable();
+}
+
+function clearMatriksSearch() {
+    const input = document.getElementById('matriks-search-input');
+    if (input) input.value = '';
+    filterMatriksSantri();
+    if (input) input.focus();
+}
+
 function renderMatriksTable() {
     const bulanOrder = getBulanOrder(matriksTipeBulan);
     const thead = document.getElementById('matriks-thead');
@@ -457,10 +476,27 @@ function renderMatriksTable() {
     headerHTML += '</tr>';
     thead.innerHTML = headerHTML;
 
+    // Filter pencarian santri jika input terisi
+    let displayList = matriksData || [];
+    if (matriksSearchQuery) {
+        displayList = displayList.filter(s =>
+            (s.nama_santri && s.nama_santri.toLowerCase().includes(matriksSearchQuery)) ||
+            (s.kamar_kelas && s.kamar_kelas.toLowerCase().includes(matriksSearchQuery))
+        );
+    }
+
+    const countDisplay = document.getElementById('matriks-count-display');
+    if (countDisplay) {
+        countDisplay.textContent = displayList.length;
+    }
+
     // Body
     const totalCols = bulanOrder.length + (Auth.isReadOnly() ? 3 : 4);
-    if (matriksData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${totalCols}" class="py-8 text-center text-slate-400 text-sm">Belum ada data santri aktif. Tambahkan santri baru di form atas.</td></tr>`;
+    if (displayList.length === 0) {
+        const msg = matriksSearchQuery 
+            ? `Tidak ada santri yang cocok dengan kata kunci "${escHtml(matriksSearchQuery)}".`
+            : `Belum ada data santri aktif. Tambahkan santri baru di form atas.`;
+        tbody.innerHTML = `<tr><td colspan="${totalCols}" class="py-8 text-center text-slate-400 text-sm">${msg}</td></tr>`;
         return;
     }
 
@@ -468,7 +504,7 @@ function renderMatriksTable() {
     let totalTunggakanAll = 0;
     let totalBulanBelumAll = 0;
 
-    matriksData.forEach((s, idx) => {
+    displayList.forEach((s, idx) => {
         const isBoyong = (s.is_active === 0);
         const rowClass = isBoyong ? 'row-boyong' : '';
         bodyHTML += `<tr class="${rowClass}">`;
@@ -527,7 +563,7 @@ function renderMatriksTable() {
     });
 
     // Footer subtotal tunggakan keseluruhan santri aktif
-    const activeSantriCount = matriksData.filter(s => s.is_active === 1).length;
+    const activeSantriCount = displayList.filter(s => s.is_active === 1).length;
     bodyHTML += `<tr class="bg-slate-50 border-t-2 border-slate-300 font-semibold">
         <td colspan="${bulanOrder.length + 2}" class="text-right text-xs text-slate-600 py-2.5 px-3">
             Total Tunggakan ${activeSantriCount} Santri Aktif (${totalBulanBelumAll} bulan belum):

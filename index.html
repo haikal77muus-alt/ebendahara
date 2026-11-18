@@ -18,16 +18,16 @@
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=2.4_fixpin">
+    <link rel="stylesheet" href="assets/css/style.css?v=2.5_sortfilter">
 
     <!-- Firebase SDK CDN (Compat) untuk Sinkronisasi Cloud Realtime Lintas Perangkat -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <!-- Konfigurasi Firebase, Storage Engine, & Keamanan Ber-PIN -->
-    <script src="assets/js/firebase-config.js?v=2.4_fixpin"></script>
-    <script src="assets/js/storage.js?v=2.4_fixpin"></script>
-    <script src="assets/js/auth.js?v=2.4_fixpin"></script>
+    <script src="assets/js/firebase-config.js?v=2.5_sortfilter"></script>
+    <script src="assets/js/storage.js?v=2.5_sortfilter"></script>
+    <script src="assets/js/auth.js?v=2.5_sortfilter"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-800">
@@ -373,6 +373,28 @@
                         Santri baru otomatis ditambahkan ke periode aktif ini dan periode berikutnya, tanpa mengubah
                         riwayat periode terdahulu.
                     </p>
+                </div>
+            </div>
+
+            <!-- Filter Pencarian Santri & Indikator Urutan Kelas -->
+            <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm mb-4 flex items-center justify-between gap-3 flex-wrap">
+                <div class="flex items-center gap-2 flex-1 min-w-[260px]">
+                    <div class="relative w-full max-w-sm">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="matriks-search-input" class="quick-input text-xs pl-9 pr-8 w-full"
+                            placeholder="Cari nama santri atau kelas/kamar..." oninput="filterMatriksSantri()">
+                        <button type="button" id="btn-clear-search-matriks" onclick="clearMatriksSearch()"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden" title="Hapus pencarian">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-500 font-medium flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md text-[11px] font-semibold border border-slate-200">
+                        <i data-lucide="arrow-down-narrow-wide" class="w-3.5 h-3.5 text-blue-600"></i>
+                        Urut: SD (1-6) ➔ SMP (7-9) ➔ SMA (10-12)
+                    </span>
+                    <span>Menampilkan: <strong id="matriks-count-display" class="text-slate-800">0</strong> santri</span>
                 </div>
             </div>
 
@@ -1202,7 +1224,7 @@
         </div>
 
         <!-- Application Core Scripts -->
-        <script src="assets/js/app.js?v=2.4_fixpin"></script>
+        <script src="assets/js/app.js?v=2.5_sortfilter"></script>
 </body>
 
 </html>
