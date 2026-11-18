@@ -517,7 +517,7 @@ function renderMatriksTable() {
             ${s.kamar_kelas ? `<span class="block text-[10px] ${isBoyong ? 'text-slate-400' : 'text-slate-500'} font-normal">${escHtml(s.kamar_kelas)}</span>` : ''}
         </td>`;
 
-        // Hitung tunggakan personal per-santri (hanya status 'belum' yang dihitung)
+        // Hitung tunggakan personal per-santri (semua yang BUKAN 'sudah' dihitung tunggakan)
         let bulanBelum = 0;
         bulanOrder.forEach(b => {
             const st = (s.status && s.status[b]) ? s.status[b] : 'kosong';
@@ -527,8 +527,8 @@ function renderMatriksTable() {
                 : `onclick="toggleStatus(${s.id}, ${b}, '${st}')"`;
             bodyHTML += `<td class="status-cell status-${st}" ${clickAttr} title="Klik untuk mengubah status">${label}</td>`;
 
-            // Hitung bulan 'belum' untuk tunggakan (hanya santri aktif)
-            if (!isBoyong && st === 'belum') {
+            // Hitung tunggakan: semua bulan yang BUKAN 'sudah' = tunggakan (baik '-' maupun 'Blom')
+            if (!isBoyong && st !== 'sudah') {
                 bulanBelum++;
             }
         });
