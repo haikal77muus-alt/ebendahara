@@ -11,103 +11,25 @@
 const STORAGE_KEY = 'ebendahara_database_v1';
 window.STORAGE_KEY = STORAGE_KEY;
 
-// Template Santri Awal
-const DEFAULT_SANTRI_TEMPLATE = [
-    { id: 1,  nama_santri: 'Abdullah Faqih',  kamar_kelas: 'Kamar Ali 01',    is_active: 1, urutan: 1, tgl_boyong: null, alasan_boyong: null },
-    { id: 2,  nama_santri: 'Muhammad Rizki',  kamar_kelas: 'Kamar Ali 02',    is_active: 1, urutan: 2, tgl_boyong: null, alasan_boyong: null },
-    { id: 3,  nama_santri: 'Ahmad Zainuddin', kamar_kelas: 'Kamar Umar 01',   is_active: 1, urutan: 3, tgl_boyong: null, alasan_boyong: null },
-    { id: 4,  nama_santri: 'Hasan Al-Bashri', kamar_kelas: 'Kamar Umar 02',   is_active: 1, urutan: 4, tgl_boyong: null, alasan_boyong: null },
-    { id: 5,  nama_santri: 'Umar Faruq',      kamar_kelas: 'Kamar Utsman 01', is_active: 1, urutan: 5, tgl_boyong: null, alasan_boyong: null },
-    { id: 6,  nama_santri: 'Ali Mustofa',     kamar_kelas: 'Kamar Utsman 02', is_active: 1, urutan: 6, tgl_boyong: null, alasan_boyong: null },
-    { id: 7,  nama_santri: 'Bilal Ibrahim',   kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 7, tgl_boyong: null, alasan_boyong: null },
-    { id: 8,  nama_santri: 'Yusuf Hakim',     kamar_kelas: 'Kamar Abu Bakar', is_active: 1, urutan: 8, tgl_boyong: null, alasan_boyong: null },
-    { id: 9,  nama_santri: 'Hamzah Ridwan',   kamar_kelas: 'Kamar Zubair 01', is_active: 1, urutan: 9, tgl_boyong: null, alasan_boyong: null },
-    { id: 10, nama_santri: 'Khalid Walid',    kamar_kelas: 'Kamar Zubair 02', is_active: 1, urutan: 10, tgl_boyong: null, alasan_boyong: null },
-    { id: 11, nama_santri: 'Zaid bin Tsabit', kamar_kelas: 'Kamar Ali 01',    is_active: 0, urutan: 11, tgl_boyong: '2026-06-25', alasan_boyong: 'Lulus Madrasah Aliyah' }
-];
+// Template Santri Awal: Bersih & kosong (tanpa data template / dummy santri)
+const DEFAULT_SANTRI_TEMPLATE = [];
 
-// Seed Data Awal jika database masih baru/kosong
+// Seed Data Awal jika database masih baru/kosong (bersih tanpa dummy santri atau transaksi)
 const DEFAULT_SEED_DATA = {
     settings: {
         edit_pin: '1234',
         is_locked: false
     },
     users: [
-        { id: 1, nama: 'Ustadzah Siti Aisyah', username: 'admin', password: 'admin123', role: 'bendahara_utama' },
-        { id: 2, nama: 'Hj. Nurul Hidayah',    username: 'bendahara', password: 'bendahara123', role: 'bendahara_utama' },
-        { id: 3, nama: 'Ahmad Fauzi',          username: 'sekretaris', password: 'sekretaris123', role: 'sekretaris_kas' },
-        { id: 4, nama: 'K.H. Abdullah Gym',    username: 'pembina', password: 'pembina123', role: 'pembina' }
+        { id: 1, nama: 'Bendahara Asrama', username: 'admin', password: 'admin123', role: 'bendahara_utama' }
     ],
     periode: [
-        { id: 1, nama_periode: 'Tahun Ajaran 2025/2026', tipe_bulan: 'juli_juni', is_active: 0, santri_list: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)) },
-        { id: 2, nama_periode: 'Tahun Ajaran 2026/2027', tipe_bulan: 'juli_juni', is_active: 1, santri_list: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)) },
-        { id: 3, nama_periode: 'Tahun 2025', tipe_bulan: 'januari_desember', is_active: 0, santri_list: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)) }
+        { id: 1, nama_periode: 'Tahun Ajaran 2026/2027', tipe_bulan: 'juli_juni', is_active: 1, santri_list: [] }
     ],
-    master_santri: JSON.parse(JSON.stringify(DEFAULT_SANTRI_TEMPLATE)),
-    matriks_kas_bulanan: [
-        { id: 1,  periode_id: 2, santri_id: 1, bulan: 7, status: 'sudah' },
-        { id: 2,  periode_id: 2, santri_id: 1, bulan: 8, status: 'sudah' },
-        { id: 3,  periode_id: 2, santri_id: 1, bulan: 9, status: 'sudah' },
-        { id: 4,  periode_id: 2, santri_id: 1, bulan: 10, status: 'sudah' },
-        { id: 5,  periode_id: 2, santri_id: 1, bulan: 11, status: 'belum' },
-        { id: 6,  periode_id: 2, santri_id: 2, bulan: 7, status: 'sudah' },
-        { id: 7,  periode_id: 2, santri_id: 2, bulan: 8, status: 'sudah' },
-        { id: 8,  periode_id: 2, santri_id: 2, bulan: 9, status: 'belum' },
-        { id: 9,  periode_id: 2, santri_id: 2, bulan: 10, status: 'sudah' },
-        { id: 10, periode_id: 2, santri_id: 3, bulan: 7, status: 'sudah' },
-        { id: 11, periode_id: 2, santri_id: 3, bulan: 8, status: 'sudah' },
-        { id: 12, periode_id: 2, santri_id: 3, bulan: 9, status: 'sudah' },
-        { id: 13, periode_id: 2, santri_id: 3, bulan: 10, status: 'sudah' },
-        { id: 14, periode_id: 2, santri_id: 3, bulan: 11, status: 'sudah' },
-        { id: 15, periode_id: 2, santri_id: 4, bulan: 7, status: 'sudah' },
-        { id: 16, periode_id: 2, santri_id: 4, bulan: 8, status: 'belum' },
-        { id: 17, periode_id: 2, santri_id: 4, bulan: 9, status: 'sudah' },
-        { id: 18, periode_id: 2, santri_id: 4, bulan: 10, status: 'belum' },
-        { id: 19, periode_id: 2, santri_id: 5, bulan: 7, status: 'sudah' },
-        { id: 20, periode_id: 2, santri_id: 5, bulan: 8, status: 'sudah' },
-        { id: 21, periode_id: 2, santri_id: 5, bulan: 9, status: 'sudah' },
-        { id: 22, periode_id: 2, santri_id: 5, bulan: 10, status: 'sudah' },
-        { id: 23, periode_id: 2, santri_id: 5, bulan: 11, status: 'sudah' },
-        { id: 24, periode_id: 2, santri_id: 6, bulan: 7, status: 'sudah' },
-        { id: 25, periode_id: 2, santri_id: 6, bulan: 8, status: 'sudah' },
-        { id: 26, periode_id: 2, santri_id: 6, bulan: 9, status: 'sudah' },
-        { id: 27, periode_id: 2, santri_id: 6, bulan: 10, status: 'belum' },
-        { id: 28, periode_id: 2, santri_id: 7, bulan: 7, status: 'sudah' },
-        { id: 29, periode_id: 2, santri_id: 7, bulan: 8, status: 'sudah' },
-        { id: 30, periode_id: 2, santri_id: 7, bulan: 9, status: 'sudah' },
-        { id: 31, periode_id: 2, santri_id: 7, bulan: 10, status: 'sudah' },
-        { id: 32, periode_id: 2, santri_id: 7, bulan: 11, status: 'belum' },
-        { id: 33, periode_id: 2, santri_id: 8, bulan: 7, status: 'sudah' },
-        { id: 34, periode_id: 2, santri_id: 8, bulan: 8, status: 'sudah' },
-        { id: 35, periode_id: 2, santri_id: 8, bulan: 9, status: 'belum' },
-        { id: 36, periode_id: 2, santri_id: 8, bulan: 10, status: 'sudah' },
-        { id: 37, periode_id: 2, santri_id: 9, bulan: 7, status: 'sudah' },
-        { id: 38, periode_id: 2, santri_id: 9, bulan: 8, status: 'sudah' },
-        { id: 39, periode_id: 2, santri_id: 9, bulan: 9, status: 'sudah' },
-        { id: 40, periode_id: 2, santri_id: 9, bulan: 10, status: 'sudah' },
-        { id: 41, periode_id: 2, santri_id: 9, bulan: 11, status: 'sudah' },
-        { id: 42, periode_id: 2, santri_id: 10, bulan: 7, status: 'sudah' },
-        { id: 43, periode_id: 2, santri_id: 10, bulan: 8, status: 'belum' },
-        { id: 44, periode_id: 2, santri_id: 10, bulan: 9, status: 'sudah' },
-        { id: 45, periode_id: 2, santri_id: 10, bulan: 10, status: 'sudah' }
-    ],
-    buku_kas: [
-        { id: 1,  periode_id: 2, tanggal: '2026-07-15', nama_barang: 'Saldo Awal', keterangan: 'Saldo pindahan dari periode sebelumnya', debit: 250000, kredit: 0, bukti: '-', urutan: 1 },
-        { id: 2,  periode_id: 2, tanggal: '2026-07-20', nama_barang: 'Iuran Kas Juli', keterangan: 'Setoran kas bulan Juli (8 santri)', debit: 80000, kredit: 0, bukti: 'Buku Kas', urutan: 2 },
-        { id: 3,  periode_id: 2, tanggal: '2026-07-25', nama_barang: 'Sapu Ijuk', keterangan: 'Pembelian 3 sapu ijuk untuk asrama', debit: 0, kredit: 45000, bukti: 'Nota', urutan: 3 },
-        { id: 4,  periode_id: 2, tanggal: '2026-08-05', nama_barang: 'Iuran Kas Agustus', keterangan: 'Setoran kas bulan Agustus (8 santri)', debit: 80000, kredit: 0, bukti: 'Buku Kas', urutan: 4 },
-        { id: 5,  periode_id: 2, tanggal: '2026-08-12', nama_barang: 'Ember & Gayung', keterangan: 'Pembelian perlengkapan mandi asrama', debit: 0, kredit: 35000, bukti: 'Nota', urutan: 5 },
-        { id: 6,  periode_id: 2, tanggal: '2026-09-03', nama_barang: 'Iuran Kas September', keterangan: 'Setoran kas bulan September (7 santri)', debit: 70000, kredit: 0, bukti: 'Buku Kas', urutan: 6 },
-        { id: 7,  periode_id: 2, tanggal: '2026-09-18', nama_barang: 'Deterjen & Pewangi', keterangan: 'Sabun cuci 5 kg + pewangi 2 liter', debit: 0, kredit: 52000, bukti: 'Nota', urutan: 7 },
-        { id: 8,  periode_id: 2, tanggal: '2026-10-02', nama_barang: 'Iuran Kas Oktober', keterangan: 'Setoran kas bulan Oktober (8 santri)', debit: 80000, kredit: 0, bukti: 'Buku Kas', urutan: 8 },
-        { id: 9,  periode_id: 2, tanggal: '2026-10-15', nama_barang: 'Lampu LED', keterangan: 'Penggantian lampu kamar 2 & 3', debit: 0, kredit: 30000, bukti: 'Nota', urutan: 9 },
-        { id: 10, periode_id: 2, tanggal: '2026-11-01', nama_barang: 'Iuran Kas November', keterangan: 'Setoran kas bulan November (5 santri)', debit: 50000, kredit: 0, bukti: 'Buku Kas', urutan: 10 }
-    ],
-    pinjaman: [
-        { id: 1, periode_id: 2, tanggal: '2026-08-20', nama_peminjam: 'Ustadz Mahmud', keperluan: 'Beli tinta printer untuk administrasi', total_ambil: 50000, total_kembali: 50000, tgl_kembali: '2026-09-05', tanda_bukti: 'Kwitansi' },
-        { id: 2, periode_id: 2, tanggal: '2026-09-10', nama_peminjam: 'Bu Fatimah', keperluan: 'Keperluan dapur darurat', total_ambil: 75000, total_kembali: 30000, tgl_kembali: null, tanda_bukti: 'Catatan' },
-        { id: 3, periode_id: 2, tanggal: '2026-10-25', nama_peminjam: 'Pak Sulaiman', keperluan: 'Perbaikan pipa air kamar mandi', total_ambil: 100000, total_kembali: 0, tgl_kembali: null, tanda_bukti: 'Nota' }
-    ]
+    master_santri: [],
+    matriks_kas_bulanan: [],
+    buku_kas: [],
+    pinjaman: []
 };
 
 /**
@@ -208,21 +130,27 @@ const Storage = {
 
         try {
             data = JSON.parse(raw);
-            if (!data || !Array.isArray(data.users) || !Array.isArray(data.periode) || !Array.isArray(data.buku_kas) || !Array.isArray(data.pinjaman)) {
-                console.warn('[Storage] Struktur data tidak lengkap, mereset ke data awal');
+            if (!data || typeof data !== 'object') {
+                console.warn('[Storage] Data rusak atau bukan objek, memasang database awal bersih');
                 data = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA));
                 this.saveLocalOnly(data);
                 return data;
             }
         } catch (e) {
-            console.error('[Storage] Data rusak, mengembalikan ke data awal:', e);
+            console.error('[Storage] Data rusak, mengembalikan ke data awal bersih:', e);
             data = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA));
             this.saveLocalOnly(data);
             return data;
         }
 
-        // Migrasi & Validasi
+        // Migrasi & Validasi aman (memperbaiki tanpa menghapus data pengguna yang valid)
         let needsSave = false;
+
+        // Pastikan seluruh array utama selalu ada
+        if (!Array.isArray(data.buku_kas)) { data.buku_kas = []; needsSave = true; }
+        if (!Array.isArray(data.pinjaman)) { data.pinjaman = []; needsSave = true; }
+        if (!Array.isArray(data.matriks_kas_bulanan)) { data.matriks_kas_bulanan = []; needsSave = true; }
+        if (!Array.isArray(data.master_santri)) { data.master_santri = []; needsSave = true; }
 
         // PENGAMAN PIN KEAMANAN: Pastikan settings.edit_pin selalu tersedia (default '1234')
         if (!data.settings || typeof data.settings.edit_pin !== 'string' || !data.settings.edit_pin.trim()) {
@@ -255,27 +183,19 @@ const Storage = {
             }
         }
 
-        // Manajemen Santri Per-Periode (santri_list tersimpan mandiri di tiap periode)
+        // Manajemen Periode & Santri Per-Periode (santri_list mandiri di tiap periode)
         if (!Array.isArray(data.periode) || data.periode.length === 0) {
             data.periode = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA.periode));
             needsSave = true;
         }
 
-        const fallbackSantri = (Array.isArray(data.master_santri) && data.master_santri.length > 0)
-            ? data.master_santri
-            : DEFAULT_SANTRI_TEMPLATE;
-
+        // Pastikan santri_list di setiap periode bertipe Array tanpa menyisipkan template dummy
         data.periode.forEach(p => {
-            if (!Array.isArray(p.santri_list) || p.santri_list.length === 0) {
-                p.santri_list = JSON.parse(JSON.stringify(fallbackSantri));
+            if (!Array.isArray(p.santri_list)) {
+                p.santri_list = [];
                 needsSave = true;
             }
         });
-
-        if (!Array.isArray(data.master_santri) || data.master_santri.length === 0) {
-            data.master_santri = JSON.parse(JSON.stringify(fallbackSantri));
-            needsSave = true;
-        }
 
         if (needsSave) {
             this.saveLocalOnly(data);
@@ -463,9 +383,9 @@ const Storage = {
         // Ambil periode sumber untuk menyalin santriList
         const sourcePid = parseInt(dari_periode_id || (this.getActivePeriode() || {}).id);
         const sourcePeriode = db.periode.find(p => p.id === sourcePid) || this.getActivePeriode();
-        const sourceSantri = (sourcePeriode && Array.isArray(sourcePeriode.santri_list) && sourcePeriode.santri_list.length > 0)
+        const sourceSantri = (sourcePeriode && Array.isArray(sourcePeriode.santri_list))
             ? sourcePeriode.santri_list
-            : (db.master_santri || DEFAULT_SANTRI_TEMPLATE);
+            : (Array.isArray(db.master_santri) ? db.master_santri : []);
 
         // Salin seluruh daftar santri dari periode aktif sebelumnya ke periode baru
         const copiedSantriList = sourceSantri.map(s => ({
@@ -558,7 +478,7 @@ const Storage = {
         if (!targetPeriode) return [];
 
         if (!Array.isArray(targetPeriode.santri_list)) {
-            targetPeriode.santri_list = JSON.parse(JSON.stringify(db.master_santri || DEFAULT_SANTRI_TEMPLATE));
+            targetPeriode.santri_list = [];
             this.saveLocalOnly(db);
         }
 
