@@ -132,6 +132,8 @@ const TAB_TITLES = {
 
 function switchTab(tab) {
     currentTab = tab;
+    // Simpan tab aktif agar tidak reset saat refresh
+    try { sessionStorage.setItem('ebendahara_active_tab', tab); } catch(e) {}
     // Update active tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tab);
@@ -165,7 +167,11 @@ function switchTab(tab) {
 }
 
 function renderCurrentTab() {
-    switchTab(currentTab || 'dashboard');
+    // Pulihkan tab terakhir yang dibuka sebelum refresh (jangan selalu ke dashboard)
+    const savedTab = sessionStorage.getItem('ebendahara_active_tab');
+    const validTabs = ['dashboard', 'matriks', 'bukukas', 'pinjaman'];
+    const targetTab = (savedTab && validTabs.includes(savedTab)) ? savedTab : (currentTab || 'dashboard');
+    switchTab(targetTab);
 }
 
 // ============================================================
