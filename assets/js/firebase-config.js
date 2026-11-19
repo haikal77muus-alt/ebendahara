@@ -64,25 +64,22 @@ const FirebaseSync = {
 
     /**
      * Dapatkan konfigurasi aktif:
-     * 1. Utamakan FIREBASE_CONFIG_DEFAULT di file ini (agar otomatis aktif di SEMUA HP/laptop pengurus tanpa perlu atur ulang)
-     * 2. Atau dari localStorage jika pernah diatur lewat antarmuka modal
+     * 1. Utamakan konfigurasi yang disimpan / diperbarui secara manual oleh pengguna di localStorage
+     * 2. Atau konfigurasi bawaan FIREBASE_CONFIG_DEFAULT sebagai cadangan
      */
     getConfig() {
-        // Jika konfigurasi global di file ini sudah diisi, gunakan langsung untuk semua device
-        if (FIREBASE_CONFIG_DEFAULT && (FIREBASE_CONFIG_DEFAULT.databaseURL || (FIREBASE_CONFIG_DEFAULT.projectId && FIREBASE_CONFIG_DEFAULT.apiKey))) {
-            return FIREBASE_CONFIG_DEFAULT;
-        }
         try {
             const saved = localStorage.getItem(FIREBASE_CONFIG_STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
-                if (parsed && (parsed.databaseURL || parsed.projectId)) {
+                if (parsed && (parsed.databaseURL || (parsed.projectId && parsed.apiKey))) {
                     return parsed;
                 }
             }
         } catch (e) {
             console.warn('[FirebaseSync] Gagal membaca config tersimpan:', e);
         }
+
         return FIREBASE_CONFIG_DEFAULT;
     },
 
@@ -90,6 +87,9 @@ const FirebaseSync = {
      * Cek apakah konfigurasi sudah terisi
      */
     hasValidConfig() {
+        if (localStorage.getItem('ebendahara_force_offline') === 'true') {
+            return false;
+        }
         const cfg = this.getConfig();
         return Boolean(cfg && (cfg.databaseURL || (cfg.projectId && cfg.apiKey)));
     },
@@ -292,6 +292,14 @@ const FirebaseSync = {
             this.setStatus('connecting', 'Sedang menghubungkan ke Firebase Cloud...');
             const config = this.getConfig();
 
+            // Lepas listener koneksi sebelumnya jika ada
+            if (this.connectedRef) {
+                try { this.connectedRef.off(); } catch (e) {}
+            }
+            if (this.ref) {
+                try { this.ref.off(); } catch (e) {}
+            }
+
             // Inisialisasi Firebase App
             if (!firebase.apps.length) {
                 this.app = firebase.initializeApp(config);
@@ -299,15 +307,28 @@ const FirebaseSync = {
                 this.app = firebase.app();
             }
 
-            this.db = firebase.database();
+            // Arahkan ke database instance yang sesuai dengan URL aktif
+            this.db = (config && config.databaseURL)
+                ? firebase.database(this.app, config.databaseURL)
+                : firebase.database(this.app);
             this.ref = this.db.ref(FIREBASE_DB_ROOT);
+
+            // Timeout pengaman: jika dalam 7 detik koneksi belum berhasil, jangan biarkan stuck 'connecting'
+            if (this.connectTimeout) clearTimeout(this.connectTimeout);
+            this.connectTimeout = setTimeout(() => {
+                if (this.status === 'connecting') {
+                    this.setStatus('error', 'Koneksi ke Firebase gagal / timeout. Periksa databaseURL atau aturan Rules di Firebase Console.');
+                }
+            }, 7000);
 
             // Pantau konektivitas jaringan Firebase
             const connectedRef = this.db.ref('.info/connected');
+            this.connectedRef = connectedRef;
             connectedRef.on('value', snap => {
                 if (snap.val() === true) {
+                    if (this.connectTimeout) clearTimeout(this.connectTimeout);
                     this.setStatus('connected', 'Cloud Realtime Terhubung & Sinkron');
-                } else if (this.status !== 'error') {
+                } else if (this.status === 'connected') {
                     this.setStatus('connecting', 'Koneksi cloud terputus, menyambungkan kembali...');
                 }
             });
@@ -337,12 +358,14 @@ const FirebaseSync = {
                 }
             }, err => {
                 console.error('[FirebaseSync] Realtime Listener error:', err);
+                if (this.connectTimeout) clearTimeout(this.connectTimeout);
                 this.setStatus('error', 'Akses ditolak atau aturan Realtime Database belum diatur (Permission Denied)');
             });
 
             return true;
         } catch (e) {
             console.error('[FirebaseSync] Inisialisasi gagal:', e);
+            if (this.connectTimeout) clearTimeout(this.connectTimeout);
             this.setStatus('error', 'Gagal inisialisasi: ' + e.message);
             return false;
         }
@@ -383,24 +406,33 @@ const FirebaseSync = {
     /**
      * Simpan konfigurasi baru dan restart koneksi
      */
-    saveConfig(configObj) {
+    async saveConfig(configObj) {
         try {
             if (!configObj || typeof configObj !== 'object') {
                 throw new Error('Objek konfigurasi tidak valid!');
             }
+            // Bersihkan tanda paksa offline jika ada
+            localStorage.removeItem('ebendahara_force_offline');
             localStorage.setItem(FIREBASE_CONFIG_STORAGE_KEY, JSON.stringify(configObj));
             
-            // Re-inisialisasi
+            // Re-inisialisasi bersih
             if (this.ref) {
-                this.ref.off();
+                try { this.ref.off(); } catch (e) {}
             }
-            if (firebase.apps.length) {
-                // Hapus instance app lama
-                firebase.app().delete().catch(() => {});
+            if (this.connectedRef) {
+                try { this.connectedRef.off(); } catch (e) {}
+            }
+            if (this.connectTimeout) {
+                clearTimeout(this.connectTimeout);
+            }
+            if (firebase.apps && firebase.apps.length) {
+                // Tunggu penghapusan instance app lama selesai
+                await Promise.all(firebase.apps.map(a => a.delete().catch(() => {})));
             }
             this.app = null;
             this.db = null;
             this.ref = null;
+            this.connectedRef = null;
 
             return this.init();
         } catch (e) {
@@ -412,16 +444,26 @@ const FirebaseSync = {
     /**
      * Beralih ke Mode Offline / Reset Konfigurasi
      */
-    disconnectToOffline() {
+    async disconnectToOffline() {
         try {
-            if (this.ref) this.ref.off();
-            if (firebase.apps.length) {
-                firebase.app().delete().catch(() => {});
+            if (this.ref) {
+                try { this.ref.off(); } catch (e) {}
+            }
+            if (this.connectedRef) {
+                try { this.connectedRef.off(); } catch (e) {}
+            }
+            if (this.connectTimeout) {
+                clearTimeout(this.connectTimeout);
+            }
+            if (firebase.apps && firebase.apps.length) {
+                await Promise.all(firebase.apps.map(a => a.delete().catch(() => {})));
             }
         } catch (e) {}
         this.app = null;
         this.db = null;
         this.ref = null;
+        this.connectedRef = null;
+        localStorage.setItem('ebendahara_force_offline', 'true');
         localStorage.removeItem(FIREBASE_CONFIG_STORAGE_KEY);
         this.setStatus('offline', 'Mode Offline — Data tersimpan di browser ini');
     }

@@ -1488,7 +1488,11 @@ function parseJsonConfigToInputs() {
         }
         if (!obj || typeof obj !== 'object') throw new Error('Format teks tidak valid');
 
-        if (obj.databaseURL && document.getElementById('fc-databaseURL')) document.getElementById('fc-databaseURL').value = obj.databaseURL;
+        if (obj.databaseURL && document.getElementById('fc-databaseURL')) {
+            document.getElementById('fc-databaseURL').value = obj.databaseURL;
+        } else if (obj.projectId && document.getElementById('fc-databaseURL') && !document.getElementById('fc-databaseURL').value) {
+            document.getElementById('fc-databaseURL').value = `https://${obj.projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`;
+        }
         if (obj.apiKey && document.getElementById('fc-apiKey')) document.getElementById('fc-apiKey').value = obj.apiKey;
         if (obj.projectId && document.getElementById('fc-projectId')) document.getElementById('fc-projectId').value = obj.projectId;
         if (obj.authDomain && document.getElementById('fc-authDomain')) document.getElementById('fc-authDomain').value = obj.authDomain;
@@ -1501,7 +1505,7 @@ function parseJsonConfigToInputs() {
     }
 }
 
-function simpanFirebaseConfig() {
+async function simpanFirebaseConfig() {
     const dbUrl = document.getElementById('fc-databaseURL')?.value.trim();
     const apiKey = document.getElementById('fc-apiKey')?.value.trim();
     const projId = document.getElementById('fc-projectId')?.value.trim();
@@ -1525,7 +1529,7 @@ function simpanFirebaseConfig() {
 
     try {
         if (typeof FirebaseSync !== 'undefined') {
-            FirebaseSync.saveConfig(config);
+            await FirebaseSync.saveConfig(config);
             showToast('Konfigurasi Firebase berhasil disimpan! Menghubungkan ke cloud...', 'success');
             closeModal('modal-firebase-config');
             if (typeof FirebaseSync.pushToCloud === 'function') {
@@ -1537,9 +1541,9 @@ function simpanFirebaseConfig() {
     }
 }
 
-function useOfflineMode() {
+async function useOfflineMode() {
     if (typeof FirebaseSync !== 'undefined') {
-        FirebaseSync.disconnectToOffline();
+        await FirebaseSync.disconnectToOffline();
         showToast('Beralih ke mode offline (localStorage). Data tetap aman di browser ini.', 'info');
         closeModal('modal-firebase-config');
     }
