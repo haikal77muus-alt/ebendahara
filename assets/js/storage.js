@@ -1040,34 +1040,84 @@ const Storage = {
 
     addPinjaman({ periode_id, tanggal, nama_peminjam, keperluan, total_ambil, tanda_bukti }) {
         const db = this.getData();
+        const pid = parseInt(periode_id);
         const newId = this.getNextId(db.pinjaman);
+        const tgl = tanggal || new Date().toISOString().split('T')[0];
+        const nominal = parseFloat(total_ambil) || 0;
+
         const newRecord = {
             id: newId,
-            periode_id: parseInt(periode_id),
-            tanggal: tanggal || new Date().toISOString().split('T')[0],
+            periode_id: pid,
+            tanggal: tgl,
             nama_peminjam: nama_peminjam || '',
             keperluan: keperluan || '',
-            total_ambil: parseFloat(total_ambil) || 0,
+            total_ambil: nominal,
             total_kembali: 0,
             tgl_kembali: null,
             tanda_bukti: tanda_bukti || '-'
         };
         db.pinjaman.push(newRecord);
+
+        // Otomatis masukkan kas keluar (kredit) ke Buku Kas agar tidak perlu input 2 kali
+        if (nominal > 0) {
+            if (!Array.isArray(db.buku_kas)) db.buku_kas = [];
+            const listBK = db.buku_kas.filter(b => b.periode_id === pid);
+            const nextUrutan = listBK.reduce((m, item) => Math.max(m, item.urutan || 0), 0) + 1;
+            const newBkId = this.getNextId(db.buku_kas);
+            db.buku_kas.push({
+                id: newBkId,
+                periode_id: pid,
+                tanggal: tgl,
+                nama_barang: `Pinjaman: ${nama_peminjam || 'Santri/Pengurus'}`,
+                keterangan: keperluan ? keperluan : 'Pinjaman / Kasbon',
+                debit: 0,
+                kredit: nominal,
+                bukti: tanda_bukti || '-',
+                urutan: nextUrutan,
+                ref_pinjaman_id: newId,
+                ref_tipe: 'pinjam'
+            });
+        }
+
         this.saveData(db);
         return newRecord;
     },
 
     cicilPinjaman(id, jumlahBayar, tglKembali) {
         const db = this.getData();
-        const item = db.pinjaman.find(p => p.id === parseInt(id));
+        const targetId = parseInt(id);
+        const item = db.pinjaman.find(p => p.id === targetId);
         if (!item) throw new Error('Pinjaman tidak ditemukan!');
 
         const bayar = parseFloat(jumlahBayar) || 0;
         item.total_kembali = (parseFloat(item.total_kembali) || 0) + bayar;
         if (item.total_kembali > item.total_ambil) item.total_kembali = item.total_ambil;
 
-        item.tgl_kembali = tglKembali || new Date().toISOString().split('T')[0];
+        const tgl = tglKembali || new Date().toISOString().split('T')[0];
+        item.tgl_kembali = tgl;
         const isLunas = item.total_kembali >= item.total_ambil;
+
+        // Otomatis masukkan kas masuk (debit) ke Buku Kas saat pengembalian / cicil pinjaman
+        if (bayar > 0) {
+            if (!Array.isArray(db.buku_kas)) db.buku_kas = [];
+            const pid = parseInt(item.periode_id);
+            const listBK = db.buku_kas.filter(b => b.periode_id === pid);
+            const nextUrutan = listBK.reduce((m, b) => Math.max(m, b.urutan || 0), 0) + 1;
+            const newBkId = this.getNextId(db.buku_kas);
+            db.buku_kas.push({
+                id: newBkId,
+                periode_id: pid,
+                tanggal: tgl,
+                nama_barang: `Pengembalian Pinjaman: ${item.nama_peminjam || 'Santri/Pengurus'}`,
+                keterangan: isLunas ? 'Pelunasan pinjaman' : 'Cicilan pengembalian pinjaman',
+                debit: bayar,
+                kredit: 0,
+                bukti: item.tanda_bukti || '-',
+                urutan: nextUrutan,
+                ref_pinjaman_id: targetId,
+                ref_tipe: 'kembali'
+            });
+        }
 
         this.saveData(db);
         return { item, lunas: isLunas };
@@ -1079,6 +1129,10 @@ const Storage = {
         const item = db.pinjaman.find(p => p.id === targetId);
         if (!item) throw new Error('Pinjaman tidak ditemukan!');
         db.pinjaman = db.pinjaman.filter(p => p.id !== targetId);
+        // Hapus juga transaksi buku kas otomatis yang terhubung dengan pinjaman ini
+        if (Array.isArray(db.buku_kas)) {
+            db.buku_kas = db.buku_kas.filter(b => b.ref_pinjaman_id !== targetId);
+        }
         this.saveData(db);
         return item;
     },

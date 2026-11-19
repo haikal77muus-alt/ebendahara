@@ -1154,13 +1154,14 @@ function tambahPinjaman() {
             total_ambil: jumlah,
             tanda_bukti: bukti
         });
-        showToast('Pinjaman berhasil dicatat', 'success');
+        showToast('Pinjaman berhasil dicatat & otomatis masuk ke Buku Kas (Kredit)', 'success');
         document.getElementById('pj-tanggal').value = '';
         document.getElementById('pj-nama').value = '';
         document.getElementById('pj-keperluan').value = '';
         document.getElementById('pj-jumlah').value = '';
         document.getElementById('pj-bukti').value = '';
         loadPinjaman();
+        loadBukuKas();
         loadDashboard();
     } catch (e) {
         showToast(e.message, 'error');
@@ -1208,9 +1209,10 @@ function prosesCicilan() {
 
     try {
         const res = Storage.cicilPinjaman(id, jumlah, tgl);
-        showToast(res.lunas ? 'Pinjaman telah LUNAS!' : 'Pembayaran cicilan berhasil dicatat', res.lunas ? 'success' : 'info');
+        showToast(res.lunas ? 'Pinjaman telah LUNAS & pengembalian otomatis masuk ke Buku Kas (Debit)!' : 'Pengembalian pinjaman berhasil dicatat & masuk ke Buku Kas (Debit)', res.lunas ? 'success' : 'info');
         closeModal('modal-cicil');
         loadPinjaman();
+        loadBukuKas();
         loadDashboard();
     } catch (e) {
         showToast(e.message, 'error');
@@ -1222,7 +1224,7 @@ function konfirmasiHapusPinjaman(id) {
         showToast('Akses ditolak!', 'warning');
         return;
     }
-    document.getElementById('confirm-message').textContent = 'Hapus catatan pinjaman ini?';
+    document.getElementById('confirm-message').textContent = 'Hapus catatan pinjaman ini? (Catatan terkait di Buku Kas juga akan dihapus)';
     const btn = document.getElementById('confirm-btn');
     btn.onclick = () => {
         try {
@@ -1230,6 +1232,7 @@ function konfirmasiHapusPinjaman(id) {
             showToast('Pinjaman berhasil dihapus', 'success');
             closeModal('modal-confirm');
             loadPinjaman();
+            loadBukuKas();
             loadDashboard();
         } catch (e) {
             showToast(e.message, 'error');
