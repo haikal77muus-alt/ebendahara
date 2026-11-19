@@ -1437,127 +1437,70 @@ function escHtml(str) {
 }
 
 // ============================================================
-// PENGATURAN FIREBASE CLOUD REALTIME
+// PENGATURAN CLOUD SYNC (api.npoint.io)
 // ============================================================
-function openModalFirebaseConfig() {
-    openModal('modal-firebase-config');
-    if (typeof FirebaseSync !== 'undefined') {
-        const cfg = FirebaseSync.getConfig();
-        if (cfg) {
-            const elDb = document.getElementById('fc-databaseURL');
-            const elApi = document.getElementById('fc-apiKey');
-            const elProj = document.getElementById('fc-projectId');
-            const elAuth = document.getElementById('fc-authDomain');
-            const elApp = document.getElementById('fc-appId');
-            const elBucket = document.getElementById('fc-storageBucket');
-
-            if (elDb) elDb.value = cfg.databaseURL || '';
-            if (elApi) elApi.value = cfg.apiKey || '';
-            if (elProj) elProj.value = cfg.projectId || '';
-            if (elAuth) elAuth.value = cfg.authDomain || '';
-            if (elApp) elApp.value = cfg.appId || '';
-            if (elBucket) elBucket.value = cfg.storageBucket || '';
-
-            if (cfg.databaseURL || cfg.projectId) {
-                const jsonPaste = document.getElementById('fc-json-paste');
-                if (jsonPaste && !jsonPaste.value) {
-                    jsonPaste.value = JSON.stringify(cfg, null, 2);
-                }
-            }
+function openModalCloudSync() {
+    openModal('modal-cloud-sync');
+    if (typeof CloudSync !== 'undefined') {
+        const input = document.getElementById('cs-binId');
+        if (input) {
+            input.value = CloudSync.binId || '';
         }
-        FirebaseSync.updateUIStatusBadge();
+        CloudSync.updateUIStatusBadge();
     }
     renderIcons();
 }
 
-function parseJsonConfigToInputs() {
-    const text = (document.getElementById('fc-json-paste')?.value || '').trim();
-    if (!text) {
-        showToast('Tempelkan teks konfigurasi Firebase terlebih dahulu!', 'warning');
+async function simpanCloudSync() {
+    const input = document.getElementById('cs-binId');
+    const val = input ? input.value.trim() : '';
+
+    if (!val) {
+        showToast('Masukkan Kode Bin npoint.io terlebih dahulu!', 'warning');
         return;
     }
+
     try {
-        let obj = null;
-        if (text.startsWith('{')) {
-            obj = JSON.parse(text);
-        } else {
-            const match = text.match(/\{[\s\S]*\}/);
-            if (match) {
-                obj = (new Function('return ' + match[0]))();
+        if (typeof CloudSync !== 'undefined') {
+            const cloudData = await CloudSync.saveBinId(val);
+            if (cloudData) {
+                showToast('Cloud terhubung dan data berhasil disinkronkan!', 'success');
+            } else {
+                showToast('Cloud terhubung! Mengunggah data lokal ke cloud...', 'success');
+                const localData = Storage.getData();
+                await CloudSync.pushToCloud(localData, true);
             }
+            CloudSync.startAutoSync();
+            closeModal('modal-cloud-sync');
         }
-        if (!obj || typeof obj !== 'object') throw new Error('Format teks tidak valid');
-
-        if (obj.databaseURL && document.getElementById('fc-databaseURL')) {
-            document.getElementById('fc-databaseURL').value = obj.databaseURL;
-        } else if (obj.projectId && document.getElementById('fc-databaseURL') && !document.getElementById('fc-databaseURL').value) {
-            document.getElementById('fc-databaseURL').value = `https://${obj.projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`;
-        }
-        if (obj.apiKey && document.getElementById('fc-apiKey')) document.getElementById('fc-apiKey').value = obj.apiKey;
-        if (obj.projectId && document.getElementById('fc-projectId')) document.getElementById('fc-projectId').value = obj.projectId;
-        if (obj.authDomain && document.getElementById('fc-authDomain')) document.getElementById('fc-authDomain').value = obj.authDomain;
-        if (obj.appId && document.getElementById('fc-appId')) document.getElementById('fc-appId').value = obj.appId;
-        if (obj.storageBucket && document.getElementById('fc-storageBucket')) document.getElementById('fc-storageBucket').value = obj.storageBucket;
-
-        showToast('Parameter konfigurasi berhasil diekstrak ke formulir!', 'success');
     } catch (e) {
-        showToast('Gagal membaca JSON: ' + e.message, 'error');
+        showToast('Gagal menghubungkan: ' + e.message, 'error');
     }
 }
 
-async function simpanFirebaseConfig() {
-    const dbUrl = document.getElementById('fc-databaseURL')?.value.trim();
-    const apiKey = document.getElementById('fc-apiKey')?.value.trim();
-    const projId = document.getElementById('fc-projectId')?.value.trim();
-    const authDom = document.getElementById('fc-authDomain')?.value.trim();
-    const appId = document.getElementById('fc-appId')?.value.trim();
-    const bucket = document.getElementById('fc-storageBucket')?.value.trim();
-
-    if (!dbUrl && !projId) {
-        showToast('Database URL atau Project ID wajib diisi!', 'warning');
-        return;
-    }
-
-    const config = {
-        databaseURL: dbUrl,
-        apiKey: apiKey,
-        projectId: projId,
-        authDomain: authDom || `${projId}.firebaseapp.com`,
-        appId: appId || '',
-        storageBucket: bucket || `${projId}.appspot.com`
-    };
-
-    try {
-        if (typeof FirebaseSync !== 'undefined') {
-            await FirebaseSync.saveConfig(config);
-            showToast('Konfigurasi Firebase berhasil disimpan! Menghubungkan ke cloud...', 'success');
-            closeModal('modal-firebase-config');
-            if (typeof FirebaseSync.pushToCloud === 'function') {
-                FirebaseSync.pushToCloud(Storage.getData());
-            }
-        }
-    } catch (e) {
-        showToast(e.message, 'error');
+async function salinLinkSinkron() {
+    if (typeof CloudSync !== 'undefined') {
+        await CloudSync.copySyncLink();
     }
 }
 
 async function useOfflineMode() {
-    if (typeof FirebaseSync !== 'undefined') {
-        await FirebaseSync.disconnectToOffline();
-        showToast('Beralih ke mode offline (localStorage). Data tetap aman di browser ini.', 'info');
-        closeModal('modal-firebase-config');
+    if (typeof CloudSync !== 'undefined') {
+        CloudSync.disconnect();
+        showToast('Beralih ke mode offline (localStorage + IndexedDB). Data tetap aman di browser ini.', 'info');
+        closeModal('modal-cloud-sync');
     }
 }
 
-function syncLocalToCloudNow() {
-    if (typeof FirebaseSync !== 'undefined') {
-        if (!FirebaseSync.hasValidConfig()) {
-            showToast('Harap simpan konfigurasi Firebase terlebih dahulu sebelum sinkronisasi!', 'warning');
+async function syncLocalToCloudNow() {
+    if (typeof CloudSync !== 'undefined') {
+        if (!CloudSync.isConnected()) {
+            showToast('Harap masukkan dan simpan Kode Bin terlebih dahulu!', 'warning');
             return;
         }
         const data = Storage.getData();
-        FirebaseSync.pushToCloud(data);
-        showToast('Data lokal berhasil dikirim ke antrean sinkronisasi Firebase Cloud!', 'success');
+        await CloudSync.pushToCloud(data, true);
+        showToast('Data lokal berhasil disinkronkan ke Cloud JSON!', 'success');
     }
 }
 
@@ -1624,12 +1567,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 1. Tunggu pembacaan cloud once('value') saat inisialisasi sebelum render
-    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.hasValidConfig()) {
-        try {
-            await FirebaseSync.waitForInitialSync(4000);
-        } catch (e) {
-            console.warn('[App] Bypass initial cloud sync:', e);
+    // 1. Inisialisasi CloudSync & IndexedDB
+    if (typeof CloudSync !== 'undefined') {
+        CloudSync.init();
+        if (CloudSync.isConnected()) {
+            try {
+                const cloudData = await CloudSync.pullFromCloud();
+                if (cloudData && typeof Storage !== 'undefined') {
+                    // Data cloud sudah otomatis tersimpan ke lokal
+                }
+            } catch (e) {
+                console.warn('[App] Bypass initial cloud sync:', e);
+            }
+            CloudSync.startAutoSync();
         }
     }
 
@@ -1646,9 +1596,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 5. Perbarui badge jumlah santri boyong
     updateBoyongCountBadge();
 
-    // 6. Perbarui status cloud badge
-    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.updateUIStatusBadge) {
-        FirebaseSync.updateUIStatusBadge();
+    // 6. Pulihkan tab yang tersimpan dari sessionStorage jika ada
+    renderCurrentTab();
+
+    // 7. Perbarui status cloud badge
+    if (typeof CloudSync !== 'undefined' && CloudSync.updateUIStatusBadge) {
+        CloudSync.updateUIStatusBadge();
     }
 
     // Inisialisasi ikon Lucide

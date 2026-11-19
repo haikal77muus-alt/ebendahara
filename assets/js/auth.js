@@ -4,6 +4,7 @@
  * Manajemen Keamanan: Mode Edit / Kunci Tampilan Ber-PIN
  * (Default PIN: 1234, dapat diubah pengurus)
  * Memastikan data kas aman dari klik/sentuhan tidak sengaja di HP/Laptop
+ * Status isLocked & editPin tersimpan di state bersama (tersinkron cloud)
  * ============================================================
  */
 
@@ -17,7 +18,7 @@ const Auth = {
      */
     isEditMode() {
         try {
-            // Prioritas: baca dari Storage (tersinkron ke Firebase Cloud)
+            // Prioritas: baca dari Storage (tersinkron ke Cloud)
             if (typeof Storage !== 'undefined' && Storage.getLockState) {
                 return !Storage.getLockState();
             }
@@ -34,7 +35,7 @@ const Auth = {
      */
     setEditMode(enabled) {
         try {
-            // Simpan ke Storage → otomatis sync ke Firebase Cloud (semua device ikut)
+            // Simpan ke Storage → otomatis sync ke Cloud (semua device ikut)
             if (typeof Storage !== 'undefined' && Storage.setLockState) {
                 Storage.setLockState(!enabled);
             }

@@ -1,8 +1,8 @@
 /**
  * ============================================================
  * E-Bendahara — storage.js
- * Pengelola Database Lokal (localStorage) & Sinkronisasi Cloud
- * Firebase Realtime Database Lintas Perangkat, Seeder Data Awal,
+ * Pengelola Database Lokal (localStorage + IndexedDB) &
+ * Sinkronisasi Cloud JSON Otomatis (api.npoint.io),
  * Master Data Santri Permanen & Arsip Santri Boyong,
  * serta Fitur Ekspor / Impor Cadangan Data (Backup JSON)
  * ============================================================
@@ -29,7 +29,8 @@ const DEFAULT_SEED_DATA = {
     master_santri: [],
     matriks_kas_bulanan: [],
     buku_kas: [],
-    pinjaman: []
+    pinjaman: [],
+    lastSavedAt: null
 };
 
 /**
@@ -297,6 +298,20 @@ const Storage = {
         if (!raw) {
             data = JSON.parse(JSON.stringify(DEFAULT_SEED_DATA));
             this.saveLocalOnly(data);
+            // Coba pulihkan cadangan dari IndexedDB jika localStorage kosong
+            if (typeof IDB !== 'undefined' && IDB.load) {
+                IDB.load().then(idbData => {
+                    if (idbData && Array.isArray(idbData.periode) && (
+                        (idbData.buku_kas && idbData.buku_kas.length > 0) ||
+                        (idbData.pinjaman && idbData.pinjaman.length > 0) ||
+                        (idbData.periode && idbData.periode.some(p => p.santri_list && p.santri_list.length > 0))
+                    )) {
+                        console.log('[Storage] Memulihkan data dari IndexedDB...');
+                        Storage.saveLocalOnly(idbData);
+                        if (typeof renderCurrentTab === 'function') renderCurrentTab();
+                    }
+                }).catch(() => {});
+            }
             return data;
         }
 
@@ -382,14 +397,14 @@ const Storage = {
 
     /**
      * Pengaman Beforeunload & Auto-Save Sync:
-     * Memastikan state lokal tersimpan rapi dan langsung diflush ke Firebase Cloud seketika
+     * Memastikan state lokal tersimpan rapi dan langsung diflush ke Cloud seketika
      */
     autoSaveSync() {
         try {
             const db = this.getData();
             this.saveLocalOnly(db);
-            if (typeof FirebaseSync !== 'undefined' && FirebaseSync.hasValidConfig() && FirebaseSync.pushToCloud) {
-                FirebaseSync.pushToCloud(db, true);
+            if (typeof CloudSync !== 'undefined' && CloudSync.isConnected() && CloudSync.pushToCloud) {
+                CloudSync.pushToCloud(db, true);
             }
         } catch (e) {
             console.warn('[Storage] autoSaveSync error:', e);
@@ -401,16 +416,22 @@ const Storage = {
      */
     saveLocalOnly(data) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        // Juga simpan ke IndexedDB sebagai cadangan
+        if (typeof IDB !== 'undefined' && IDB.save) {
+            IDB.save(data).catch(() => {});
+        }
         this.notifySubscribers(data);
     },
 
     /**
-     * Simpan data: simpan ke lokal dan otomatis sinkronkan ke Firebase Cloud Realtime
+     * Simpan data: simpan ke lokal dan otomatis sinkronkan ke Cloud JSON (npoint.io)
      */
     saveData(data) {
+        // Update timestamp
+        data.lastSavedAt = new Date().toISOString();
         this.saveLocalOnly(data);
-        if (typeof FirebaseSync !== 'undefined' && FirebaseSync.pushToCloud) {
-            FirebaseSync.pushToCloud(data);
+        if (typeof CloudSync !== 'undefined' && CloudSync.isConnected() && CloudSync.pushToCloud) {
+            CloudSync.pushToCloud(data);
         }
     },
 
@@ -1079,7 +1100,7 @@ const Storage = {
     },
 
     /**
-     * Status Kunci Tampilan (isLocked) — disinkronkan ke Firebase Cloud
+     * Status Kunci Tampilan (isLocked) — disinkronkan ke Cloud JSON
      * agar saat dikunci di 1 perangkat, semua perangkat lain ikut terkunci
      */
     getLockState() {
@@ -1138,22 +1159,10 @@ const Storage = {
     },
 
     resetToDefault() {
-        this.saveData(DEFAULT_SEED_DATA);
+        this.saveData(JSON.parse(JSON.stringify(DEFAULT_SEED_DATA)));
         return DEFAULT_SEED_DATA;
     }
 };
-
-// Hubungkan ke listener FirebaseSync jika tersedia
-if (typeof FirebaseSync !== 'undefined' && FirebaseSync.onDataChange) {
-    FirebaseSync.onDataChange((cloudData) => {
-        // Data sudah di-save ke localStorage oleh listener .on('value') di firebase-config.js
-        // Di sini cukup periksa apakah status kunci (is_locked) berubah dari cloud
-        // dan terapkan ke UI agar semua device sinkron
-        if (cloudData && cloudData.settings && typeof Auth !== 'undefined' && Auth.applyUIPermissions) {
-            Auth.applyUIPermissions();
-        }
-    });
-}
 
 // Pastikan storage diinisialisasi saat skrip dimuat
 Storage.init();
