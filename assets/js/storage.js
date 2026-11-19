@@ -80,8 +80,12 @@ function parseKelasRank(rawText) {
     }
 
     if (isSMA) {
-        if (angka && angka >= 10 && angka <= 12) return 300 + angka;
+        if (angka && angka >= 10 && angka <= 12) {
+            if (/\blulus\b/i.test(s)) return 313;
+            return 300 + angka;
+        }
         if (angka && angka >= 1 && angka <= 3) return 300 + (angka + 9); // 1 SMA -> 10
+        if (/\blulus\b/i.test(s)) return 313;
         return 310;
     }
 
@@ -95,6 +99,174 @@ function parseKelasRank(rawText) {
     return 9000;
 }
 window.parseKelasRank = parseKelasRank;
+
+/**
+ * Helper untuk menaikkan kelas santri otomatis saat pergantian periode/tahun ajaran baru:
+ * SD (Kelas 1-6) -> SMP (Kelas 7-9) -> SMA (Kelas 10-12) -> Lulus
+ * Mempertahankan nama kamar/keterangan lain (misal: "Kamar Ali 01 / SD Kelas 1" -> "Kamar Ali 01 / SD Kelas 2")
+ */
+function promoteKamarKelas(rawText) {
+    if (!rawText || typeof rawText !== 'string') return rawText || '';
+    const text = rawText.trim();
+    if (!text) return '';
+
+    // Jika sudah bertuliskan lulus, biarkan
+    if (/\blulus\b/i.test(text)) {
+        return text;
+    }
+
+    const hasKelasWord = /\b(kelas|kls)\b/i.test(text);
+    const hasJenjang = /\b(sd|mi|smp|mts|sma|ma|smk|aliyah|tsanawiyah|ibtidaiyah)\b/i.test(text);
+
+    // Jika tidak ada penyebutan kelas atau jenjang sekolah, biarkan apa adanya (misal hanya nomor kamar "Kamar Ali 01")
+    if (!hasKelasWord && !hasJenjang) {
+        return text;
+    }
+
+    // 1. Cek Romawi (XII, XI, X, IX, VIII, VII, VI, V, IV, III, II, I)
+    const romawiRegex = /\b(kelas|kls)?\s*(xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i)\b/i;
+    const romawiMatch = text.match(romawiRegex);
+    if (romawiMatch) {
+        const prefix = romawiMatch[1] || '';
+        const rom = romawiMatch[2].toLowerCase();
+        let nextRom = '';
+        let levelUp = null;
+
+        if (rom === 'xii') {
+            return text.replace(romawiRegex, prefix ? `${prefix} XII (Lulus)` : 'XII (Lulus)');
+        } else if (rom === 'xi') {
+            nextRom = 'XII';
+        } else if (rom === 'x') {
+            nextRom = 'XI';
+        } else if (rom === 'ix') {
+            nextRom = 'X';
+            levelUp = { from: /\b(smp|mts|tsanawiyah)\b/i, to: 'SMA' };
+        } else if (rom === 'viii') {
+            nextRom = 'IX';
+        } else if (rom === 'vii') {
+            nextRom = 'VIII';
+        } else if (rom === 'vi') {
+            nextRom = 'VII';
+            levelUp = { from: /\b(sd|mi|ibtidaiyah)\b/i, to: 'SMP' };
+        } else if (rom === 'v') {
+            nextRom = 'VI';
+        } else if (rom === 'iv') {
+            nextRom = 'V';
+        } else if (rom === 'iii') {
+            nextRom = 'IV';
+        } else if (rom === 'ii') {
+            nextRom = 'III';
+        } else if (rom === 'i') {
+            nextRom = 'II';
+        }
+
+        let res = text.replace(romawiRegex, prefix ? `${prefix} ${nextRom}` : nextRom);
+        if (levelUp && levelUp.from.test(res)) {
+            res = res.replace(levelUp.from, levelUp.to);
+        }
+        return res;
+    }
+
+    // 2. Cek Angka dengan kata "Kelas" atau "Kls" (misal: "Kelas 1", "SD Kelas 6", "Kelas 7 SMP", "Kamar Ali / Kelas 1 SD")
+    const kelasRegex = /\b(kelas|kls)\s*([0-9]{1,2})\b/i;
+    const kelasMatch = text.match(kelasRegex);
+    if (kelasMatch) {
+        const prefix = kelasMatch[1];
+        const num = parseInt(kelasMatch[2], 10);
+        if (num >= 1 && num <= 12) {
+            let res = text;
+            const isSD = /\b(sd|mi|ibtidaiyah)\b/i.test(text);
+            const isSMP = /\b(smp|mts|tsanawiyah)\b/i.test(text);
+            const isSMA = /\b(sma|ma|smk|aliyah)\b/i.test(text);
+
+            if (num === 12 || (isSMA && num === 3)) {
+                return res.replace(kelasRegex, `${prefix} ${num} (Lulus)`);
+            }
+
+            // Kenaikan jenjang:
+            // SD Kelas 6 -> SMP Kelas 7
+            if (num === 6 && (isSD || (!isSMP && !isSMA))) {
+                if (isSD) res = res.replace(/\b(sd|mi|ibtidaiyah)\b/i, 'SMP');
+                return res.replace(kelasRegex, `${prefix} 7`);
+            }
+            // SMP Kelas 9 -> SMA Kelas 10
+            if (num === 9) {
+                if (isSMP) res = res.replace(/\b(smp|mts|tsanawiyah)\b/i, 'SMA');
+                return res.replace(kelasRegex, `${prefix} 10`);
+            }
+            // SMP Kelas 3 (sistem 1-3 SMP) -> SMA Kelas 10
+            if (num === 3 && isSMP) {
+                res = res.replace(/\b(smp|mts|tsanawiyah)\b/i, 'SMA');
+                return res.replace(kelasRegex, `${prefix} 10`);
+            }
+            // 1 SMA -> 2 SMA, 2 SMA -> 3 SMA
+            if (num === 1 && isSMA) {
+                return res.replace(kelasRegex, `${prefix} 2`);
+            }
+            if (num === 2 && isSMA) {
+                return res.replace(kelasRegex, `${prefix} 3`);
+            }
+
+            const nextNum = num + 1;
+            return res.replace(kelasRegex, `${prefix} ${nextNum}`);
+        }
+    }
+
+    // 3. Cek Pola Jenjang + Angka (misal "SD 1", "SD 6", "SMP 7", "SMA 10", "SMA 12")
+    const jenjangNumRegex = /\b(sd|mi|smp|mts|sma|ma|smk)\s*([0-9]{1,2})\b/i;
+    const jenjangNumMatch = text.match(jenjangNumRegex);
+    if (jenjangNumMatch) {
+        const jjg = jenjangNumMatch[1];
+        const num = parseInt(jenjangNumMatch[2], 10);
+        const isSD = /^(sd|mi)$/i.test(jjg);
+        const isSMP = /^(smp|mts)$/i.test(jjg);
+        const isSMA = /^(sma|ma|smk)$/i.test(jjg);
+
+        if (num === 12 || (isSMA && num === 3)) {
+            return text.replace(jenjangNumRegex, `${jjg} ${num} (Lulus)`);
+        }
+        if (num === 6 && isSD) {
+            return text.replace(jenjangNumRegex, 'SMP 7');
+        }
+        if (num === 9 && isSMP) {
+            return text.replace(jenjangNumRegex, 'SMA 10');
+        }
+        if (num === 3 && isSMP) {
+            return text.replace(jenjangNumRegex, 'SMA 10');
+        }
+        const nextNum = num + 1;
+        return text.replace(jenjangNumRegex, `${jjg} ${nextNum}`);
+    }
+
+    // 4. Cek Pola Angka + Jenjang (misal "1 SD", "6 SD", "7 SMP", "9 SMP", "10 SMA", "12 SMA")
+    const numJenjangRegex = /\b([0-9]{1,2})\s*(sd|mi|smp|mts|sma|ma|smk)\b/i;
+    const numJenjangMatch = text.match(numJenjangRegex);
+    if (numJenjangMatch) {
+        const num = parseInt(numJenjangMatch[1], 10);
+        const jjg = numJenjangMatch[2];
+        const isSD = /^(sd|mi)$/i.test(jjg);
+        const isSMP = /^(smp|mts)$/i.test(jjg);
+        const isSMA = /^(sma|ma|smk)$/i.test(jjg);
+
+        if (num === 12 || (isSMA && num === 3)) {
+            return text.replace(numJenjangRegex, `${num} ${jjg} (Lulus)`);
+        }
+        if (num === 6 && isSD) {
+            return text.replace(numJenjangRegex, '7 SMP');
+        }
+        if (num === 9 && isSMP) {
+            return text.replace(numJenjangRegex, '10 SMA');
+        }
+        if (num === 3 && isSMP) {
+            return text.replace(numJenjangRegex, '10 SMA');
+        }
+        const nextNum = num + 1;
+        return text.replace(numJenjangRegex, `${nextNum} ${jjg}`);
+    }
+
+    return text;
+}
+window.promoteKamarKelas = promoteKamarKelas;
 
 const Storage = {
     subscribers: [],
@@ -388,10 +560,11 @@ const Storage = {
             : (Array.isArray(db.master_santri) ? db.master_santri : []);
 
         // Salin seluruh daftar santri dari periode aktif sebelumnya ke periode baru
+        // dengan kenaikan kelas otomatis khusus untuk periode baru ini (periode lama tetap utuh)
         const copiedSantriList = sourceSantri.map(s => ({
             id: s.id,
             nama_santri: s.nama_santri,
-            kamar_kelas: s.kamar_kelas || '',
+            kamar_kelas: (s.is_active === 1) ? promoteKamarKelas(s.kamar_kelas || '') : (s.kamar_kelas || ''),
             is_active: s.is_active,
             urutan: s.urutan || 1,
             tgl_boyong: s.tgl_boyong || null,
