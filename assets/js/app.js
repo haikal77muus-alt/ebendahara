@@ -1500,6 +1500,16 @@ async function useOfflineMode() {
     }
 }
 
+async function resetCloudToDefault() {
+    if (typeof CloudSync !== 'undefined' && CloudSync.resetToDefault) {
+        await CloudSync.resetToDefault();
+        showToast('Database Cloud dihubungkan kembali ke server utama!', 'success');
+        if (typeof renderCurrentTab === 'function') renderCurrentTab();
+        closeModal('modal-cloud-sync');
+    }
+}
+window.resetCloudToDefault = resetCloudToDefault;
+
 async function syncLocalToCloudNow() {
     if (typeof CloudSync !== 'undefined') {
         if (!CloudSync.isConnected()) {

@@ -1,25 +1,63 @@
 /**
  * ============================================================
  * E-Bendahara — cloud-sync.js
- * Sinkronisasi Cloud REST Otomatis Lintas Perangkat
- * Mendukung:
- * 1. Firebase Realtime Database REST API (Native Fetch tanpa SDK)
- * 2. Pantry Cloud (getpantry.cloud)
- * 3. npoint.io (JSON Bin)
+ * Sinkronisasi Cloud REST Otomatis Lintas Perangkat (Zero-Config)
+ * Backend Utama: Firebase Realtime Database REST API (Native Fetch tanpa SDK)
+ * Endpoint Permanen: https://ebendahara-asrama-default-rtdb.firebaseio.com/ebendahara_database.json
  * Penyimpanan Ganda: localStorage + IndexedDB
- * Proteksi Timestamp lastSavedAt & Pencegahan Data Tertimpa Kosong
+ * Proteksi Timestamp lastSavedAt & Auto Sync Realtime Dua Arah
  * ============================================================
  */
 
 const CLOUD_SYNC_KEY = 'ebendahara_cloud_bin_id';
+const DEFAULT_CLOUD_URL = 'https://ebendahara-asrama-default-rtdb.firebaseio.com/ebendahara_database.json';
 
 // Helper pembersih Kode Bin / URL
 function cleanBinId(raw) {
     if (!raw) return '';
     let s = String(raw).trim();
-    // Hilangkan parameter query dan hash
     s = s.split('?')[0].split('#')[0];
     return s;
+}
+
+/**
+ * Normalisasi objek/array dari Firebase (karena Firebase kadang mengembalikan array sebagai objek {0:.., 1:..})
+ */
+function ensureArray(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val.filter(Boolean);
+    if (typeof val === 'object') {
+        return Object.values(val).filter(Boolean);
+    }
+    return [];
+}
+
+function sanitizeCloudData(data) {
+    if (!data || typeof data !== 'object') return null;
+    
+    // Buka wrapper jika ada
+    if (data.ebendahara_database && typeof data.ebendahara_database === 'object') {
+        data = data.ebendahara_database;
+    }
+    if (data.ebendahara && typeof data.ebendahara === 'object') {
+        data = data.ebendahara;
+    }
+
+    data.buku_kas = ensureArray(data.buku_kas);
+    data.pinjaman = ensureArray(data.pinjaman);
+    data.matriks_kas_bulanan = ensureArray(data.matriks_kas_bulanan);
+    data.master_santri = ensureArray(data.master_santri);
+    data.periode = ensureArray(data.periode);
+    data.periode.forEach(p => {
+        if (p && typeof p === 'object') {
+            p.santri_list = ensureArray(p.santri_list);
+        }
+    });
+    data.users = ensureArray(data.users);
+    if (!data.settings || typeof data.settings !== 'object') {
+        data.settings = { edit_pin: '1234', is_locked: false };
+    }
+    return data;
 }
 
 // ============================================================
@@ -86,21 +124,21 @@ const IDB = {
 };
 
 // ============================================================
-// CloudSync — Multi-Provider REST Cloud Sync
+// CloudSync — REST Cloud Sync Otomatis Permanen
 // ============================================================
 const CloudSync = {
-    status: 'offline', // 'connected' | 'syncing' | 'offline' | 'error'
-    statusMessage: 'Mode Lokal (Offline)',
-    binId: null,
+    status: 'connected', // 'connected' | 'syncing' | 'offline' | 'error'
+    statusMessage: 'Cloud Terhubung (Otomatis)',
+    binId: DEFAULT_CLOUD_URL,
     isSyncing: false,
     syncInterval: null,
     lastSyncTime: 0,
 
     /**
-     * Inisialisasi: Muat Bin ID / URL dari parameter (?sync=...) atau localStorage
+     * Inisialisasi: Gunakan DEFAULT_CLOUD_URL otomatis tanpa perlu input manual!
      */
     init() {
-        // 1. Cek parameter ?sync= di URL
+        // 1. Cek parameter ?sync= di URL jika ada kustom
         try {
             const urlParams = new URLSearchParams(window.location.search);
             const syncParam = urlParams.get('sync');
@@ -109,51 +147,43 @@ const CloudSync = {
                 if (cleaned) {
                     this.binId = cleaned;
                     localStorage.setItem(CLOUD_SYNC_KEY, this.binId);
-                    // Bersihkan URL tanpa reload
                     const cleanUrl = window.location.pathname + window.location.hash;
                     window.history.replaceState({}, document.title, cleanUrl);
                 }
             }
         } catch (e) {}
 
-        // 2. Ambil dari localStorage jika ada
-        if (!this.binId) {
-            this.binId = cleanBinId(localStorage.getItem(CLOUD_SYNC_KEY) || '');
-        }
+        // 2. Ambil dari localStorage, atau default ke database permanen
+        const saved = cleanBinId(localStorage.getItem(CLOUD_SYNC_KEY) || '');
+        this.binId = saved || DEFAULT_CLOUD_URL;
 
-        if (this.binId) {
-            const provider = this.getProviderInfo();
-            this.setStatus('connected', `Cloud Terhubung (${provider.name})`);
-        } else {
-            this.setStatus('offline', 'Mode Lokal (Offline) — Belum ada Kode / URL Sinkronisasi');
-        }
-
+        const provider = this.getProviderInfo();
+        this.setStatus('connected', `Cloud Aktif (${provider.name})`);
         this.updateUIStatusBadge();
     },
 
     /**
-     * Deteksi penyedia cloud (Firebase REST, Pantry, npoint, atau Custom REST)
+     * Deteksi penyedia cloud (Default: Firebase REST API)
      */
     getProviderInfo() {
-        if (!this.binId) {
-            return { type: 'none', name: 'None', readUrl: '', writeUrl: '', method: 'POST' };
-        }
-
-        let raw = this.binId.trim();
+        let raw = (this.binId || DEFAULT_CLOUD_URL).trim();
 
         // 1. Firebase Realtime Database REST API (Native Fetch tanpa SDK)
         if (raw.includes('firebasedatabase.app') || raw.includes('firebaseio.com')) {
             let base = raw.replace(/\/+$/, '');
             if (!base.startsWith('http')) base = 'https://' + base;
-            let url = base;
-            if (!url.endsWith('.json')) {
-                url = `${url}/ebendahara.json`;
+            if (base.endsWith('.json')) {
+                // sudah lengkap
+            } else if (base.endsWith('/ebendahara_database') || base.endsWith('/ebendahara')) {
+                base = base + '.json';
+            } else {
+                base = base + '/ebendahara_database.json';
             }
             return {
                 type: 'firebase',
-                name: 'Firebase RTDB (REST)',
-                readUrl: url,
-                writeUrl: url,
+                name: 'Firebase Cloud',
+                readUrl: base,
+                writeUrl: base,
                 method: 'PUT'
             };
         }
@@ -172,7 +202,7 @@ const CloudSync = {
             };
         }
 
-        // 3. npoint.io (default ID atau URL npoint)
+        // 3. npoint.io (fallback)
         let npointId = raw.replace(/^https?:\/\/(?:api\.|www\.)?npoint\.io\/(?:docs\/)?/i, '').replace(/[^a-zA-Z0-9_-]/g, '');
         return {
             type: 'npoint',
@@ -183,34 +213,20 @@ const CloudSync = {
         };
     },
 
-    /**
-     * Dapatkan URL sinkron lengkap untuk dibagikan ke HP / laptop lain
-     */
     getSyncLink() {
-        if (!this.binId) return '';
-        const base = window.location.origin + window.location.pathname;
-        return base + '?sync=' + encodeURIComponent(this.binId);
+        return window.location.origin + window.location.pathname;
     },
 
-    /**
-     * Salin link sinkronisasi ke clipboard
-     */
     async copySyncLink() {
         const link = this.getSyncLink();
-        if (!link) {
-            if (typeof showToast === 'function') {
-                showToast('Hubungkan Kode / URL Sinkronisasi terlebih dahulu!', 'warning');
-            }
-            return false;
-        }
         try {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(link);
             } else {
-                throw new Error('Clipboard API fallback');
+                throw new Error('Clipboard fallback');
             }
             if (typeof showToast === 'function') {
-                showToast('Link sinkronisasi disalin! Buka link ini di perangkat lain untuk langsung terhubung.', 'success');
+                showToast('Link website disalin! Buka di HP atau perangkat lain, data otomatis sinkron.', 'success');
             }
             return true;
         } catch (err) {
@@ -224,37 +240,28 @@ const CloudSync = {
                 document.execCommand('copy');
                 document.body.removeChild(ta);
                 if (typeof showToast === 'function') {
-                    showToast('Link sinkronisasi disalin! Buka link ini di perangkat lain untuk langsung terhubung.', 'success');
+                    showToast('Link website disalin! Buka di HP atau perangkat lain, data otomatis sinkron.', 'success');
                 }
                 return true;
             } catch (e2) {
                 if (typeof showToast === 'function') {
-                    showToast('Gagal menyalin otomatis. Link: ' + link, 'info');
+                    showToast('Link: ' + link, 'info');
                 }
                 return false;
             }
         }
     },
 
-    /**
-     * Apakah cloud sync aktif
-     */
     isConnected() {
-        return !!this.binId;
+        return true; // Selalu terhubung ke default database permanen
     },
 
-    /**
-     * Set status dan update UI
-     */
     setStatus(status, message) {
         this.status = status;
         this.statusMessage = message;
         this.updateUIStatusBadge();
     },
 
-    /**
-     * Update tampilan badge status cloud di header & modal
-     */
     updateUIStatusBadge() {
         const textElem = document.getElementById('cloud-status-text');
         const dotElem = document.getElementById('cloud-indicator-dot');
@@ -272,7 +279,7 @@ const CloudSync = {
             }
             if (btnElem) {
                 btnElem.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm border bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 cursor-pointer';
-                btnElem.title = '🟢 ' + this.statusMessage;
+                btnElem.title = '🟢 Cloud Aktif — Data sinkron otomatis di semua perangkat (HP & Laptop)';
             }
         } else if (this.status === 'syncing') {
             if (textElem) textElem.textContent = 'Menyinkronkan...';
@@ -286,7 +293,7 @@ const CloudSync = {
                 btnElem.title = '🟡 Sedang menyinkronkan data...';
             }
         } else if (this.status === 'error') {
-            if (textElem) textElem.textContent = 'Sinkron Gagal';
+            if (textElem) textElem.textContent = 'Mode Offline';
             dotElem.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500';
             if (pingElem) pingElem.style.display = 'none';
             if (btnElem) {
@@ -294,12 +301,12 @@ const CloudSync = {
                 btnElem.title = '🔴 ' + this.statusMessage;
             }
         } else {
-            if (textElem) textElem.textContent = 'Mode Lokal (Offline)';
+            if (textElem) textElem.textContent = 'Mode Lokal';
             dotElem.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-400';
             if (pingElem) pingElem.style.display = 'none';
             if (btnElem) {
                 btnElem.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm border bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 cursor-pointer';
-                btnElem.title = '⚪ Mode Lokal — Klik untuk menghubungkan Cloud';
+                btnElem.title = '⚪ Mode Lokal';
             }
         }
 
@@ -320,9 +327,9 @@ const CloudSync = {
      * Push data lokal ke cloud
      */
     async pushToCloud(data, force = false) {
-        if (!this.binId || this.isSyncing) return false;
+        if (this.isSyncing) return false;
         this.isSyncing = true;
-        this.setStatus('syncing', 'Mengunggah data ke cloud...');
+        this.setStatus('syncing', 'Menyimpan data ke cloud...');
 
         const provider = this.getProviderInfo();
 
@@ -337,9 +344,6 @@ const CloudSync = {
             });
 
             if (!res.ok) {
-                if (provider.type === 'npoint' && (res.status === 500 || res.status === 405)) {
-                    throw new Error('npoint.io menolak penyimpanan otomatis (Read-Only). Gunakan Firebase RTDB REST URL untuk edit dua arah.');
-                }
                 throw new Error(`HTTP ${res.status}`);
             }
 
@@ -349,11 +353,11 @@ const CloudSync = {
             }
 
             this.lastSyncTime = Date.now();
-            this.setStatus('connected', `Cloud Terhubung & Data Tersinkron (${provider.name})`);
+            this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
             return true;
         } catch (e) {
             console.error('[CloudSync] Push gagal:', e);
-            this.setStatus('error', 'Gagal mengunggah: ' + e.message);
+            this.setStatus('error', 'Koneksi offline: ' + e.message);
             return false;
         } finally {
             this.isSyncing = false;
@@ -364,9 +368,9 @@ const CloudSync = {
      * Tarik data dari cloud
      */
     async pullFromCloud() {
-        if (!this.binId || this.isSyncing) return null;
+        if (this.isSyncing) return null;
         this.isSyncing = true;
-        this.setStatus('syncing', 'Mengunduh data dari cloud...');
+        this.setStatus('syncing', 'Memuat data dari cloud...');
 
         const provider = this.getProviderInfo();
 
@@ -374,16 +378,11 @@ const CloudSync = {
             const res = await fetch(provider.readUrl);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            let cloudData = await res.json();
+            let rawData = await res.json();
+            const cloudData = sanitizeCloudData(rawData);
 
-            // Tangani pembungkus objek jika ada (misal Pantry atau Firebase)
-            if (cloudData && typeof cloudData === 'object' && cloudData.ebendahara && cloudData.ebendahara.periode) {
-                cloudData = cloudData.ebendahara;
-            }
-
-            // Validasi format dasar objek data cloud
-            if (!cloudData || typeof cloudData !== 'object' || !Array.isArray(cloudData.periode)) {
-                this.setStatus('connected', `Cloud Terhubung (${provider.name} - data baru)`);
+            if (!cloudData || !Array.isArray(cloudData.periode)) {
+                this.setStatus('connected', 'Cloud Terhubung (Database Siap)');
                 this.isSyncing = false;
                 return null;
             }
@@ -406,12 +405,12 @@ const CloudSync = {
                 (Array.isArray(cloudData.master_santri) && cloudData.master_santri.length > 0)
             );
 
-            // 1. Jika data cloud lebih baru, ATAU data lokal masih kosong bawaan sedangkan cloud sudah terisi
+            // 1. Jika data cloud lebih baru, ATAU data lokal masih kosong sedangkan cloud sudah terisi
             if (cloudTime > localTime || (!localHasContent && cloudHasContent)) {
                 if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
                     Storage.saveLocalOnly(cloudData);
                 }
-                this.setStatus('connected', `Cloud Terhubung & Data Tersinkron (${provider.name})`);
+                this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
                 this.isSyncing = false;
                 
                 // Segera refresh tampilan tab aktif agar langsung berubah di layar
@@ -428,21 +427,18 @@ const CloudSync = {
             } 
             // 3. Status identik
             else {
-                this.setStatus('connected', `Cloud Terhubung & Data Tersinkron (${provider.name})`);
+                this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
                 this.isSyncing = false;
                 return null;
             }
         } catch (e) {
             console.error('[CloudSync] Pull gagal:', e);
-            this.setStatus('error', 'Gagal mengunduh: ' + e.message);
+            this.setStatus('error', 'Koneksi offline: ' + e.message);
             this.isSyncing = false;
             return null;
         }
     },
 
-    /**
-     * Simpan Bin ID / URL dan langsung sinkronkan
-     */
     async saveBinId(rawId) {
         const id = cleanBinId(rawId);
         if (!id) return;
@@ -450,46 +446,39 @@ const CloudSync = {
         localStorage.setItem(CLOUD_SYNC_KEY, this.binId);
         
         const provider = this.getProviderInfo();
-        this.setStatus('connected', `Cloud Terhubung (${provider.name})`);
+        this.setStatus('connected', `Cloud Aktif (${provider.name})`);
 
-        // Tarik data dari cloud untuk pertama kali
         const cloudData = await this.pullFromCloud();
         return cloudData;
     },
 
-    /**
-     * Putuskan koneksi cloud (mode offline)
-     */
-    disconnect() {
-        this.binId = null;
+    resetToDefault() {
+        this.binId = DEFAULT_CLOUD_URL;
         localStorage.removeItem(CLOUD_SYNC_KEY);
-        if (this.syncInterval) {
-            clearInterval(this.syncInterval);
-            this.syncInterval = null;
-        }
-        this.setStatus('offline', 'Mode Lokal (Offline) — Data hanya tersimpan di browser ini');
+        this.setStatus('connected', 'Cloud Terhubung (Database Utama)');
+        return this.pullFromCloud();
+    },
+
+    disconnect() {
+        this.setStatus('offline', 'Mode Offline (Lokal)');
     },
 
     /**
-     * Mulai auto-sync periodik (setiap 20 detik)
+     * Mulai auto-sync periodik (setiap 10 detik agar cepat dan responsif)
      */
     startAutoSync() {
         if (this.syncInterval) clearInterval(this.syncInterval);
-        if (!this.binId) return;
 
         this.syncInterval = setInterval(async () => {
-            if (!this.binId || this.isSyncing) return;
+            if (this.isSyncing) return;
             try {
                 await this.pullFromCloud();
             } catch (e) {
-                console.warn('[CloudSync] Auto-sync error:', e);
+                console.warn('[CloudSync] Auto-sync notice:', e);
             }
-        }, 20000); // 20 detik
+        }, 10000); // 10 detik
     },
 
-    /**
-     * Hentikan auto-sync
-     */
     stopAutoSync() {
         if (this.syncInterval) {
             clearInterval(this.syncInterval);
