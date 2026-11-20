@@ -153,9 +153,14 @@ const CloudSync = {
             }
         } catch (e) {}
 
-        // 2. Ambil dari localStorage, atau default ke database permanen
-        const saved = cleanBinId(localStorage.getItem(CLOUD_SYNC_KEY) || '');
-        this.binId = saved || DEFAULT_CLOUD_URL;
+        // 2. Bersihkan otomatis nilai lama dari localStorage jika bukan database resmi yang benar
+        let saved = cleanBinId(localStorage.getItem(CLOUD_SYNC_KEY) || '');
+        if (!saved || saved.includes('e-bendahara') || saved.includes('npoint') || !saved.includes('ebendahara-asrama')) {
+            // Otomatis reset ke database resmi Firebase yang aktif tanpa hyphen
+            saved = DEFAULT_CLOUD_URL;
+            localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
+        }
+        this.binId = saved;
 
         const provider = this.getProviderInfo();
         this.setStatus('connected', `Cloud Aktif (${provider.name})`);
@@ -344,6 +349,25 @@ const CloudSync = {
             });
 
             if (!res.ok) {
+                if (res.status === 404 && this.binId !== DEFAULT_CLOUD_URL) {
+                    console.warn('[CloudSync] 404 pada URL lama, auto-reset ke database resmi...');
+                    this.binId = DEFAULT_CLOUD_URL;
+                    localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
+                    const freshProvider = this.getProviderInfo();
+                    const retryRes = await fetch(freshProvider.writeUrl, {
+                        method: freshProvider.method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (retryRes.ok) {
+                        if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
+                            Storage.saveLocalOnly(payload);
+                        }
+                        this.lastSyncTime = Date.now();
+                        this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
+                        return true;
+                    }
+                }
                 throw new Error(`HTTP ${res.status}`);
             }
 
@@ -375,8 +399,17 @@ const CloudSync = {
         const provider = this.getProviderInfo();
 
         try {
-            const res = await fetch(provider.readUrl);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            let res = await fetch(provider.readUrl);
+            if (!res.ok) {
+                if (res.status === 404 && this.binId !== DEFAULT_CLOUD_URL) {
+                    console.warn('[CloudSync] 404 pada URL lama, auto-reset ke database resmi...');
+                    this.binId = DEFAULT_CLOUD_URL;
+                    localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
+                    const freshProvider = this.getProviderInfo();
+                    res = await fetch(freshProvider.readUrl);
+                }
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            }
 
             let rawData = await res.json();
             const cloudData = sanitizeCloudData(rawData);

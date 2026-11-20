@@ -1512,16 +1512,22 @@ window.resetCloudToDefault = resetCloudToDefault;
 
 async function syncLocalToCloudNow() {
     if (typeof CloudSync !== 'undefined') {
-        if (!CloudSync.isConnected()) {
-            showToast('Harap masukkan dan simpan Kode Bin atau Database URL terlebih dahulu!', 'warning');
-            return;
+        // Otomatis bersihkan jika ada sisa URL lama atau status error
+        if (typeof DEFAULT_CLOUD_URL !== 'undefined') {
+            CloudSync.binId = DEFAULT_CLOUD_URL;
+            localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
         }
         const data = Storage.getData();
         const success = await CloudSync.pushToCloud(data, true);
         if (success) {
-            showToast('Data lokal berhasil disinkronkan ke Cloud!', 'success');
+            showToast('Data berhasil disinkronkan ke Cloud Firebase!', 'success');
         } else {
-            showToast('Sinkronisasi gagal: ' + CloudSync.statusMessage, 'error');
+            const pulled = await CloudSync.pullFromCloud();
+            if (pulled) {
+                showToast('Data terbaru dari Cloud berhasil dimuat!', 'success');
+            } else {
+                showToast('Sinkronisasi: ' + CloudSync.statusMessage, 'info');
+            }
         }
     }
 }
