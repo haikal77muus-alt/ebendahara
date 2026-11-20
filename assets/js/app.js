@@ -1459,7 +1459,7 @@ async function simpanCloudSync() {
     const val = input ? input.value.trim() : '';
 
     if (!val) {
-        showToast('Masukkan Kode Bin npoint.io terlebih dahulu!', 'warning');
+        showToast('Masukkan Kode Bin atau Database URL terlebih dahulu!', 'warning');
         return;
     }
 
@@ -1467,11 +1467,16 @@ async function simpanCloudSync() {
         if (typeof CloudSync !== 'undefined') {
             const cloudData = await CloudSync.saveBinId(val);
             if (cloudData) {
-                showToast('Cloud terhubung dan data berhasil disinkronkan!', 'success');
+                showToast('Cloud terhubung dan data dari cloud berhasil dimuat!', 'success');
+                if (typeof renderCurrentTab === 'function') renderCurrentTab();
             } else {
-                showToast('Cloud terhubung! Mengunggah data lokal ke cloud...', 'success');
                 const localData = Storage.getData();
-                await CloudSync.pushToCloud(localData, true);
+                const pushOk = await CloudSync.pushToCloud(localData, true);
+                if (pushOk) {
+                    showToast('Cloud terhubung! Data lokal berhasil diunggah ke cloud.', 'success');
+                } else {
+                    showToast('Terhubung, namun unggah gagal: ' + CloudSync.statusMessage, 'warning');
+                }
             }
             CloudSync.startAutoSync();
             closeModal('modal-cloud-sync');
@@ -1498,12 +1503,16 @@ async function useOfflineMode() {
 async function syncLocalToCloudNow() {
     if (typeof CloudSync !== 'undefined') {
         if (!CloudSync.isConnected()) {
-            showToast('Harap masukkan dan simpan Kode Bin terlebih dahulu!', 'warning');
+            showToast('Harap masukkan dan simpan Kode Bin atau Database URL terlebih dahulu!', 'warning');
             return;
         }
         const data = Storage.getData();
-        await CloudSync.pushToCloud(data, true);
-        showToast('Data lokal berhasil disinkronkan ke Cloud JSON!', 'success');
+        const success = await CloudSync.pushToCloud(data, true);
+        if (success) {
+            showToast('Data lokal berhasil disinkronkan ke Cloud!', 'success');
+        } else {
+            showToast('Sinkronisasi gagal: ' + CloudSync.statusMessage, 'error');
+        }
     }
 }
 

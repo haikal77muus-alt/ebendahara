@@ -1,25 +1,24 @@
 /**
  * ============================================================
  * E-Bendahara — cloud-sync.js
- * Sinkronisasi Cloud JSON Otomatis via api.npoint.io
+ * Sinkronisasi Cloud REST Otomatis Lintas Perangkat
+ * Mendukung:
+ * 1. Firebase Realtime Database REST API (Native Fetch tanpa SDK)
+ * 2. Pantry Cloud (getpantry.cloud)
+ * 3. npoint.io (JSON Bin)
  * Penyimpanan Ganda: localStorage + IndexedDB
  * Proteksi Timestamp lastSavedAt & Pencegahan Data Tertimpa Kosong
  * ============================================================
  */
 
 const CLOUD_SYNC_KEY = 'ebendahara_cloud_bin_id';
-const NPOINT_API = 'https://api.npoint.io';
 
-// Helper pembersih Kode Bin (mendukung input ID mentah maupun URL lengkap npoint.io)
+// Helper pembersih Kode Bin / URL
 function cleanBinId(raw) {
     if (!raw) return '';
     let s = String(raw).trim();
-    // Hilangkan URL prefix jika pengguna menempelkan link lengkap npoint
-    s = s.replace(/^https?:\/\/(?:api\.|www\.)?npoint\.io\/(?:docs\/)?/i, '');
-    // Hilangkan parameter query jika ada
+    // Hilangkan parameter query dan hash
     s = s.split('?')[0].split('#')[0];
-    // Bersihkan karakter non-alfanumerik aman
-    s = s.replace(/[^a-zA-Z0-9_-]/g, '');
     return s;
 }
 
@@ -87,7 +86,7 @@ const IDB = {
 };
 
 // ============================================================
-// CloudSync — Sinkronisasi Otomatis api.npoint.io
+// CloudSync — Multi-Provider REST Cloud Sync
 // ============================================================
 const CloudSync = {
     status: 'offline', // 'connected' | 'syncing' | 'offline' | 'error'
@@ -98,10 +97,10 @@ const CloudSync = {
     lastSyncTime: 0,
 
     /**
-     * Inisialisasi: Muat Bin ID dari URL parameter (?sync=KODE_BIN) atau localStorage
+     * Inisialisasi: Muat Bin ID / URL dari parameter (?sync=...) atau localStorage
      */
     init() {
-        // 1. Cek apakah ada parameter ?sync= di URL
+        // 1. Cek parameter ?sync= di URL
         try {
             const urlParams = new URLSearchParams(window.location.search);
             const syncParam = urlParams.get('sync');
@@ -110,25 +109,78 @@ const CloudSync = {
                 if (cleaned) {
                     this.binId = cleaned;
                     localStorage.setItem(CLOUD_SYNC_KEY, this.binId);
-                    // Bersihkan URL tanpa reload agar rapi di browser
+                    // Bersihkan URL tanpa reload
                     const cleanUrl = window.location.pathname + window.location.hash;
                     window.history.replaceState({}, document.title, cleanUrl);
                 }
             }
         } catch (e) {}
 
-        // 2. Jika belum dari URL, ambil dari localStorage
+        // 2. Ambil dari localStorage jika ada
         if (!this.binId) {
             this.binId = cleanBinId(localStorage.getItem(CLOUD_SYNC_KEY) || '');
         }
 
         if (this.binId) {
-            this.setStatus('connected', 'Cloud Terhubung (npoint.io)');
+            const provider = this.getProviderInfo();
+            this.setStatus('connected', `Cloud Terhubung (${provider.name})`);
         } else {
-            this.setStatus('offline', 'Mode Lokal (Offline) — Belum ada Kode Sinkronisasi');
+            this.setStatus('offline', 'Mode Lokal (Offline) — Belum ada Kode / URL Sinkronisasi');
         }
 
         this.updateUIStatusBadge();
+    },
+
+    /**
+     * Deteksi penyedia cloud (Firebase REST, Pantry, npoint, atau Custom REST)
+     */
+    getProviderInfo() {
+        if (!this.binId) {
+            return { type: 'none', name: 'None', readUrl: '', writeUrl: '', method: 'POST' };
+        }
+
+        let raw = this.binId.trim();
+
+        // 1. Firebase Realtime Database REST API (Native Fetch tanpa SDK)
+        if (raw.includes('firebasedatabase.app') || raw.includes('firebaseio.com')) {
+            let base = raw.replace(/\/+$/, '');
+            if (!base.startsWith('http')) base = 'https://' + base;
+            let url = base;
+            if (!url.endsWith('.json')) {
+                url = `${url}/ebendahara.json`;
+            }
+            return {
+                type: 'firebase',
+                name: 'Firebase RTDB (REST)',
+                readUrl: url,
+                writeUrl: url,
+                method: 'PUT'
+            };
+        }
+
+        // 2. Pantry Cloud (getpantry.cloud UUID)
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
+        if (isUUID || raw.includes('getpantry.cloud')) {
+            const cleanId = raw.replace(/.*pantry\//i, '').replace(/\/basket.*/i, '').trim();
+            const url = `https://getpantry.cloud/apiv1/pantry/${cleanId}/basket/ebendahara`;
+            return {
+                type: 'pantry',
+                name: 'Pantry Cloud',
+                readUrl: url,
+                writeUrl: url,
+                method: 'POST'
+            };
+        }
+
+        // 3. npoint.io (default ID atau URL npoint)
+        let npointId = raw.replace(/^https?:\/\/(?:api\.|www\.)?npoint\.io\/(?:docs\/)?/i, '').replace(/[^a-zA-Z0-9_-]/g, '');
+        return {
+            type: 'npoint',
+            name: 'npoint.io',
+            readUrl: `https://api.npoint.io/${npointId}`,
+            writeUrl: `https://api.npoint.io/${npointId}`,
+            method: 'POST'
+        };
     },
 
     /**
@@ -137,17 +189,17 @@ const CloudSync = {
     getSyncLink() {
         if (!this.binId) return '';
         const base = window.location.origin + window.location.pathname;
-        return base + '?sync=' + this.binId;
+        return base + '?sync=' + encodeURIComponent(this.binId);
     },
 
     /**
-     * Salin link sinkronisasi ke clipboard dengan fallback aman
+     * Salin link sinkronisasi ke clipboard
      */
     async copySyncLink() {
         const link = this.getSyncLink();
         if (!link) {
             if (typeof showToast === 'function') {
-                showToast('Hubungkan Kode Sinkronisasi npoint.io terlebih dahulu!', 'warning');
+                showToast('Hubungkan Kode / URL Sinkronisasi terlebih dahulu!', 'warning');
             }
             return false;
         }
@@ -155,14 +207,13 @@ const CloudSync = {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(link);
             } else {
-                throw new Error('Clipboard API tidak didukung');
+                throw new Error('Clipboard API fallback');
             }
             if (typeof showToast === 'function') {
                 showToast('Link sinkronisasi disalin! Buka link ini di perangkat lain untuk langsung terhubung.', 'success');
             }
             return true;
         } catch (err) {
-            // Fallback execCommand
             try {
                 const ta = document.createElement('textarea');
                 ta.value = link;
@@ -221,7 +272,7 @@ const CloudSync = {
             }
             if (btnElem) {
                 btnElem.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm border bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 cursor-pointer';
-                btnElem.title = '🟢 Cloud Terhubung (npoint.io) — Klik untuk pengaturan sinkronisasi';
+                btnElem.title = '🟢 ' + this.statusMessage;
             }
         } else if (this.status === 'syncing') {
             if (textElem) textElem.textContent = 'Menyinkronkan...';
@@ -252,7 +303,6 @@ const CloudSync = {
             }
         }
 
-        // Update status di modal jika terbuka
         const modalStatusText = document.getElementById('modal-cloud-status-desc');
         const modalStatusDot = document.getElementById('modal-cloud-status-dot');
         if (modalStatusText) modalStatusText.textContent = this.statusMessage;
@@ -267,56 +317,73 @@ const CloudSync = {
     },
 
     /**
-     * Push data lokal ke cloud (npoint.io)
-     * Memperbarui timestamp lastSavedAt sebelum dikirim
+     * Push data lokal ke cloud
      */
     async pushToCloud(data, force = false) {
-        if (!this.binId || this.isSyncing) return;
+        if (!this.binId || this.isSyncing) return false;
         this.isSyncing = true;
         this.setStatus('syncing', 'Mengunggah data ke cloud...');
+
+        const provider = this.getProviderInfo();
 
         try {
             const payload = JSON.parse(JSON.stringify(data));
             payload.lastSavedAt = new Date().toISOString();
 
-            const res = await fetch(`${NPOINT_API}/${this.binId}`, {
-                method: 'POST',
+            const res = await fetch(provider.writeUrl, {
+                method: provider.method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (!res.ok) {
+                if (provider.type === 'npoint' && (res.status === 500 || res.status === 405)) {
+                    throw new Error('npoint.io menolak penyimpanan otomatis (Read-Only). Gunakan Firebase RTDB REST URL untuk edit dua arah.');
+                }
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            // Simpan juga ke lokal data dengan timestamp yang telah terverifikasi terunggah
+            if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
+                Storage.saveLocalOnly(payload);
+            }
 
             this.lastSyncTime = Date.now();
-            this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
+            this.setStatus('connected', `Cloud Terhubung & Data Tersinkron (${provider.name})`);
+            return true;
         } catch (e) {
             console.error('[CloudSync] Push gagal:', e);
-            this.setStatus('error', 'Gagal mengunggah ke cloud: ' + e.message);
+            this.setStatus('error', 'Gagal mengunggah: ' + e.message);
+            return false;
         } finally {
             this.isSyncing = false;
         }
     },
 
     /**
-     * Tarik data dari cloud (npoint.io)
-     * Membandingkan timestamp lastSavedAt:
-     * - Hanya perbarui lokal jika cloud lebih baru ATAU lokal masih kosong bawaan
-     * - Jangan pernah timpa data lokal yang valid dengan data kosong
+     * Tarik data dari cloud
      */
     async pullFromCloud() {
         if (!this.binId || this.isSyncing) return null;
         this.isSyncing = true;
         this.setStatus('syncing', 'Mengunduh data dari cloud...');
 
+        const provider = this.getProviderInfo();
+
         try {
-            const res = await fetch(`${NPOINT_API}/${this.binId}`);
+            const res = await fetch(provider.readUrl);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            const cloudData = await res.json();
+            let cloudData = await res.json();
+
+            // Tangani pembungkus objek jika ada (misal Pantry atau Firebase)
+            if (cloudData && typeof cloudData === 'object' && cloudData.ebendahara && cloudData.ebendahara.periode) {
+                cloudData = cloudData.ebendahara;
+            }
 
             // Validasi format dasar objek data cloud
             if (!cloudData || typeof cloudData !== 'object' || !Array.isArray(cloudData.periode)) {
-                this.setStatus('connected', 'Cloud Terhubung (format data cloud belum diinisialisasi)');
+                this.setStatus('connected', `Cloud Terhubung (${provider.name} - data baru)`);
                 this.isSyncing = false;
                 return null;
             }
@@ -325,7 +392,6 @@ const CloudSync = {
             const cloudTime = cloudData.lastSavedAt ? new Date(cloudData.lastSavedAt).getTime() : 0;
             const localTime = localData && localData.lastSavedAt ? new Date(localData.lastSavedAt).getTime() : 0;
 
-            // Periksa apakah data lokal memiliki catatan nyata pengguna
             const localHasContent = localData && (
                 (Array.isArray(localData.buku_kas) && localData.buku_kas.length > 0) ||
                 (Array.isArray(localData.pinjaman) && localData.pinjaman.length > 0) ||
@@ -333,7 +399,6 @@ const CloudSync = {
                 (Array.isArray(localData.master_santri) && localData.master_santri.length > 0)
             );
 
-            // Periksa apakah cloud memiliki catatan nyata
             const cloudHasContent = cloudData && (
                 (Array.isArray(cloudData.buku_kas) && cloudData.buku_kas.length > 0) ||
                 (Array.isArray(cloudData.pinjaman) && cloudData.pinjaman.length > 0) ||
@@ -341,17 +406,21 @@ const CloudSync = {
                 (Array.isArray(cloudData.master_santri) && cloudData.master_santri.length > 0)
             );
 
-            // Logika Proteksi:
-            // 1. Jika cloud lebih baru, ATAU data lokal masih kosong bawaan sedangkan cloud sudah terisi
+            // 1. Jika data cloud lebih baru, ATAU data lokal masih kosong bawaan sedangkan cloud sudah terisi
             if (cloudTime > localTime || (!localHasContent && cloudHasContent)) {
                 if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
                     Storage.saveLocalOnly(cloudData);
                 }
-                this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
+                this.setStatus('connected', `Cloud Terhubung & Data Tersinkron (${provider.name})`);
                 this.isSyncing = false;
+                
+                // Segera refresh tampilan tab aktif agar langsung berubah di layar
+                if (typeof renderCurrentTab === 'function') {
+                    renderCurrentTab();
+                }
                 return cloudData;
             } 
-            // 2. Jika data lokal lebih baru dan memiliki konten, otomatis push ke cloud
+            // 2. Jika data lokal lebih baru dan memiliki konten, otomatis unggah ke cloud
             else if (localTime > cloudTime && localHasContent) {
                 this.isSyncing = false;
                 await this.pushToCloud(localData);
@@ -359,27 +428,29 @@ const CloudSync = {
             } 
             // 3. Status identik
             else {
-                this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
+                this.setStatus('connected', `Cloud Terhubung & Data Tersinkron (${provider.name})`);
                 this.isSyncing = false;
                 return null;
             }
         } catch (e) {
             console.error('[CloudSync] Pull gagal:', e);
-            this.setStatus('error', 'Gagal mengunduh dari cloud: ' + e.message);
+            this.setStatus('error', 'Gagal mengunduh: ' + e.message);
             this.isSyncing = false;
             return null;
         }
     },
 
     /**
-     * Simpan Bin ID dan langsung sinkronkan
+     * Simpan Bin ID / URL dan langsung sinkronkan
      */
     async saveBinId(rawId) {
         const id = cleanBinId(rawId);
         if (!id) return;
         this.binId = id;
         localStorage.setItem(CLOUD_SYNC_KEY, this.binId);
-        this.setStatus('connected', 'Cloud Terhubung (npoint.io)');
+        
+        const provider = this.getProviderInfo();
+        this.setStatus('connected', `Cloud Terhubung (${provider.name})`);
 
         // Tarik data dari cloud untuk pertama kali
         const cloudData = await this.pullFromCloud();
@@ -400,7 +471,7 @@ const CloudSync = {
     },
 
     /**
-     * Mulai auto-sync periodik (setiap 30 detik)
+     * Mulai auto-sync periodik (setiap 20 detik)
      */
     startAutoSync() {
         if (this.syncInterval) clearInterval(this.syncInterval);
@@ -413,7 +484,7 @@ const CloudSync = {
             } catch (e) {
                 console.warn('[CloudSync] Auto-sync error:', e);
             }
-        }, 30000); // 30 detik
+        }, 20000); // 20 detik
     },
 
     /**

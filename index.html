@@ -18,12 +18,12 @@
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=3.1_pinjaman_bukukas">
+    <link rel="stylesheet" href="assets/css/style.css?v=3.2_multicloudsync">
 
-    <!-- Cloud Sync (api.npoint.io), IndexedDB Dual Storage, & Keamanan Ber-PIN -->
-    <script src="assets/js/cloud-sync.js?v=3.1_pinjaman_bukukas"></script>
-    <script src="assets/js/storage.js?v=3.1_pinjaman_bukukas"></script>
-    <script src="assets/js/auth.js?v=3.1_pinjaman_bukukas"></script>
+    <!-- Cloud Sync (Firebase REST / Pantry / npoint), IndexedDB Dual Storage, & Keamanan Ber-PIN -->
+    <script src="assets/js/cloud-sync.js?v=3.2_multicloudsync"></script>
+    <script src="assets/js/storage.js?v=3.2_multicloudsync"></script>
+    <script src="assets/js/auth.js?v=3.2_multicloudsync"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-800">
@@ -78,10 +78,10 @@
 
             <!-- 3. Sisi Kanan: Status Cloud, Backup, Mode Edit / Kunci Tampilan Ber-PIN, & Ubah PIN -->
             <div class="flex items-center gap-2 shrink-0">
-                <!-- Status Indikator Cloud / npoint.io Sync -->
+                <!-- Status Indikator Cloud Sync -->
                 <button id="btn-cloud-status" onclick="openModalCloudSync()"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm border bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 cursor-pointer"
-                    title="Status & Pengaturan Cloud Sync (npoint.io)">
+                    title="Status & Pengaturan Cloud Sync">
                     <span class="relative flex h-2 w-2">
                         <span id="cloud-indicator-ping"
                             class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
@@ -979,7 +979,7 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- MODAL: Sinkronisasi Cloud JSON (api.npoint.io)               -->
+        <!-- MODAL: Sinkronisasi Cloud Lintas Perangkat                  -->
         <!-- ============================================================ -->
         <div id="modal-cloud-sync" class="modal-overlay"
             onclick="if(event.target===this)closeModal('modal-cloud-sync')">
@@ -987,7 +987,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <i data-lucide="cloud" class="w-5 h-5 text-blue-600"></i>
-                        Sinkronisasi Cloud JSON (npoint.io)
+                        Sinkronisasi Cloud Lintas Perangkat
                     </h3>
                     <button class="text-slate-400 hover:text-slate-600 cursor-pointer" onclick="closeModal('modal-cloud-sync')">
                         <i data-lucide="x" class="w-5 h-5"></i>
@@ -996,7 +996,8 @@
 
                 <p class="text-xs text-slate-500 mb-4 leading-relaxed">
                     Sinkronisasikan seluruh data kas E-Bendahara (matriks santri, buku kas, pinjaman, dan status gembok)
-                    lintas HP dan laptop secara otomatis menggunakan Cloud JSON <strong>api.npoint.io</strong> (100% Gratis &amp; Tanpa Perlu Daftar Akun).
+                    lintas HP dan laptop secara otomatis. Mendukung <strong>Firebase Realtime Database REST</strong> (Rekomendasi),
+                    <strong>Pantry Cloud</strong>, atau <strong>npoint.io</strong>.
                 </p>
 
                 <!-- Status Koneksi Saat Ini & Tombol Sinkron Sekarang -->
@@ -1019,18 +1020,18 @@
                 <div class="space-y-3 mb-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">
-                            Kode Bin Sinkronisasi (Bin ID) <span class="text-red-500">*</span>
+                            Kode / URL Sinkronisasi <span class="text-red-500">*</span>
                         </label>
                         <div class="flex gap-2">
                             <input type="text" id="cs-binId" class="quick-input flex-1 text-xs font-mono"
-                                placeholder="Contoh: c0a1b2c3d4e5f6 atau tempel link npoint.io">
+                                placeholder="Contoh: https://xxx-default-rtdb.firebaseio.com atau UUID Pantry atau ID npoint">
                             <button type="button" onclick="simpanCloudSync()"
                                 class="btn-primary bg-blue-600 hover:bg-blue-700 text-xs px-3.5 py-2 flex items-center gap-1.5 shrink-0 cursor-pointer">
                                 <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan &amp; Hubungkan
                             </button>
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1">
-                            Masukkan ID dari bin JSON Anda di npoint.io.
+                            Tempelkan URL Firebase Realtime Database, UUID Pantry Cloud, atau ID npoint.io Anda.
                         </p>
                     </div>
 
@@ -1047,18 +1048,30 @@
                     </div>
                 </div>
 
-                <!-- Panduan Singkat npoint.io -->
+                <!-- Panduan Singkat Multi-Provider Cloud Sync -->
                 <details class="bg-blue-50/60 border border-blue-200 rounded-xl p-3 mb-4 text-xs text-slate-700">
                     <summary class="font-bold text-blue-800 cursor-pointer flex items-center gap-1.5">
                         <i data-lucide="help-circle" class="w-4 h-4 text-blue-600"></i>
-                        Panduan Cepat Membuat Kode Bin di npoint.io (100% Gratis &amp; 1 Menit)
+                        Panduan Cepat Menghubungkan Cloud (Firebase / Pantry / npoint)
                     </summary>
-                    <div class="mt-2.5 space-y-2 text-slate-600 leading-relaxed text-[11px]">
-                        <p>1. Buka <strong><a href="https://www.npoint.io" target="_blank" class="text-blue-600 underline font-bold">npoint.io</a></strong> di browser.</p>
-                        <p>2. Di halaman utama, pada editor teks ketikkan tanda kurung kurawal buka dan tutup: <code>{}</code> lalu klik tombol biru <strong>"Save"</strong>.</p>
-                        <p>3. Anda akan diarahkan ke halaman dengan URL seperti <code>https://www.npoint.io/docs/c0a1b2c3d4e5f6</code>. Kode di bagian belakang tersebut (misal: <code>c0a1b2c3d4e5f6</code>) adalah <strong>Kode Bin</strong> Anda.</p>
-                        <p>4. Salin kode tersebut dan tempelkan ke kolom <strong>Kode Bin Sinkronisasi</strong> di atas, lalu klik <strong>"Simpan &amp; Hubungkan"</strong>.</p>
-                        <p>5. Klik tombol <strong>"Sinkronkan Cloud Sekarang"</strong> untuk mengunggah data pertama kali, lalu klik <strong>"Salin Link Sinkron untuk Device Lain"</strong> untuk dibuka di HP atau laptop pengurus lainnya!</p>
+                    <div class="mt-2.5 space-y-3 text-slate-600 leading-relaxed text-[11px]">
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
+                            <p class="font-bold text-emerald-800 mb-1">🔥 Opsi 1: Firebase Realtime Database (REKOMENDASI — 2 Arah Sempurna)</p>
+                            <p>1. Buka <a href="https://console.firebase.google.com/" target="_blank" class="text-blue-600 underline font-bold">Firebase Console</a>, buat project baru (atau gunakan yang sudah ada).</p>
+                            <p>2. Di menu kiri, klik <strong>Realtime Database</strong> → <strong>Create Database</strong> → pilih region → pilih <strong>Start in test mode</strong> → klik <strong>Enable</strong>.</p>
+                            <p>3. Salin URL database Anda (contoh: <code>https://nama-project-default-rtdb.firebaseio.com</code>).</p>
+                            <p>4. Tempelkan URL tersebut ke kolom di atas, lalu klik <strong>"Simpan & Hubungkan"</strong>.</p>
+                        </div>
+                        <div class="bg-violet-50 border border-violet-200 rounded-lg p-2.5">
+                            <p class="font-bold text-violet-800 mb-1">🗄️ Opsi 2: Pantry Cloud (Tanpa Daftar Akun)</p>
+                            <p>1. Buka <a href="https://getpantry.cloud/" target="_blank" class="text-blue-600 underline font-bold">getpantry.cloud</a>, masukkan email Anda dan klik <strong>Create Pantry</strong>.</p>
+                            <p>2. Salin <strong>Pantry ID</strong> (UUID berformat <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>).</p>
+                            <p>3. Tempelkan UUID tersebut ke kolom di atas, lalu klik <strong>"Simpan & Hubungkan"</strong>.</p>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+                            <p class="font-bold text-slate-700 mb-1">📝 Opsi 3: npoint.io (Hanya Baca — Tidak Disarankan)</p>
+                            <p>npoint.io bersifat <strong>Read-Only</strong> dari luar website mereka (POST/PUT ditolak HTTP 500). Hanya cocok untuk menyebarkan data awal, bukan sinkronisasi dua arah. Gunakan Firebase atau Pantry untuk sinkronisasi penuh.</p>
+                        </div>
                     </div>
                 </details>
 
@@ -1165,7 +1178,7 @@
         </div>
 
         <!-- Application Core Scripts -->
-        <script src="assets/js/app.js?v=3.1_pinjaman_bukukas"></script>
+        <script src="assets/js/app.js?v=3.2_multicloudsync"></script>
 </body>
 
 </html>
