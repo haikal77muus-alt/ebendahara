@@ -34,7 +34,7 @@ function ensureArray(val) {
 
 function sanitizeCloudData(data) {
     if (!data || typeof data !== 'object') return null;
-    
+
     // Buka wrapper jika ada
     if (data.ebendahara_database && typeof data.ebendahara_database === 'object') {
         data = data.ebendahara_database;
@@ -135,86 +135,29 @@ const CloudSync = {
     lastSyncTime: 0,
 
     /**
-     * Inisialisasi: Gunakan DEFAULT_CLOUD_URL otomatis tanpa perlu input manual!
+     * Inisialisasi: Gunakan DEFAULT_CLOUD_URL otomatis permanen (Zero Config)
      */
     init() {
-        // 1. Cek parameter ?sync= di URL jika ada kustom
+        // Selalu gunakan database resmi Firebase tanpa perlu utak-atik lagi
+        this.binId = DEFAULT_CLOUD_URL;
         try {
-            const urlParams = new URLSearchParams(window.location.search);
-            const syncParam = urlParams.get('sync');
-            if (syncParam && syncParam.trim()) {
-                const cleaned = cleanBinId(syncParam);
-                if (cleaned) {
-                    this.binId = cleaned;
-                    localStorage.setItem(CLOUD_SYNC_KEY, this.binId);
-                    const cleanUrl = window.location.pathname + window.location.hash;
-                    window.history.replaceState({}, document.title, cleanUrl);
-                }
-            }
-        } catch (e) {}
-
-        // 2. Bersihkan otomatis nilai lama dari localStorage jika bukan database resmi yang benar
-        let saved = cleanBinId(localStorage.getItem(CLOUD_SYNC_KEY) || '');
-        if (!saved || saved.includes('e-bendahara') || saved.includes('npoint') || !saved.includes('ebendahara-asrama')) {
-            // Otomatis reset ke database resmi Firebase yang aktif tanpa hyphen
-            saved = DEFAULT_CLOUD_URL;
             localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
-        }
-        this.binId = saved;
+        } catch (e) { }
 
-        const provider = this.getProviderInfo();
-        this.setStatus('connected', `Cloud Aktif (${provider.name})`);
+        this.setStatus('connected', 'Cloud Aktif (Firebase Cloud)');
         this.updateUIStatusBadge();
     },
 
     /**
-     * Deteksi penyedia cloud (Default: Firebase REST API)
+     * Deteksi penyedia cloud (Permanen: Firebase REST API)
      */
     getProviderInfo() {
-        let raw = (this.binId || DEFAULT_CLOUD_URL).trim();
-
-        // 1. Firebase Realtime Database REST API (Native Fetch tanpa SDK)
-        if (raw.includes('firebasedatabase.app') || raw.includes('firebaseio.com')) {
-            let base = raw.replace(/\/+$/, '');
-            if (!base.startsWith('http')) base = 'https://' + base;
-            if (base.endsWith('.json')) {
-                // sudah lengkap
-            } else if (base.endsWith('/ebendahara_database') || base.endsWith('/ebendahara')) {
-                base = base + '.json';
-            } else {
-                base = base + '/ebendahara_database.json';
-            }
-            return {
-                type: 'firebase',
-                name: 'Firebase Cloud',
-                readUrl: base,
-                writeUrl: base,
-                method: 'PUT'
-            };
-        }
-
-        // 2. Pantry Cloud (getpantry.cloud UUID)
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
-        if (isUUID || raw.includes('getpantry.cloud')) {
-            const cleanId = raw.replace(/.*pantry\//i, '').replace(/\/basket.*/i, '').trim();
-            const url = `https://getpantry.cloud/apiv1/pantry/${cleanId}/basket/ebendahara`;
-            return {
-                type: 'pantry',
-                name: 'Pantry Cloud',
-                readUrl: url,
-                writeUrl: url,
-                method: 'POST'
-            };
-        }
-
-        // 3. npoint.io (fallback)
-        let npointId = raw.replace(/^https?:\/\/(?:api\.|www\.)?npoint\.io\/(?:docs\/)?/i, '').replace(/[^a-zA-Z0-9_-]/g, '');
         return {
-            type: 'npoint',
-            name: 'npoint.io',
-            readUrl: `https://api.npoint.io/${npointId}`,
-            writeUrl: `https://api.npoint.io/${npointId}`,
-            method: 'POST'
+            type: 'firebase',
+            name: 'Firebase Cloud',
+            readUrl: DEFAULT_CLOUD_URL,
+            writeUrl: DEFAULT_CLOUD_URL,
+            method: 'PUT'
         };
     },
 
@@ -321,9 +264,9 @@ const CloudSync = {
         if (modalStatusDot) {
             modalStatusDot.className = 'w-3 h-3 rounded-full ' + (
                 this.status === 'connected' ? 'bg-emerald-500 ring-4 ring-emerald-100' :
-                this.status === 'syncing' ? 'bg-amber-500 ring-4 ring-amber-100' :
-                this.status === 'error' ? 'bg-rose-500 ring-4 ring-rose-100' :
-                'bg-slate-400 ring-4 ring-slate-100'
+                    this.status === 'syncing' ? 'bg-amber-500 ring-4 ring-amber-100' :
+                        this.status === 'error' ? 'bg-rose-500 ring-4 ring-rose-100' :
+                            'bg-slate-400 ring-4 ring-slate-100'
             );
         }
     },
@@ -349,25 +292,6 @@ const CloudSync = {
             });
 
             if (!res.ok) {
-                if (res.status === 404 && this.binId !== DEFAULT_CLOUD_URL) {
-                    console.warn('[CloudSync] 404 pada URL lama, auto-reset ke database resmi...');
-                    this.binId = DEFAULT_CLOUD_URL;
-                    localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
-                    const freshProvider = this.getProviderInfo();
-                    const retryRes = await fetch(freshProvider.writeUrl, {
-                        method: freshProvider.method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (retryRes.ok) {
-                        if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
-                            Storage.saveLocalOnly(payload);
-                        }
-                        this.lastSyncTime = Date.now();
-                        this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
-                        return true;
-                    }
-                }
                 throw new Error(`HTTP ${res.status}`);
             }
 
@@ -389,9 +313,9 @@ const CloudSync = {
     },
 
     /**
-     * Tarik data dari cloud
+     * Tarik data dari cloud (pullFromCloud)
      */
-    async pullFromCloud() {
+    async pullFromCloud(force = false) {
         if (this.isSyncing) return null;
         this.isSyncing = true;
         this.setStatus('syncing', 'Memuat data dari cloud...');
@@ -399,19 +323,12 @@ const CloudSync = {
         const provider = this.getProviderInfo();
 
         try {
-            let res = await fetch(provider.readUrl);
+            const res = await fetch(provider.readUrl);
             if (!res.ok) {
-                if (res.status === 404 && this.binId !== DEFAULT_CLOUD_URL) {
-                    console.warn('[CloudSync] 404 pada URL lama, auto-reset ke database resmi...');
-                    this.binId = DEFAULT_CLOUD_URL;
-                    localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
-                    const freshProvider = this.getProviderInfo();
-                    res = await fetch(freshProvider.readUrl);
-                }
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                throw new Error(`HTTP ${res.status}`);
             }
 
-            let rawData = await res.json();
+            const rawData = await res.json();
             const cloudData = sanitizeCloudData(rawData);
 
             if (!cloudData || !Array.isArray(cloudData.periode)) {
@@ -442,33 +359,31 @@ const CloudSync = {
             const localIsOutdated = !localData || !Array.isArray(localData.periode) || localData.periode.length < 3 || (!localData.master_santri || localData.master_santri.length < 50);
             const cloudIsComplete = Array.isArray(cloudData.periode) && cloudData.periode.length >= 3 && Array.isArray(cloudData.master_santri) && cloudData.master_santri.length >= 50;
 
-            // 1. Jika data cloud lebih baru, ATAU data lokal belum lengkap/lama, ATAU lokal masih kosong
-            if (cloudTime > localTime || (!localHasContent && cloudHasContent) || (localIsOutdated && cloudIsComplete)) {
+            // 1. Jika force, ATAU cloud lebih baru, ATAU data lokal belum lengkap/lama, ATAU lokal masih kosong
+            if (force || cloudTime > localTime || (!localHasContent && cloudHasContent) || (localIsOutdated && cloudIsComplete)) {
                 if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
                     Storage.saveLocalOnly(cloudData);
                 }
                 this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
                 this.isSyncing = false;
-                
+
                 // Segera refresh periode dan tampilan tab aktif agar langsung berubah di layar
-                if (typeof renderPeriodeDropdown === 'function') {
-                    try { renderPeriodeDropdown(); } catch (e) {}
+                if (typeof loadPeriode === 'function') {
+                    try { loadPeriode(); } catch (e) { }
+                } else if (typeof renderPeriodeDropdown === 'function') {
+                    try { renderPeriodeDropdown(); } catch (e) { }
                 }
                 if (typeof renderCurrentTab === 'function') {
-                    try { renderCurrentTab(); } catch (e) {}
+                    try { renderCurrentTab(); } catch (e) { }
                 }
                 return cloudData;
             }
-                    renderCurrentTab();
-                }
-                return cloudData;
-            } 
             // 2. Jika data lokal lebih baru dan memiliki konten, otomatis unggah ke cloud
             else if (localTime > cloudTime && localHasContent) {
                 this.isSyncing = false;
                 await this.pushToCloud(localData);
                 return null;
-            } 
+            }
             // 3. Status identik
             else {
                 this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
@@ -484,23 +399,18 @@ const CloudSync = {
     },
 
     async saveBinId(rawId) {
-        const id = cleanBinId(rawId);
-        if (!id) return;
-        this.binId = id;
-        localStorage.setItem(CLOUD_SYNC_KEY, this.binId);
-        
+        this.binId = DEFAULT_CLOUD_URL;
+        localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
         const provider = this.getProviderInfo();
         this.setStatus('connected', `Cloud Aktif (${provider.name})`);
-
-        const cloudData = await this.pullFromCloud();
-        return cloudData;
+        return this.pullFromCloud(true);
     },
 
     resetToDefault() {
         this.binId = DEFAULT_CLOUD_URL;
-        localStorage.removeItem(CLOUD_SYNC_KEY);
+        localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
         this.setStatus('connected', 'Cloud Terhubung (Database Utama)');
-        return this.pullFromCloud();
+        return this.pullFromCloud(true);
     },
 
     disconnect() {

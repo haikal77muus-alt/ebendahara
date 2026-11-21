@@ -1512,22 +1512,14 @@ window.resetCloudToDefault = resetCloudToDefault;
 
 async function syncLocalToCloudNow() {
     if (typeof CloudSync !== 'undefined') {
-        // Otomatis bersihkan jika ada sisa URL lama atau status error
-        if (typeof DEFAULT_CLOUD_URL !== 'undefined') {
-            CloudSync.binId = DEFAULT_CLOUD_URL;
-            localStorage.setItem(CLOUD_SYNC_KEY, DEFAULT_CLOUD_URL);
-        }
-        const data = Storage.getData();
-        const success = await CloudSync.pushToCloud(data, true);
-        if (success) {
-            showToast('Data berhasil disinkronkan ke Cloud Firebase!', 'success');
+        showToast('Memeriksa & menyinkronkan data cloud...', 'info');
+        const pulled = await CloudSync.pullFromCloud(true);
+        if (pulled) {
+            showToast('Data terbaru dari Cloud Firebase berhasil dimuat!', 'success');
+        } else if (CloudSync.status === 'connected') {
+            showToast('Data lokal sudah sinkron dengan Cloud Firebase!', 'success');
         } else {
-            const pulled = await CloudSync.pullFromCloud();
-            if (pulled) {
-                showToast('Data terbaru dari Cloud berhasil dimuat!', 'success');
-            } else {
-                showToast('Sinkronisasi: ' + CloudSync.statusMessage, 'info');
-            }
+            showToast('Status: ' + CloudSync.statusMessage, 'warning');
         }
     }
 }

@@ -24,7 +24,9 @@ const DEFAULT_SEED_DATA = {
         { id: 1, nama: 'Bendahara Asrama', username: 'admin', password: 'admin123', role: 'bendahara_utama' }
     ],
     periode: [
-        { id: 1, nama_periode: 'Tahun Ajaran 2026/2027', tipe_bulan: 'juli_juni', is_active: 1, santri_list: [] }
+        { id: 1, nama_periode: 'Tahun Ajaran 2024/2025', tipe_bulan: 'juli_juni', is_active: 0, santri_list: [] },
+        { id: 2, nama_periode: 'Tahun Ajaran 2025/2026', tipe_bulan: 'juli_juni', is_active: 0, santri_list: [] },
+        { id: 3, nama_periode: 'Tahun Ajaran 2026/2027', tipe_bulan: 'juli_juni', is_active: 1, santri_list: [] }
     ],
     master_santri: [],
     matriks_kas_bulanan: [],
