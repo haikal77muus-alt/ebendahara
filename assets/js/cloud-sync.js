@@ -438,16 +438,27 @@ const CloudSync = {
                 (Array.isArray(cloudData.master_santri) && cloudData.master_santri.length > 0)
             );
 
-            // 1. Jika data cloud lebih baru, ATAU data lokal masih kosong sedangkan cloud sudah terisi
-            if (cloudTime > localTime || (!localHasContent && cloudHasContent)) {
+            // Cek apakah data lokal masih template lama (< 3 periode atau < 50 santri) sedangkan cloud sudah berisi data lengkap Excel (3 periode, 100+ santri)
+            const localIsOutdated = !localData || !Array.isArray(localData.periode) || localData.periode.length < 3 || (!localData.master_santri || localData.master_santri.length < 50);
+            const cloudIsComplete = Array.isArray(cloudData.periode) && cloudData.periode.length >= 3 && Array.isArray(cloudData.master_santri) && cloudData.master_santri.length >= 50;
+
+            // 1. Jika data cloud lebih baru, ATAU data lokal belum lengkap/lama, ATAU lokal masih kosong
+            if (cloudTime > localTime || (!localHasContent && cloudHasContent) || (localIsOutdated && cloudIsComplete)) {
                 if (typeof Storage !== 'undefined' && Storage.saveLocalOnly) {
                     Storage.saveLocalOnly(cloudData);
                 }
                 this.setStatus('connected', 'Cloud Terhubung & Data Tersinkron');
                 this.isSyncing = false;
                 
-                // Segera refresh tampilan tab aktif agar langsung berubah di layar
+                // Segera refresh periode dan tampilan tab aktif agar langsung berubah di layar
+                if (typeof renderPeriodeDropdown === 'function') {
+                    try { renderPeriodeDropdown(); } catch (e) {}
+                }
                 if (typeof renderCurrentTab === 'function') {
+                    try { renderCurrentTab(); } catch (e) {}
+                }
+                return cloudData;
+            }
                     renderCurrentTab();
                 }
                 return cloudData;
