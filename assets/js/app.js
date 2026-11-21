@@ -515,12 +515,21 @@ function renderMatriksTable() {
         const rowClass = isBoyong ? 'row-boyong' : '';
         bodyHTML += `<tr class="${rowClass}">`;
         bodyHTML += `<td class="col-no">${idx + 1}</td>`;
+        const hasCustomClass = s.kamar_kelas && s.kamar_kelas !== 'Kamar Asrama' && s.kamar_kelas !== '-';
         bodyHTML += `<td class="col-nama">
             <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-semibold ${isBoyong ? 'text-slate-600' : 'text-slate-800'}">${escHtml(s.nama_santri)}</span>
                 ${isBoyong ? '<span class="badge-status-boyong">Boyong</span>' : ''}
             </div>
-            ${s.kamar_kelas ? `<span class="block text-[10px] ${isBoyong ? 'text-slate-400' : 'text-slate-500'} font-normal">${escHtml(s.kamar_kelas)}</span>` : ''}
+            ${hasCustomClass ? `
+                <span class="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[10px] ${isBoyong ? 'text-slate-400 bg-slate-100' : 'text-blue-700 bg-blue-50 border border-blue-200'} font-medium">
+                    ${escHtml(s.kamar_kelas)}
+                </span>
+            ` : (Auth.isReadOnly() ? '' : `
+                <button type="button" class="text-[10px] text-slate-400 hover:text-blue-600 italic block mt-0.5 transition" title="Klik untuk atur kelas santri ini" onclick="openEditSantriModal(${s.id})">
+                    + atur kelas
+                </button>
+            `)}
         </td>`;
 
         // Hitung tunggakan personal per-santri (semua yang BUKAN 'sudah' dihitung tunggakan)
@@ -556,6 +565,9 @@ function renderMatriksTable() {
         if (!Auth.isReadOnly()) {
             bodyHTML += `<td class="no-print col-aksi">
                 <div class="flex items-center justify-center gap-1">
+                    <button class="p-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition" title="Edit Data & Kelas Santri" onclick="openEditSantriModal(${s.id})">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    </button>
                     ${isBoyong ? `
                         <button class="px-2 py-0.5 text-[11px] rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-medium" title="Aktifkan Kembali ke Pondok" onclick="toggleStatusSantri(${s.id}, 1, '${escHtml(s.nama_santri)}')">Aktifkan</button>
                     ` : `
@@ -637,6 +649,66 @@ function tambahSantri() {
 }
 
 // ============================================================
+// EDIT DATA & KELAS SANTRI
+// ============================================================
+function openEditSantriModal(id) {
+    if (Auth.isReadOnly()) {
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header untuk mengubah data.', 'warning');
+        return;
+    }
+    const santriList = Storage.getSantriByPeriode(activePeriodeId);
+    let s = santriList.find(x => x.id === parseInt(id));
+    if (!s) {
+        const db = Storage.getData();
+        s = (db.master_santri || []).find(x => x.id === parseInt(id));
+    }
+    if (!s) {
+        showToast('Data santri tidak ditemukan!', 'error');
+        return;
+    }
+    document.getElementById('edit-santri-id').value = s.id;
+    document.getElementById('edit-santri-nama').value = s.nama_santri || '';
+    document.getElementById('edit-santri-kelas').value = (s.kamar_kelas === 'Kamar Asrama' ? '' : s.kamar_kelas) || '';
+    openModal('modal-edit-santri');
+    setTimeout(() => {
+        const kInput = document.getElementById('edit-santri-kelas');
+        if (kInput) kInput.focus();
+    }, 150);
+}
+window.openEditSantriModal = openEditSantriModal;
+
+function setQuickKelas(val) {
+    const kInput = document.getElementById('edit-santri-kelas');
+    if (kInput) kInput.value = val;
+}
+window.setQuickKelas = setQuickKelas;
+
+function simpanEditSantri() {
+    if (Auth.isReadOnly()) {
+        showToast('Kunci Tampilan aktif! Buka Mode Edit dengan PIN (1234) di header.', 'warning');
+        return;
+    }
+    const id = parseInt(document.getElementById('edit-santri-id').value);
+    const nama = (document.getElementById('edit-santri-nama').value || '').trim();
+    const kelas = (document.getElementById('edit-santri-kelas').value || '').trim() || 'Kamar Asrama';
+
+    if (!nama) {
+        showToast('Nama santri wajib diisi!', 'warning');
+        return;
+    }
+
+    Storage.updateSantri(id, { nama_santri: nama, kamar_kelas: kelas }, activePeriodeId);
+    closeModal('modal-edit-santri');
+    showToast(`Data santri "${nama}" berhasil disimpan & diurutkan otomatis!`, 'success');
+
+    // Re-render tampilan
+    if (typeof loadMatriks === 'function') loadMatriks();
+    if (typeof loadMasterSantriList === 'function') loadMasterSantriList();
+    renderIcons();
+}
+window.simpanEditSantri = simpanEditSantri;
+
+// ============================================================
 // PENGELOLAAN MASTER DATA SANTRI (PER-PERIODE)
 // ============================================================
 function openModalMasterSantri() {
@@ -679,6 +751,9 @@ function renderMasterSantriTable(list) {
         const aksiCol = !Auth.isReadOnly() ? `
             <td class="p-2 text-center col-aksi">
                 <div class="flex items-center justify-center gap-1">
+                    <button class="p-1 text-blue-600 hover:text-blue-800 rounded hover:bg-blue-50 border border-blue-200" title="Edit Data & Kelas Santri" onclick="openEditSantriModal(${s.id})">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    </button>
                     ${toggleBtn}
                     <button class="p-1 text-red-500 hover:text-red-700 rounded hover:bg-red-50" title="Hapus dari Periode Ini" onclick="konfirmasiHapusSantri(${s.id}, '${escHtml(s.nama_santri)}')">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>

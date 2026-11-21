@@ -45,6 +45,9 @@ function parseKelasRank(rawText) {
     if (!rawText) return 9000;
     const s = String(rawText).toLowerCase().trim();
 
+    if (s === 'kamar asrama' || s === '-' || s === '' || s === 'belum diatur') return 9000;
+    if (/\blulus\b/i.test(s)) return 313;
+
     const isSD = /\b(sd|mi|ibtidaiyah)\b/.test(s);
     const isSMP = /\b(smp|mts|tsanawiyah)\b/.test(s);
     const isSMA = /\b(sma|ma|smk|aliyah)\b/.test(s);
@@ -65,9 +68,9 @@ function parseKelasRank(rawText) {
     else if (/\b(ii)\b/.test(s)) angka = 2;
     else if (/\b(i)\b/.test(s)) angka = 1;
 
-    // Angka 1 s/d 12
+    // Angka 1 s/d 12 (misal "Kelas 7", "SMP 7", "7A", "Kls 8", "10 IPA", dll)
     if (angka === null) {
-        const m = s.match(/\b([1-9]|1[0-2])\b/);
+        const m = s.match(/(?:kelas|kls)?\s*([1-9]|1[0-2])(?:\s*[a-z])?\b/);
         if (m) angka = parseInt(m[1], 10);
     }
 
@@ -84,19 +87,17 @@ function parseKelasRank(rawText) {
 
     if (isSMA) {
         if (angka && angka >= 10 && angka <= 12) {
-            if (/\blulus\b/i.test(s)) return 313;
             return 300 + angka;
         }
         if (angka && angka >= 1 && angka <= 3) return 300 + (angka + 9); // 1 SMA -> 10
-        if (/\blulus\b/i.test(s)) return 313;
         return 310;
     }
 
     // Angka eksplisit tanpa label jenjang
     if (angka !== null) {
-        if (angka >= 1 && angka <= 6) return 100 + angka; // Asumsi SD 1-6
-        if (angka >= 7 && angka <= 9) return 200 + angka; // Asumsi SMP 7-9
-        if (angka >= 10 && angka <= 12) return 300 + angka; // Asumsi SMA 10-12
+        if (angka >= 1 && angka <= 6) return 100 + angka; // Asumsi SD 1-6 (Rank 101-106)
+        if (angka >= 7 && angka <= 9) return 200 + angka; // Asumsi SMP 7-9 (Rank 207-209)
+        if (angka >= 10 && angka <= 12) return 300 + angka; // Asumsi SMA 10-12 (Rank 310-312)
     }
 
     return 9000;
@@ -681,8 +682,8 @@ const Storage = {
         return targetPeriode.santri_list.sort((a, b) => 
             (b.is_active - a.is_active) || 
             (parseKelasRank(a.kamar_kelas) - parseKelasRank(b.kamar_kelas)) ||
-            ((a.urutan || 0) - (b.urutan || 0)) || 
             (a.nama_santri || '').localeCompare(b.nama_santri || '', 'id') ||
+            ((a.urutan || 0) - (b.urutan || 0)) || 
             (a.id - b.id)
         );
     },
