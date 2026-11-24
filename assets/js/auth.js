@@ -138,15 +138,15 @@ const Auth = {
 
         if (btnToggle && badgeIcon && badgeText) {
             if (editMode) {
-                btnToggle.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1.5 transition shadow-sm cursor-pointer';
+                btnToggle.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1.5 transition shadow-sm cursor-pointer';
                 badgeIcon.setAttribute('data-lucide', 'lock-open');
-                badgeText.textContent = 'Mode Edit (Terbuka)';
+                badgeText.innerHTML = '<span class="hidden sm:inline">Mode </span>Edit<span class="hidden sm:inline"> (Terbuka)</span>';
                 btnToggle.title = 'Mode Edit Aktif. Klik untuk Mengunci Tampilan (Mode Pantau)';
                 if (btnChangePin) btnChangePin.style.display = 'inline-flex';
             } else {
-                btnToggle.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 flex items-center gap-1.5 transition shadow-sm cursor-pointer';
+                btnToggle.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 flex items-center gap-1.5 transition shadow-sm cursor-pointer';
                 badgeIcon.setAttribute('data-lucide', 'lock');
-                badgeText.textContent = 'Mode Pantau (Terkunci)';
+                badgeText.innerHTML = '<span class="hidden sm:inline">Mode </span>Terkunci';
                 btnToggle.title = 'Kunci Tampilan Aktif. Klik untuk Membuka Mode Edit dengan PIN (Bawaan: 1234)';
                 if (btnChangePin) btnChangePin.style.display = 'none';
             }

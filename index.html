@@ -18,12 +18,12 @@
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=4.1_edit_kelas_sort">
+    <link rel="stylesheet" href="assets/css/style.css?v=4.2_mobile_responsive">
 
     <!-- Cloud Sync Otomatis (Firebase REST), IndexedDB Dual Storage, & Keamanan Ber-PIN -->
-    <script src="assets/js/cloud-sync.js?v=4.1_edit_kelas_sort"></script>
-    <script src="assets/js/storage.js?v=4.1_edit_kelas_sort"></script>
-    <script src="assets/js/auth.js?v=4.1_edit_kelas_sort"></script>
+    <script src="assets/js/cloud-sync.js?v=4.2_mobile_responsive"></script>
+    <script src="assets/js/storage.js?v=4.2_mobile_responsive"></script>
+    <script src="assets/js/auth.js?v=4.2_mobile_responsive"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-800">
@@ -50,9 +50,9 @@
                 </div>
             </div>
 
-            <!-- 2. Bagian Tengah: 4 Tombol Tab Navigasi Utama Menyamping -->
+            <!-- 2. Bagian Tengah: 4 Tombol Tab Navigasi Utama Menyamping (Desktop/Tablet) -->
             <nav
-                class="flex items-center justify-center gap-1 overflow-x-auto order-last sm:order-none w-full sm:w-auto">
+                class="hidden sm:flex items-center justify-center gap-1 overflow-x-auto order-last sm:order-none w-full sm:w-auto">
                 <button
                     class="tab-btn active px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5"
                     data-tab="dashboard" onclick="switchTab('dashboard')">
@@ -165,12 +165,12 @@
     <!-- ============================================================ -->
     <!-- MAIN CONTENT — Tab Panels                                     -->
     <!-- ============================================================ -->
-    <main class="max-w-screen-2xl mx-auto px-4 py-6">
+    <main class="max-w-screen-2xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-24 sm:pb-6">
 
         <!-- ========== TAB: DASHBOARD ========== -->
         <section id="tab-dashboard" class="tab-content">
             <!-- 4 Kartu Ringkasan -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
                 <div class="stat-card">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Saldo Kas
@@ -179,7 +179,7 @@
                             <i data-lucide="wallet" class="w-4 h-4 text-blue-600"></i>
                         </div>
                     </div>
-                    <p id="card-saldo" class="text-2xl font-extrabold text-slate-800">Rp 0</p>
+                    <p id="card-saldo" class="text-xl sm:text-2xl font-extrabold text-slate-800">Rp 0</p>
                 </div>
                 <div class="stat-card">
                     <div class="flex items-center justify-between mb-2">
@@ -189,7 +189,7 @@
                             <i data-lucide="trending-up" class="w-4 h-4 text-green-600"></i>
                         </div>
                     </div>
-                    <p id="card-debit" class="text-2xl font-extrabold text-green-600">Rp 0</p>
+                    <p id="card-debit" class="text-xl sm:text-2xl font-extrabold text-green-600">Rp 0</p>
                 </div>
                 <div class="stat-card">
                     <div class="flex items-center justify-between mb-2">
@@ -199,7 +199,7 @@
                             <i data-lucide="trending-down" class="w-4 h-4 text-red-600"></i>
                         </div>
                     </div>
-                    <p id="card-kredit" class="text-2xl font-extrabold text-red-600">Rp 0</p>
+                    <p id="card-kredit" class="text-xl sm:text-2xl font-extrabold text-red-600">Rp 0</p>
                 </div>
                 <div class="stat-card">
                     <div class="flex items-center justify-between mb-2">
@@ -209,7 +209,7 @@
                             <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
                         </div>
                     </div>
-                    <p id="card-pinjaman" class="text-2xl font-extrabold text-amber-600">Rp 0</p>
+                    <p id="card-pinjaman" class="text-xl sm:text-2xl font-extrabold text-amber-600">Rp 0</p>
                 </div>
             </div>
 
@@ -354,12 +354,12 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="flex gap-2 mb-2">
+                        <div class="flex flex-col sm:flex-row gap-2 mb-2">
                             <input type="text" id="input-nama-santri" class="quick-input flex-1"
                                 placeholder="Nama santri baru..." onkeydown="if(event.key==='Enter')tambahSantri()">
-                            <input type="text" id="input-kamar-santri" class="quick-input w-36 hidden sm:block"
+                            <input type="text" id="input-kamar-santri" class="quick-input w-full sm:w-36"
                                 placeholder="Kamar / Kelas (opsional)">
-                            <button class="btn-primary bg-emerald-600 hover:bg-emerald-700 shrink-0"
+                            <button class="btn-primary bg-emerald-600 hover:bg-emerald-700 shrink-0 justify-center"
                                 onclick="tambahSantri()">
                                 <i data-lucide="plus" class="w-4 h-4"></i> Tambah
                             </button>
@@ -420,34 +420,34 @@
                     <i data-lucide="plus-circle" class="w-4 h-4 text-blue-500"></i>
                     Tambah Transaksi Buku Kas
                 </h3>
-                <div class="flex flex-wrap items-end gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-end gap-2">
                     <div>
                         <label class="text-xs font-medium text-slate-500 block mb-1">Tanggal</label>
-                        <input type="date" id="bk-tanggal" class="quick-input text-sm">
+                        <input type="date" id="bk-tanggal" class="quick-input text-sm w-full">
                     </div>
-                    <div class="flex-1 min-w-[150px]">
+                    <div class="col-span-2 sm:col-span-1 lg:flex-1 lg:min-w-[150px]">
                         <label class="text-xs font-medium text-slate-500 block mb-1">Nama Barang</label>
                         <input type="text" id="bk-nama" class="quick-input text-sm w-full"
                             placeholder="Nama barang/uraian">
                     </div>
-                    <div class="flex-1 min-w-[120px]">
+                    <div class="col-span-2 sm:col-span-1 lg:flex-1 lg:min-w-[120px]">
                         <label class="text-xs font-medium text-slate-500 block mb-1">Keterangan</label>
                         <input type="text" id="bk-ket" class="quick-input text-sm w-full"
                             placeholder="Keterangan transaksi">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-500 block mb-1">Debit (Rp)</label>
-                        <input type="number" id="bk-debit" class="quick-input text-sm w-28" placeholder="0" min="0">
+                        <input type="number" id="bk-debit" inputmode="numeric" class="quick-input text-sm w-full lg:w-28" placeholder="0" min="0">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-500 block mb-1">Kredit (Rp)</label>
-                        <input type="number" id="bk-kredit" class="quick-input text-sm w-28" placeholder="0" min="0">
+                        <input type="number" id="bk-kredit" inputmode="numeric" class="quick-input text-sm w-full lg:w-28" placeholder="0" min="0">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-500 block mb-1">Bukti</label>
-                        <input type="text" id="bk-bukti" class="quick-input text-sm w-28" placeholder="Nota / -">
+                        <input type="text" id="bk-bukti" class="quick-input text-sm w-full lg:w-28" placeholder="Nota / -">
                     </div>
-                    <button class="btn-primary" onclick="tambahBukuKas()">
+                    <button class="btn-primary col-span-2 sm:col-span-1 lg:col-span-1 justify-center" onclick="tambahBukuKas()">
                         <i data-lucide="save" class="w-4 h-4"></i> Simpan
                     </button>
                 </div>
@@ -486,28 +486,28 @@
                     <i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i>
                     Catat Pinjaman / Kasbon Baru
                 </h3>
-                <div class="flex flex-wrap items-end gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-end gap-2">
                     <div>
                         <label class="text-xs font-medium text-slate-500 block mb-1">Tanggal</label>
-                        <input type="date" id="pj-tanggal" class="quick-input text-sm">
+                        <input type="date" id="pj-tanggal" class="quick-input text-sm w-full">
                     </div>
-                    <div class="flex-1 min-w-[140px]">
+                    <div class="col-span-2 sm:col-span-1 lg:flex-1 lg:min-w-[140px]">
                         <label class="text-xs font-medium text-slate-500 block mb-1">Nama Peminjam</label>
                         <input type="text" id="pj-nama" class="quick-input text-sm w-full" placeholder="Nama peminjam">
                     </div>
-                    <div class="flex-1 min-w-[140px]">
+                    <div class="col-span-2 sm:col-span-1 lg:flex-1 lg:min-w-[140px]">
                         <label class="text-xs font-medium text-slate-500 block mb-1">Keperluan</label>
                         <input type="text" id="pj-keperluan" class="quick-input text-sm w-full" placeholder="Untuk apa">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-500 block mb-1">Total Ambil (Rp)</label>
-                        <input type="number" id="pj-jumlah" class="quick-input text-sm w-32" placeholder="0" min="0">
+                        <input type="number" id="pj-jumlah" inputmode="numeric" class="quick-input text-sm w-full lg:w-32" placeholder="0" min="0">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-500 block mb-1">Tanda Bukti</label>
-                        <input type="text" id="pj-bukti" class="quick-input text-sm w-28" placeholder="Kwitansi">
+                        <input type="text" id="pj-bukti" class="quick-input text-sm w-full lg:w-28" placeholder="Kwitansi">
                     </div>
-                    <button class="btn-primary bg-amber-600 hover:bg-amber-700" onclick="tambahPinjaman()">
+                    <button class="btn-primary bg-amber-600 hover:bg-amber-700 col-span-2 sm:col-span-1 lg:col-span-1 justify-center" onclick="tambahPinjaman()">
                         <i data-lucide="save" class="w-4 h-4"></i> Simpan
                     </button>
                 </div>
@@ -890,7 +890,7 @@
                         <label for="unlock-pin-input"
                             class="block text-xs font-semibold text-slate-700 mb-1.5 text-center">PIN Keamanan</label>
                         <input type="password" id="unlock-pin-input" maxlength="10" required
-                            autocomplete="current-password"
+                            inputmode="numeric" pattern="[0-9]*" autocomplete="current-password"
                             class="w-full text-center text-xl tracking-widest font-mono py-2.5 px-3 rounded-lg border border-slate-300 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
                             placeholder="••••">
                     </div>
@@ -930,18 +930,18 @@
             <form onsubmit="submitUbahPIN(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Lama</label>
-                    <input type="password" id="up-pin-lama" required maxlength="10"
+                    <input type="password" id="up-pin-lama" required maxlength="10" inputmode="numeric"
                         class="quick-input w-full text-sm font-mono tracking-wider" placeholder="Masukkan PIN lama (default: 1234)">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Baru (min. 4 angka/karakter)</label>
-                    <input type="password" id="up-pin-baru" required maxlength="10"
+                    <input type="password" id="up-pin-baru" required maxlength="10" inputmode="numeric"
                         class="quick-input w-full text-sm font-mono tracking-wider"
                         placeholder="Masukkan PIN baru...">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Konfirmasi PIN Baru</label>
-                    <input type="password" id="up-pin-konfirm" required maxlength="10"
+                    <input type="password" id="up-pin-konfirm" required maxlength="10" inputmode="numeric"
                         class="quick-input w-full text-sm font-mono tracking-wider"
                         placeholder="Ulangi PIN baru...">
                 </div>
@@ -1210,8 +1210,28 @@
             </div>
         </div>
 
+        <!-- Mobile Bottom Navigation (Khusus Tampilan HP) -->
+        <nav id="mobile-bottom-nav" class="mobile-bottom-nav sm:hidden">
+            <button class="mobile-tab-btn tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="mobile-tab-btn tab-btn" data-tab="matriks" onclick="switchTab('matriks')">
+                <i data-lucide="grid-3x3" class="w-5 h-5"></i>
+                <span>Kas Santri</span>
+            </button>
+            <button class="mobile-tab-btn tab-btn" data-tab="bukukas" onclick="switchTab('bukukas')">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+                <span>Buku Kas</span>
+            </button>
+            <button class="mobile-tab-btn tab-btn" data-tab="pinjaman" onclick="switchTab('pinjaman')">
+                <i data-lucide="hand-coins" class="w-5 h-5"></i>
+                <span>Pinjaman</span>
+            </button>
+        </nav>
+
         <!-- Application Core Scripts -->
-        <script src="assets/js/app.js?v=4.1_edit_kelas_sort"></script>
+        <script src="assets/js/app.js?v=4.2_mobile_responsive"></script>
 </body>
 
 </html>
