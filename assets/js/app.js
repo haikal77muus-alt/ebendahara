@@ -1011,16 +1011,21 @@ function loadBukuKas() {
 
 function renderBukuKasTable() {
     const tbody = document.getElementById('bukukas-tbody');
+    const cardsContainer = document.getElementById('bukukas-cards');
     const colCount = Auth.isReadOnly() ? 8 : 9;
     if (bukukasData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${colCount}" class="py-8 text-center text-slate-400 text-sm">Belum ada transaksi di Buku Kas.</td></tr>`;
+        if (cardsContainer) cardsContainer.innerHTML = `<p class="text-center text-slate-400 text-sm py-6">Belum ada transaksi di Buku Kas.</p>`;
         return;
     }
 
     let saldo = 0;
     let html = '';
+    let cardHtml = '';
     bukukasData.forEach((row, idx) => {
         saldo += (parseFloat(row.debit) || 0) - (parseFloat(row.kredit) || 0);
+
+        // === Desktop Table Row ===
         html += `<tr>
             <td class="text-center">${idx + 1}</td>
             <td class="text-center text-xs font-medium text-slate-600">${formatHariTanggal(row.tanggal)}</td>
@@ -1038,8 +1043,31 @@ function renderBukuKasTable() {
                 </div>
             </td>` : ''}
         </tr>`;
+
+        // === Mobile Card ===
+        const isDebit = row.debit > 0;
+        const isKredit = row.kredit > 0;
+        const borderColor = isDebit ? 'border-l-emerald-400' : (isKredit ? 'border-l-rose-400' : 'border-l-slate-300');
+        cardHtml += `<div class="mobile-card-bk border-l-4 ${borderColor}">
+            <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-slate-800 text-sm truncate">${escHtml(row.nama_barang || '-')}</p>
+                    <p class="text-[11px] text-slate-400">${formatHariTanggal(row.tanggal)}${row.keterangan ? ' · ' + escHtml(row.keterangan) : ''}${row.bukti && row.bukti !== '-' ? ' · ' + escHtml(row.bukti) : ''}</p>
+                </div>
+                <div class="text-right shrink-0">
+                    ${isDebit ? `<p class="text-xs font-bold text-emerald-600">+${formatRp(row.debit)}</p>` : ''}
+                    ${isKredit ? `<p class="text-xs font-bold text-rose-600">-${formatRp(row.kredit)}</p>` : ''}
+                    <p class="text-[10px] text-slate-400 font-medium">Saldo: ${formatRp(saldo)}</p>
+                </div>
+            </div>
+            ${!Auth.isReadOnly() ? `<div class="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-slate-100">
+                <button class="btn-success px-2.5 py-1 text-xs flex items-center gap-1 rounded-md" onclick="openEditBukuKas(${row.id})"><i data-lucide="edit-3" class="w-3 h-3"></i> Edit</button>
+                <button class="btn-danger px-2.5 py-1 text-xs flex items-center gap-1 rounded-md" onclick="konfirmasiHapusBK(${row.id})"><i data-lucide="trash-2" class="w-3 h-3"></i> Hapus</button>
+            </div>` : ''}
+        </div>`;
     });
     tbody.innerHTML = html;
+    if (cardsContainer) cardsContainer.innerHTML = cardHtml;
     renderIcons();
 }
 
@@ -1167,13 +1195,16 @@ function loadPinjaman() {
 
 function renderPinjamanTable() {
     const tbody = document.getElementById('pinjaman-tbody');
+    const cardsContainer = document.getElementById('pinjaman-cards');
     const colCount = Auth.isReadOnly() ? 9 : 10;
     if (pinjamanData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${colCount}" class="py-8 text-center text-slate-400 text-sm">Belum ada catatan pinjaman pada periode ini.</td></tr>`;
+        if (cardsContainer) cardsContainer.innerHTML = `<p class="text-center text-slate-400 text-sm py-6">Belum ada catatan pinjaman pada periode ini.</p>`;
         return;
     }
 
     let html = '';
+    let cardHtml = '';
     pinjamanData.forEach((row, idx) => {
         const sisa = row.total_ambil - row.total_kembali;
         const lunas = sisa <= 0;
@@ -1181,6 +1212,7 @@ function renderPinjamanTable() {
             ? '<span class="badge-lunas">✓ Lunas</span>'
             : `<span class="badge-kurang">Kurang ${formatRp(sisa)}</span>`;
 
+        // === Desktop Table Row ===
         html += `<tr>
             <td class="text-center">${idx + 1}</td>
             <td class="text-sm text-center">${formatTanggalShort(row.tanggal)}</td>
@@ -1199,8 +1231,32 @@ function renderPinjamanTable() {
                 </div>
             </td>` : ''}
         </tr>`;
+
+        // === Mobile Card ===
+        const statusBorder = lunas ? 'border-emerald-200 bg-emerald-50/40' : 'border-amber-200 bg-amber-50/40';
+        cardHtml += `<div class="mobile-card ${statusBorder}">
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="min-w-0">
+                    <p class="font-bold text-slate-800 text-sm truncate">${escHtml(row.nama_peminjam)}</p>
+                    <p class="text-[11px] text-slate-500">${escHtml(row.keperluan || '-')}</p>
+                </div>
+                <div class="shrink-0">${badgeHTML}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mb-2">
+                <div><span class="text-slate-400">Tanggal:</span> <span class="font-medium text-slate-700">${formatTanggalShort(row.tanggal)}</span></div>
+                <div><span class="text-slate-400">Ambil:</span> <span class="font-bold text-slate-800">${formatRp(row.total_ambil)}</span></div>
+                <div><span class="text-slate-400">Kembali:</span> <span class="font-bold text-emerald-600">${formatRp(row.total_kembali)}</span></div>
+                <div><span class="text-slate-400">Tgl Kembali:</span> <span class="font-medium text-slate-700">${formatTanggalShort(row.tgl_kembali)}</span></div>
+                ${row.tanda_bukti && row.tanda_bukti !== '-' ? `<div class="col-span-2"><span class="text-slate-400">Bukti:</span> <span class="font-medium">${escHtml(row.tanda_bukti)}</span></div>` : ''}
+            </div>
+            ${!Auth.isReadOnly() ? `<div class="flex items-center gap-2 pt-1.5 border-t border-slate-100">
+                ${!lunas ? `<button class="btn-success px-3 py-1.5 text-xs flex items-center gap-1 rounded-lg" onclick="openCicilModal(${row.id})"><i data-lucide="banknote" class="w-3.5 h-3.5"></i> Cicil</button>` : ''}
+                <button class="btn-danger px-3 py-1.5 text-xs flex items-center gap-1 rounded-lg" onclick="konfirmasiHapusPinjaman(${row.id})"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus</button>
+            </div>` : ''}
+        </div>`;
     });
     tbody.innerHTML = html;
+    if (cardsContainer) cardsContainer.innerHTML = cardHtml;
     renderIcons();
 }
 

@@ -18,7 +18,7 @@
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=4.2_mobile_responsive">
+    <link rel="stylesheet" href="assets/css/style.css?v=4.3_mobile_cards">
 
     <!-- Cloud Sync Otomatis (Firebase REST), IndexedDB Dual Storage, & Keamanan Ber-PIN -->
     <script src="assets/js/cloud-sync.js?v=4.2_mobile_responsive"></script>
@@ -453,8 +453,8 @@
                 </div>
             </div>
 
-            <!-- Tabel Buku Kas -->
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+            <!-- Tabel Buku Kas (Desktop/Tablet) -->
+            <div class="hidden sm:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
                 <table class="bukukas-table">
                     <thead>
                         <tr>
@@ -475,6 +475,10 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <!-- Kartu Buku Kas (Khusus Tampilan HP) -->
+            <div id="bukukas-cards" class="sm:hidden space-y-2">
+                <p class="text-center text-slate-400 text-sm py-6">Memuat data buku kas...</p>
             </div>
         </section>
 
@@ -513,8 +517,8 @@
                 </div>
             </div>
 
-            <!-- Tabel Pinjaman -->
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+            <!-- Tabel Pinjaman (Desktop/Tablet) -->
+            <div class="hidden sm:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
                 <table class="pinjaman-table">
                     <thead>
                         <tr>
@@ -537,6 +541,10 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <!-- Kartu Pinjaman (Khusus Tampilan HP) -->
+            <div id="pinjaman-cards" class="sm:hidden space-y-3">
+                <p class="text-center text-slate-400 text-sm py-6">Memuat data pinjaman...</p>
             </div>
         </section>
 
@@ -1231,7 +1239,7 @@
         </nav>
 
         <!-- Application Core Scripts -->
-        <script src="assets/js/app.js?v=4.2_mobile_responsive"></script>
+        <script src="assets/js/app.js?v=4.3_mobile_cards"></script>
 </body>
 
 </html>
